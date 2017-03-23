@@ -1,0 +1,26 @@
+{
+  "name": "proof-of-concept",
+  "version": "1.0.0",
+  "description": "",
+  "engines": {
+    "node": ">=7.6"
+  },
+  "main": "index.js",
+  "scripts": {
+    "start": "node main.js",
+    "monitor": "nodemon main.js --ignore chromium",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "adm-zip": "^0.4.7",
+    "chrome-remote-interface": "^0.18.0",
+    "express": "^4.15.2",
+    "follow-redirects": "^1.2.3",
+    "unzip": "^0.1.11"
+  },
+  "devDependencies": {
+    "nodemon": "^1.11.0"
+  }
+}
