@@ -14,13 +14,20 @@ class Renderer {
       }).then((client) => {
         try {
           // Extract DevTools domains.
-          const {Page, Runtime} = client;
+          const {Page, Runtime, Network} = client;
 
           // Enable events on domains we are interested in.
           Promise.all([
             Page.enable(),
             Runtime.enable(),
+            Network.enable(),
           ]).then(() => {
+            return Promise.all([
+              Network.clearBrowserCache(),
+              Network.setCacheDisabled({cacheDisabled: true}),
+              Network.setBypassServiceWorker({bypass: true}),
+            ]);
+          }).then(() => {
             Page.navigate({url: this._url});
           });
 
@@ -30,7 +37,7 @@ class Renderer {
               let result = await Runtime.evaluate({expression: 'document.head.outerHTML'});
               CDP.Close({id: client.tab.id});
               resolve(result.result.value);
-            }, 500);
+            }, 1000);
           });
         } catch (err) {
           console.error(err);
