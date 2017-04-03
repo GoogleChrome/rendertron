@@ -30,7 +30,7 @@ class Renderer {
               let result = await Runtime.evaluate({expression: 'document.head.outerHTML'});
               CDP.Close({id: client.tab.id});
               resolve(result.result.value);
-            }, 3000);
+            }, 500);
           });
         } catch (err) {
           console.error(err);
