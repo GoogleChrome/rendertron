@@ -1,7 +1,7 @@
 'use strict';
 
 const Renderer = require('./renderer');
-const Chromium = require('./chromium');
+const startChromium = require('./chromium');
 const express = require('express');
 
 const app = express();
@@ -17,8 +17,11 @@ const port = process.env.PORT || '3000';
 
 // Should respond to _ah/health _ah/start _ah/stop
 
-new Chromium().start().then(() => {
-  app.listen(port, function() {
-    console.log('Listening on port', port);
-  });
+if (!startChromium()) {
+  console.error('Failed to start Chromium');
+  return;
+}
+
+app.listen(port, function() {
+  console.log('Listening on port', port);
 });

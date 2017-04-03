@@ -37,6 +37,8 @@ class Renderer {
           CDP.Close({id: client.tab.id});
           reject(err);
         }
+      }).catch((e) => {
+        reject(e);
       });
     });
   }
