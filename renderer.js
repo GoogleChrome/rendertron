@@ -9,7 +9,9 @@ class Renderer {
 
   extractHead() {
     return new Promise((resolve, reject) => {
-      CDP((client) => {
+      CDP.New().then((tab) => {
+        return CDP({tab: tab});
+      }).then((client) => {
         try {
           // Extract DevTools domains.
           const {Page, Runtime} = client;
@@ -19,25 +21,22 @@ class Renderer {
             Page.enable(),
             Runtime.enable(),
           ]).then(() => {
-            return Page.navigate({url: this._url});
+            Page.navigate({url: this._url});
           });
 
           // Load and dump DOM of head element.
           Page.loadEventFired(() => {
             setTimeout(async () => {
               let result = await Runtime.evaluate({expression: 'document.head.outerHTML'});
+              CDP.Close({id: client.tab.id});
               resolve(result.result.value);
-              client.close();
             }, 3000);
           });
         } catch (err) {
           console.error(err);
-          client.close();
+          CDP.Close({id: client.tab.id});
           reject(err);
         }
-      }).on('error', (err) => {
-        console.error('Cannot connect to browser:', err);
-        reject(err);
       });
     });
   }
