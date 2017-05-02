@@ -4,7 +4,7 @@ const AdmZip = require('adm-zip');
 const execFile = require('child_process').execFile;
 
 function startChromium() {
-  const chromium = '/usr/bin/google-chrome-unstable';
+  const chromium = '/usr/bin/google-chrome-beta';
   if (!fs.existsSync(chromium)) {
     console.error('Cannot find chromium');
     return false;
