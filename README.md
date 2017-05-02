@@ -3,7 +3,7 @@
 A Docker container which runs headless Chrome and renders web pages on the fly.
 
 ## Dependencies
-This project requires Node 7+, 
+This project requires Node 7+ and Docker ([installation instructions](https://docs.docker.com/engine/installation/)).
 
 ## Installing
 Install node dependencies using:
@@ -14,6 +14,7 @@ npm install
 Install Chrome:
 ```bash
 apt-get install google-chrome-beta
+```
 
 ## Running locally
 With a local instance of Chrome Beta installed, you can start the server locally:
