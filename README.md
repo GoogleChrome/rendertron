@@ -30,7 +30,7 @@ http://localhost:3000/?url=https://dynamic-meta.appspot.com
 ## Docker
 After installing docker, build the docker image:
 ```bash
-docker -t bot-render .
+docker build -t bot-render .
 ```
 
 Start a container with the built image:
