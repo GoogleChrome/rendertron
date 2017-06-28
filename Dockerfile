@@ -22,12 +22,12 @@ RUN /usr/local/bin/install_node '>=7.6'
 
 COPY . /app/
 
-# Add Chrome as a user
+# Add botrender as a user
 RUN groupadd -r botrender && useradd -r -g botrender -G audio,video botrender \
     && mkdir -p /home/botrender && chown -R botrender:botrender /home/botrender \
     && chown -R botrender:botrender /app
 
-# Run Chrome non-privileged
+# Run botrender non-privileged
 USER botrender
 
 EXPOSE 8080
