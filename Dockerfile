@@ -2,8 +2,8 @@
 # single application.
 FROM gcr.io/google_appengine/nodejs
 LABEL name="bot-render" \ 
-			version="0.1" \
-			description="Renders a webpage for bot consumption (not production ready)"
+      version="0.1" \
+      description="Renders a webpage for bot consumption (not production ready)"
 
 RUN apt-get update && apt-get install -y \
   wget \
