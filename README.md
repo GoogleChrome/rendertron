@@ -33,14 +33,28 @@ After installing docker, build the docker image:
 docker build -t bot-render . --no-cache=true
 ```
 
-Start a container with the built image:
+## Running the container
+
+There are two ways to run the container locally:
+1. [Recommended] - Use [Jessie Frazelle' seccomp profile](https://github.com/jessfraz/dotfiles/blob/master/etc/docker/seccomp/chrome.json) and `-security-opt` flag
+2. Utilize the `--cap-add SYS_ADMIN` flag
+
+In the case where your kernel lacks user namespace support or are receiving a `ECONNREFUSED` error when trying to access the service in the container (as noted in issues [2](https://github.com/samuelli/bot-render/issues/2) and [3](https://github.com/samuelli/bot-render/issues/3)), both methods above should resolve the problem.
+
+[Recommended] Start a container with the built image using Jessie Frazelle' seccomp profile for Chrome:
 ```bash
-docker run --name bot-render-container bot-render
+wget https://raw.githubusercontent.com/jfrazelle/dotfiles/master/etc/docker/seccomp/chrome.json -O ~/chrome.json
+docker run -it -p 8080:8080 --security-opt seccomp=$HOME/chrome.json --name bot-render-container bot-render
+```
+
+Start a container with the built image using SYS_ADMIN:
+```bash
+docker run -it -p 8080:8080 --cap-add SYS_ADMIN --name bot-render-container bot-render
 ```
 
 Send a request to the server running inside the container:
 ```bash
-docker exec bot-render-container curl http://localhost:8080/?url=https://dynamic-meta.appspot.com
+curl http://localhost:8080/?url=https://dynamic-meta.appspot.com
 ```
 
 Stop the container:
