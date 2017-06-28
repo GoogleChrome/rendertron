@@ -36,12 +36,12 @@ docker build -t bot-render . --no-cache=true
 ## Running the container
 
 There are two ways to run the container locally:
-1. With [Jessie Frazelle seccomp profile](https://github.com/jessfraz/dotfiles/blob/master/etc/docker/seccomp/chrome.json)
-2. With `--cap-add=SYS_ADMIN`
+1. [Recommended] - Use [Jessie Frazelle' seccomp profile](https://github.com/jessfraz/dotfiles/blob/master/etc/docker/seccomp/chrome.json) and `-security-opt` flag
+2. Utilize the `--cap-add SYS_ADMIN` flag
 
-If you do not use one of the options above, you will get `ECONNREFUSED` errors when trying to access the container as noted in issues [2](https://github.com/samuelli/bot-render/issues/2) and [3](https://github.com/samuelli/bot-render/issues/3).
+In the case where your kernel lacks user namespace support or are receiving a `ECONNREFUSED` error when trying to access the service in the container (as noted in issues [2](https://github.com/samuelli/bot-render/issues/2) and [3](https://github.com/samuelli/bot-render/issues/3)), both methods above should resolve the problem.
 
-Start a container with the built image using Jessie Frazelle seccomp profile for Chrome:
+[Recommended] Start a container with the built image using Jessie Frazelle' seccomp profile for Chrome:
 ```bash
 wget https://raw.githubusercontent.com/jfrazelle/dotfiles/master/etc/docker/seccomp/chrome.json -O ~/chrome.json
 docker run -it -p 8080:8080 --security-opt seccomp=$HOME/chrome.json --name bot-render-container bot-render
@@ -49,7 +49,7 @@ docker run -it -p 8080:8080 --security-opt seccomp=$HOME/chrome.json --name bot-
 
 Start a container with the built image using SYS_ADMIN:
 ```bash
-docker run -it -p 8080:8080 --cap-add=SYS_ADMIN --name bot-render-container bot-render
+docker run -it -p 8080:8080 --cap-add SYS_ADMIN --name bot-render-container bot-render
 ```
 
 Send a request to the server running inside the container:
