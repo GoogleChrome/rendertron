@@ -33,7 +33,7 @@ class Renderer {
 
           // Load and dump DOM of head element.
           Page.loadEventFired(() => {
-            setTimeout(async () => {
+            setTimeout(async() => {
               let result = await Runtime.evaluate({expression: 'document.head.outerHTML'});
               CDP.Close({id: client.tab.id});
               resolve(result.result.value);

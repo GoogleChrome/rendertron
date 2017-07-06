@@ -7,7 +7,7 @@ const express = require('express');
 const app = express();
 
 app.get('/', async function(request, response) {
-  const head = await new Renderer(request.query.url).extractHead().catch(err => console.error(err));
+  const head = await new Renderer(request.query.url).extractHead().catch((err) => console.error(err));
   response.send(head);
 });
 
@@ -19,9 +19,8 @@ const port = process.env.PORT || '3000';
 
 if (!startChromium()) {
   console.error('Failed to start Chromium');
-  return;
+} else {
+  app.listen(port, function() {
+    console.log('Listening on port', port);
+  });
 }
-
-app.listen(port, function() {
-  console.log('Listening on port', port);
-});

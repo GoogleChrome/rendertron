@@ -13,11 +13,11 @@ npm install
 
 Install Chrome:
 ```bash
-apt-get install google-chrome-beta
+apt-get install google-chrome
 ```
 
 ## Running locally
-With a local instance of Chrome Beta installed, you can start the server locally:
+With a local instance of Chrome installed, you can start the server locally:
 ```bash
 npm start
 ```
