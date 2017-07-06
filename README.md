@@ -3,7 +3,8 @@
 A Docker container which runs headless Chrome and renders web pages on the fly.
 
 ## Dependencies
-This project requires Node 7+ and Docker ([installation instructions](https://docs.docker.com/engine/installation/)).
+This project requires Node 7+ and Docker ([installation instructions](https://docs.docker.com/engine/installation/)). For deployment this
+project uses the [Google Cloud Platform SDK](https://cloud.google.com/sdk/).
 
 ## Installing
 Install node dependencies using:
@@ -65,4 +66,9 @@ docker kill bot-render-container
 Clear containers:
 ```bash
 docker rm -f $(docker ps -a -q)
+```
+
+## Deploying to Google Cloud Platform
+```
+gcloud app deploy app.yaml --project <your-project-id>
 ```
