@@ -1,26 +1,45 @@
 {
-  "name": "proof-of-concept",
+  "name": "bot-render",
   "version": "1.0.0",
-  "description": "",
+  "description": "Renders webpages using headless Chrome for usage by bots",
   "engines": {
-    "node": ">=7.6"
+    "node": ">=7"
   },
-  "main": "index.js",
+  "main": "src/main.js",
   "scripts": {
-    "start": "node main.js",
-    "monitor": "nodemon main.js --ignore chromium",
+    "start": "node src/main.js",
+    "lint": "eslint src/*.js",
+    "monitor": "nodemon src/main.js --ignore chromium",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "ISC",
+  "license": "Apache 2.0",
   "dependencies": {
-    "adm-zip": "^0.4.7",
     "chrome-remote-interface": "^0.18.0",
-    "express": "^4.15.2",
-    "follow-redirects": "^1.2.3",
-    "unzip": "^0.1.11"
+    "express": "^4.15.2"
   },
   "devDependencies": {
+    "eslint": "^4.1.1",
+    "eslint-config-google": "^0.8.0",
     "nodemon": "^1.11.0"
+  },
+  "eslintConfig": {
+    "extends": "google",
+    "env": {
+      "node": true
+    },
+    "rules": {
+      "new-cap": 0,
+      "max-len": 0,
+      "no-warning-comments": 0,
+      "curly": 0,
+      "comma-dangle": 0,
+      "eqeqeq": 0,
+      "no-eq-null": 0,
+      "require-jsdoc": 0
+    },
+    "parserOptions": {
+      "ecmaVersion": 8,
+      "sourceType": "module"
+    }
   }
 }
