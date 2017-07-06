@@ -10,9 +10,9 @@
     "start": "node src/main.js",
     "lint": "eslint src/*.js test/*.js",
     "monitor": "nodemon src/main.js --ignore chromium",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "ava test/app-test.js"
   },
-  "license": "Apache 2.0",
+  "license": "Apache-2.0",
   "dependencies": {
     "chrome-remote-interface": "^0.18.0",
     "express": "^4.15.2"

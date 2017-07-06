@@ -1,4 +1,4 @@
-# bot-render
+# bot-render [![Build status](https://img.shields.io/travis/samuelli/bot-render.svg?style=flat-square)](https://travis-ci.org/samuelli/bot-render)
 
 A Docker container which runs headless Chrome and renders web pages on the fly.
 
