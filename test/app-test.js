@@ -12,19 +12,19 @@ const test = require('ava');
 async function createServer() {
   delete require.cache[require.resolve('../src/main.js')];
   const app = await require('../src/main.js');
-  return app;
+  return request(app);
 }
 
 test('health check responds correctly', async(t) => {
-  const app = await createServer();
-  const res = await request(app).get('/_ah/health');
+  const server = await createServer();
+  const res = await server.get('/_ah/health');
   t.is(res.status, 200);
 });
 
 test('renders basic script', async(t) => {
-  const app = await createServer();
+  const server = await createServer();
   const testFile = path.resolve(__dirname, 'resources/basic-script.html');
-  const res = await request(app).get('/?url=file://' + testFile);
+  const res = await server.get('/?url=file://' + testFile);
   t.is(res.status, 200);
   t.is(res.text.replace(/\n/, ''), '<head>my head element</head>');
 });

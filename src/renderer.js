@@ -4,7 +4,6 @@ const CDP = require('chrome-remote-interface');
 
 function extractHead(url) {
   return new Promise((resolve, reject) => {
-    debugger;
     CDP.New().then((tab) => {
       return CDP({tab: tab});
     }).then((client) => {
