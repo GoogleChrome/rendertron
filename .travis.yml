@@ -1,0 +1,14 @@
+language: node_js
+node_js: "8"
+cache:
+  yarn: true
+install:
+  - yarn
+before_script:
+  - export DISPLAY=:99.0
+  - export LIGHTHOUSE_CHROMIUM_PATH="$(pwd)/chrome-linux/chrome"
+  - sh -e /etc/init.d/xvfb start
+  - curl -L https://raw.githubusercontent.com/GoogleChrome/lighthouse/v2.2.1/lighthouse-core/scripts/download-chrome.sh | bash
+script:
+  - yarn lint
+  - yarn test
