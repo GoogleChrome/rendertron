@@ -26,6 +26,6 @@ test('renders basic script', async(t) => {
   const testFile = path.resolve(__dirname, 'resources/basic-script.html');
   const res = await server.get('/?url=file://' + testFile);
   t.is(res.status, 200);
-  t.is(res.text.replace(/\n/, ''), '<head>my head element</head>');
+  t.is(res.text.replace(/\n/, ''), '<html><head>my head element</head><body></body></html>');
 });
 

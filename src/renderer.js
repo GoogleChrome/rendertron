@@ -2,7 +2,7 @@
 
 const CDP = require('chrome-remote-interface');
 
-function dump(url) {
+function render(url) {
   return new Promise(async(resolve, reject) => {
     const tab = await CDP.New();
     const client = await CDP({tab: tab});
@@ -62,4 +62,4 @@ function dump(url) {
   });
 }
 
-module.exports = dump;
+module.exports = render;
