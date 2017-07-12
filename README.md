@@ -91,7 +91,10 @@ layer. This checks the user agent to determine whether prerendering is required.
 If you are using web components v0 (deprecated), you will need to enable Shady DOM to
 render correctly. In Polymer 1.x, which uses web components v0, Shady DOM is enabled by default.
 If you are using Shadow DOM, override this by setting `?dom=shady` when directing requests
-to your bot-render service.
+to the bot-render service.
+
+If you are using web components v1, simply pass `wc=1` when directing requests to the bot-render
+service.
 
 ## Middleware
 This is a list of middleware available to use with the bot-render service:

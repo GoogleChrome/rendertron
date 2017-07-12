@@ -7,8 +7,9 @@ const express = require('express');
 const app = express();
 
 app.get('/', async function(request, response) {
-  const head = await render(request.query.url).catch((err) => console.error(err));
-  response.send(head);
+  const renderWebComponents = !!request.query['wc'];
+  const html = await render(request.query.url, renderWebComponents).catch((err) => console.error(err));
+  response.send(html);
 });
 
 app.get('/_ah/health', (request, response) => response.send('OK'));

@@ -1,0 +1,12 @@
+<my-element></my-element>
+<script>
+  class MyElement extends HTMLElement {
+    constructor() {
+      super();
+
+      const shadowRoot = this.attachShadow({mode: 'open'});
+      shadowRoot.innerHTML = 'shadow-root' + '-text';
+    }
+  }
+  customElements.define('my-element', MyElement);
+</script>

@@ -36,3 +36,12 @@ test('renders script after page load event', async(t) => {
   t.is(res.status, 200);
   t.true(res.text.indexOf('injectedElement') != -1);
 });
+
+test('renders shadow DOM', async(t) => {
+  const server = await createServer();
+  const testFile = path.resolve(__dirname, 'resources/shadow-dom.html');
+  const res = await server.get('/?url=file://' + testFile + '&wc=1');
+  t.is(res.status, 200);
+  console.log(res.text);
+  t.true(res.text.indexOf('shadow-root-text') != -1);
+});
