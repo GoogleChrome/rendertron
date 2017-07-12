@@ -3,7 +3,6 @@
 const request = require('supertest');
 const path = require('path');
 const test = require('ava');
-const nock = require('nock');
 
 /**
  * This deletes server from the require cache and reloads
