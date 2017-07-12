@@ -1,12 +1,22 @@
 # bot-render [![Build status](https://img.shields.io/travis/samuelli/bot-render.svg?style=flat-square)](https://travis-ci.org/samuelli/bot-render)
 
-A Docker container which runs headless Chrome and renders web pages on the fly.
+A Docker container which runs headless Chrome and renders web pages on the fly, which
+can be set up to serve pages to search engines, social networks and link rendering
+bots.
 
-## Dependencies
+## Contents
+- [Installation & deploying](#installation--deploying)
+- [Rendering](#rendering)
+  - [Web components](#web-components)
+  - [Middleware](#middleware)
+
+## Installing & deploying
+
+### Dependencies
 This project requires Node 7+ and Docker ([installation instructions](https://docs.docker.com/engine/installation/)). For deployment this
 project uses the [Google Cloud Platform SDK](https://cloud.google.com/sdk/).
 
-## Installing
+### Installing
 Install node dependencies using:
 ```bash
 npm install
@@ -17,7 +27,7 @@ Install Chrome:
 apt-get install google-chrome
 ```
 
-## Running locally
+### Running locally
 With a local instance of Chrome installed, you can start the server locally:
 ```bash
 npm start
@@ -28,13 +38,13 @@ To test a rendering, send a request:
 http://localhost:3000/?url=https://dynamic-meta.appspot.com
 ```
 
-## Docker
+### Docker
 After installing docker, build the docker image:
 ```bash
 docker build -t bot-render . --no-cache=true
 ```
 
-## Running the container
+### Running the container
 
 There are two ways to run the container locally:
 1. [Recommended] - Use [Jessie Frazelle' seccomp profile](https://github.com/jessfraz/dotfiles/blob/master/etc/docker/seccomp/chrome.json) and `-security-opt` flag
@@ -68,7 +78,21 @@ Clear containers:
 docker rm -f $(docker ps -a -q)
 ```
 
-## Deploying to Google Cloud Platform
+### Deploying to Google Cloud Platform
 ```
 gcloud app deploy app.yaml --project <your-project-id>
 ```
+
+## Rendering
+Once you have the service up and running, you'll need to implement the differential serving
+layer. This checks the user agent to determine whether prerendering is required.
+
+### Web components
+If you are using web components v0 (deprecated), you will need to enable Shady DOM to
+render correctly. In Polymer 1.x, which uses web components v0, Shady DOM is enabled by default.
+If you are using Shadow DOM, override this by setting `?dom=shady` when directing requests
+to your bot-render service.
+
+## Middleware
+This is a list of middleware available to use with the bot-render service:
+ * [Firebase functions](https://github.com/justinribeiro/pwa-firebase-functions-botrender) (Community maintained)
