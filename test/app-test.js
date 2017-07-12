@@ -3,7 +3,6 @@
 const request = require('supertest');
 const path = require('path');
 const test = require('ava');
-const nock = require('nock');
 
 /**
  * This deletes server from the require cache and reloads
@@ -31,8 +30,9 @@ test('renders basic script', async(t) => {
 });
 
 test('renders script after page load event', async(t) => {
+  const server = await createServer();
   const testFile = path.resolve(__dirname, 'resources/script-after-load.html');
-  const res = await request(createServer()).get('/?url=file://' + testFile);
+  const res = await server.get('/?url=file://' + testFile);
   t.is(res.status, 200);
   t.true(res.text.indexOf('injectedElement') != -1);
 });
