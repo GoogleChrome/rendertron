@@ -13,10 +13,10 @@ app.get('/', async function(request, response) {
 
 app.get('/_ah/health', (request, response) => response.send('OK'));
 
-chromeLauncher.launch({
+const appPromise = chromeLauncher.launch({
   chromeFlags: ['--headless', '--disable-gpu', '--remote-debugging-address=0.0.0.0'],
   port: 9222
-}).then(chrome => {
+}).then((chrome) => {
   // Don't open a port when running from inside a module (eg. tests). Importing
   // module can control this.
   const port = process.env.PORT || '3000';
@@ -25,6 +25,7 @@ chromeLauncher.launch({
       console.log('Listening on port', port);
     });
   }
+  return app;
 });
 
-module.exports = app;
+module.exports = appPromise;
