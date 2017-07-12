@@ -5,7 +5,7 @@ can be set up to serve pages to search engines, social networks and link renderi
 bots.
 
 ## Contents
-- [Installation & deploying](#installation-&-deploying)
+- [Installation & deploying](#installation--deploying)
 - [Rendering](#rendering)
   - [Web components](#web-components)
   - [Middleware](#middleware)
