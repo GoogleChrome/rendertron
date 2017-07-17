@@ -16,6 +16,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@webcomponents/shadydom": "^1.0.0",
+    "@webcomponents/webcomponentsjs": "^1.0.3",
     "chrome-launcher": "^0.3.1",
     "chrome-remote-interface": "^0.24.1",
     "express": "^4.15.2"

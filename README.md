@@ -87,6 +87,10 @@ gcloud app deploy app.yaml --project <your-project-id>
 Once you have the service up and running, you'll need to implement the differential serving
 layer. This checks the user agent to determine whether prerendering is required.
 
+### Query parameters
+When setting query parameters as part of your URL, ensure they are encoded correctly. In JS,
+this would be `encodeURIComponent(myURLWithParams)`.
+
 ### Web components
 If you are using web components v0 (deprecated), you will need to enable Shady DOM to
 render correctly. In Polymer 1.x, which uses web components v0, Shady DOM is enabled by default.
