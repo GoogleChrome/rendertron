@@ -17,6 +17,7 @@
   "dependencies": {
     "chrome-launcher": "^0.3.1",
     "chrome-remote-interface": "^0.24.1",
+    "compression": "^1.7.0",
     "express": "^4.15.2"
   },
   "devDependencies": {

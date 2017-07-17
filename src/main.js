@@ -3,8 +3,11 @@
 const render = require('./renderer');
 const chromeLauncher = require('chrome-launcher');
 const express = require('express');
+const compression = require('compression');
 
 const app = express();
+
+app.use(compression());
 
 app.get('/', async function(request, response) {
   const head = await render(request.query.url).catch((err) => console.error(err));
