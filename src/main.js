@@ -7,8 +7,8 @@ const express = require('express');
 const app = express();
 
 app.get('/', async function(request, response) {
-  const renderWebComponents = !!request.query['wc'];
-  const html = await render(request.query.url, renderWebComponents).catch((err) => console.error(err));
+  const injectShadyDom = !!request.query['wc-inject-shadydom'];
+  const html = await render(request.query.url, injectShadyDom).catch((err) => console.error(err));
   response.send(html);
 });
 

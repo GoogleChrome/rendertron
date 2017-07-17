@@ -4,7 +4,7 @@ const CDP = require('chrome-remote-interface');
 const fs = require('fs');
 const shadyDomPolyfill = fs.readFileSync(require.resolve('@webcomponents/shadydom'), 'utf8');
 
-function render(url, usingWebComponents) {
+function render(url, injectShadyDom) {
   return new Promise(async(resolve, reject) => {
     const tab = await CDP.New();
     const client = await CDP({tab: tab});
@@ -22,11 +22,11 @@ function render(url, usingWebComponents) {
 
     // Inject the Shady DOM polyfill if web components v1 is used, so we can
     // serialize the page.
-    if (usingWebComponents && Page.hasOwnProperty('addScriptToEvaluateOnNewDocument')) {
+    if (injectShadyDom && Page.hasOwnProperty('addScriptToEvaluateOnNewDocument')) {
       // Renamed in Chrome 61.
       Page.addScriptToEvaluateOnNewDocument({source: `ShadyDOM = {force: true}`});
       Page.addScriptToEvaluateOnNewDocument({source: shadyDomPolyfill});
-    } else if (usingWebComponents) {
+    } else if (injectShadyDom) {
       // Deprecated in Chrome 61.
       Page.addScriptToEvaluateOnLoad({scriptSource: `ShadyDOM = {force: true}`});
       Page.addScriptToEvaluateOnLoad({scriptSource: shadyDomPolyfill});
