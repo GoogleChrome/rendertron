@@ -4,8 +4,24 @@ const render = require('./renderer');
 const chromeLauncher = require('chrome-launcher');
 const express = require('express');
 const compression = require('compression');
-
+const commandLineArgs = require('command-line-args');
 const app = express();
+const cache = require('./cache');
+
+// Set up app command line flag options.
+const optionsDefinitions = [
+  {name: 'cache', type: Boolean, defaultValue: false}
+];
+if (!module.parent) {
+  const options = commandLineArgs(optionsDefinitions);
+
+  if (options.cache) {
+    app.get('/', cache.middleware());
+    // Always clear the cache for now, while things are changing.
+    cache.clearCache();
+  }
+}
+
 
 app.use(compression());
 
