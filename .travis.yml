@@ -3,8 +3,19 @@ node_js: "8"
 dist: trusty
 cache:
   yarn: true
+  directories:
+  - "$HOME/gcloud"
 install:
   - yarn
+  - if [ ! -d $HOME/gcloud/google-cloud-sdk ]; then mkdir -p $HOME/gcloud && wget https://dl.google.com/dl/cloudsdk/release/google-cloud-sdk.tar.gz --directory-prefix=$HOME/gcloud && cd $HOME/gcloud && tar xzf google-cloud-sdk.tar.gz && printf '\ny\n\ny\ny\n' | ./google-cloud-sdk/install.sh && cd $TRAVIS_BUILD_DIR;
+    fi
+  - ${HOME}/gcloud/google-cloud-sdk/bin/gcloud components install beta cloud-datastore-emulator
+before_script:
+  - ${HOME}/gcloud/google-cloud-sdk/bin/gcloud beta emulators datastore start --project bot-render --quiet &
+  - sleep 3 # wait for datastore emulator to start
+  - export DATASTORE_EMULATOR_HOST=localhost:8081
+  - $(gcloud beta emulators datastore env-init)
+  - export GCLOUD_PROJECT="bot-render"
 script:
   - yarn lint
   - yarn test
