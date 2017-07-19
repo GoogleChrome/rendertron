@@ -8,7 +8,7 @@ class Cache {
     const data = await datastore.runQuery(query);
     const entities = data[0];
     const entityKeys = entities.map((entity) => entity[datastore.KEY]);
-    console.log(`Removed ${entities.length} items from the cache`);
+    console.log(`Removing ${entities.length} items from the cache`);
     await datastore.delete(entityKeys);
     // TODO(samli): check info (data[1]) and loop through pages of entities to delete.
   }
