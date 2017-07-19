@@ -87,11 +87,25 @@ gcloud app deploy app.yaml --project <your-project-id>
 Once you have the service up and running, you'll need to implement the differential serving
 layer. This checks the user agent to determine whether prerendering is required.
 
+### Query parameters
+When setting query parameters as part of your URL, ensure they are encoded correctly. In JS,
+this would be `encodeURIComponent(myURLWithParams)`.
+
 ### Web components
+Headless Chrome supports web components but shadow DOM is difficult to serialize effectively.
+As such, shady DOM is required for web components.
+
 If you are using web components v0 (deprecated), you will need to enable Shady DOM to
 render correctly. In Polymer 1.x, which uses web components v0, Shady DOM is enabled by default.
-If you are using Shadow DOM, override this by setting `?dom=shady` when directing requests
-to your bot-render service.
+If you are using Shadow DOM, override this by setting the query parameter `dom=shady` when
+directing requests to the bot-render service.
+
+If you are using web components v1 and using `webcomponents-lite.js`, set the query parameter
+`wc-shadydom=true` to force shady dom on.
+
+If you are using web components v1 and `webcomponents-loader.js` or are not using any polyfill,
+set the query parameter `wc-inject-shadydom=true` when directing requests to the bot-render
+service. This renderer service will then inject the Shady DOM polyfill and force it on.
 
 ## Middleware
 This is a list of middleware available to use with the bot-render service:

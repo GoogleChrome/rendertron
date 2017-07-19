@@ -10,8 +10,9 @@ const app = express();
 app.use(compression());
 
 app.get('/', async function(request, response) {
-  const head = await render(request.query.url).catch((err) => console.error(err));
-  response.send(head);
+  const injectShadyDom = !!request.query['wc-inject-shadydom'];
+  const html = await render(request.query.url, injectShadyDom).catch((err) => console.error(err));
+  response.send(html);
 });
 
 app.get('/_ah/health', (request, response) => response.send('OK'));
