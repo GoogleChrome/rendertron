@@ -14,7 +14,7 @@ before_script:
   - ${HOME}/gcloud/google-cloud-sdk/bin/gcloud beta emulators datastore start --project bot-render --quiet &
   - sleep 3 # wait for datastore emulator to start
   - export DATASTORE_EMULATOR_HOST=localhost:8081
-  - $(gcloud beta emulators datastore env-init)
+  - $(${HOME}/gcloud/google-cloud-sdk/bin/gcloud beta emulators datastore env-init)
   - export GCLOUD_PROJECT="bot-render"
 script:
   - yarn lint

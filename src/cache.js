@@ -13,7 +13,7 @@ class Cache {
     // TODO(samli): check info (data[1]) and loop through pages of entities to delete.
   }
 
-  async cacheContent(key, content) {
+  async cacheContent(key, headers, payload) {
     // Set cache length to 1 day.
     const cacheDurationMinutes = 60*24;
     const now = new Date();
@@ -22,7 +22,8 @@ class Cache {
       data: [
         {name: 'saved', value: now},
         {name: 'expires', value: new Date(now.getTime() + cacheDurationMinutes*60*1000)},
-        {name: 'content', value: content.toString(), excludeFromIndexes: true},
+        {name: 'headers', value: JSON.stringify(headers), excludeFromIndexes: true},
+        {name: 'payload', value: JSON.stringify(payload), excludeFromIndexes: true},
       ]
     };
     await datastore.save(entity);
@@ -52,7 +53,12 @@ class Cache {
       if (results.length && results[0] != undefined) {
         // Serve cached content if its not expired.
         if (results[0].expires.getTime() >= new Date().getTime()) {
-          response.send(results[0].content);
+          const headers = JSON.parse(results[0].headers);
+          response.set(headers);
+          let payload = JSON.parse(results[0].payload);
+          if (typeof(payload) == 'object' && payload.type == 'Buffer')
+            payload = new Buffer(payload);
+          response.send(payload);
           return;
         }
       }
@@ -72,7 +78,7 @@ class Cache {
       response.end = async function(content, ...args) {
         if (response.statusCode == 200) {
           accumulateContent(content);
-          await this.cacheContent(key, body);
+          await this.cacheContent(key, response.getHeaders(), body);
         }
         return methods.end.apply(response, [content].concat(args));
       }.bind(this);
