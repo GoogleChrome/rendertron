@@ -92,6 +92,9 @@ When setting query parameters as part of your URL, ensure they are encoded corre
 this would be `encodeURIComponent(myURLWithParams)`.
 
 ### Web components
+Headless Chrome supports web components but shadow DOM is difficult to serialize effectively.
+As such, shady DOM is required for web components.
+
 If you are using web components v0 (deprecated), you will need to enable Shady DOM to
 render correctly. In Polymer 1.x, which uses web components v0, Shady DOM is enabled by default.
 If you are using Shadow DOM, override this by setting the query parameter `dom=shady` when
