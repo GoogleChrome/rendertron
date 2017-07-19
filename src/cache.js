@@ -36,12 +36,12 @@ class Cache {
   middleware() {
     return async function(request, response, next) {
       function accumulateContent(content) {
-        if (typeof(content) =='string') {
+        if (typeof(content) === 'string') {
           body = body || '' + content;
         } else if (Buffer.isBuffer(content)) {
           if (!body)
             body = new Buffer(0);
-          body = Buffer.concat([body || new Buffer(0), content], body.length + content.length);
+          body = Buffer.concat([body, content], body.length + content.length);
         }
       }
 
