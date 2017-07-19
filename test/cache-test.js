@@ -13,11 +13,7 @@ app.use(cache.middleware());
 
 let handlerCalledCount = 0;
 
-test.beforeEach(async(t) => {
-  await cache.clearCache();
-});
-
-test.after(async(t) => {
+test.before(async(t) => {
   await cache.clearCache();
 });
 
@@ -64,12 +60,14 @@ app.get('/compressed', (request, response) => {
 });
 
 test('compression preserved', async(t) => {
+  const expectedBody = new Array(1025).join('x');
   let res = await server.get('/compressed').set('Accept-Encoding', 'gzip, deflate, br');
   t.is(res.status, 200);
   t.is(res.header['content-encoding'], 'gzip');
+  t.is(res.text, expectedBody);
 
-  let cached = await server.get('/compressed').set('Accept-Encoding', 'gzip, deflate, br');
-  t.is(cached.status, 200);
-  t.is(cached.header['content-encoding'], 'gzip');
-  t.is(cached.text.length, res.text.length);
+  res = await server.get('/compressed').set('Accept-Encoding', 'gzip, deflate, br');
+  t.is(res.status, 200);
+  t.is(res.header['content-encoding'], 'gzip');
+  t.is(res.text, expectedBody);
 });
