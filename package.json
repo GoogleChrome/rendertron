@@ -12,8 +12,8 @@
     "monitor": "nodemon src/main.js",
     "monitor-inspect": "nodemon --inspect src/main.js --cache",
     "test": "ava test/*.js",
-    "start-emulator": "(gcloud beta emulators datastore start --project bot-render &) 2>&1 | grep -m1 'now running' && gcloud beta emulators datastore env-init && export GCLOUD_PROJECT='bot-render'",
-    "test-emulator": "yarn start-emulator && $(gcloud beta emulators datastore env-init) && yarn test"
+    "start-emulator": "(gcloud beta emulators datastore start --project emulator-project &) 2>&1 | grep -m1 'now running'",
+    "test-emulator": "yarn start-emulator && $(gcloud beta emulators datastore env-init) && export GCLOUD_PROJECT='emulator-project' && yarn test"
   },
   "license": "Apache-2.0",
   "dependencies": {
