@@ -7,18 +7,22 @@
   },
   "main": "src/main.js",
   "scripts": {
-    "start": "node src/main.js",
+    "start": "node src/main.js --cache",
     "lint": "eslint src/*.js test/*.js",
     "monitor": "nodemon src/main.js",
-    "monitor-inspect": "nodemon --inspect src/main.js",
-    "test": "ava test/app-test.js"
+    "monitor-inspect": "nodemon --inspect src/main.js --cache",
+    "test": "ava test/*.js",
+    "start-emulator": "(gcloud beta emulators datastore start --project emulator-project &) 2>&1 | grep -m1 'now running'",
+    "test-emulator": "yarn start-emulator && $(gcloud beta emulators datastore env-init) && export GCLOUD_PROJECT='emulator-project' && yarn test"
   },
   "license": "Apache-2.0",
   "dependencies": {
+    "@google-cloud/datastore": "^1.0.6",
     "@webcomponents/shadydom": "^1.0.0",
     "@webcomponents/webcomponentsjs": "^1.0.3",
     "chrome-launcher": "^0.3.1",
     "chrome-remote-interface": "^0.24.1",
+    "command-line-args": "^4.0.6",
     "compression": "^1.7.0",
     "express": "^4.15.2"
   },
