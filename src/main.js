@@ -22,7 +22,6 @@ if (!module.parent) {
   }
 }
 
-
 app.use(compression());
 
 app.get('/', async function(request, response) {
