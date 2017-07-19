@@ -22,11 +22,9 @@ function render(url, injectShadyDom) {
 
     // Inject the Shady DOM polyfill if web components v1 is used, so we can
     // serialize the page.
-    if (injectShadyDom && Page.hasOwnProperty('addScriptToEvaluateOnNewDocument')) {
-      // Renamed in Chrome 61.
-      Page.addScriptToEvaluateOnNewDocument({source: `ShadyDOM = {force: true}`});
-      Page.addScriptToEvaluateOnNewDocument({source: shadyDomPolyfill});
-    } else if (injectShadyDom) {
+    // TODO(samli): This needs to change to use the non-deprecated API after Chrome 61
+    //   addScriptToEvaluateOnNewDocument({source: `ShadyDOM = {force: true}`})
+    if (injectShadyDom) {
       // Deprecated in Chrome 61.
       Page.addScriptToEvaluateOnLoad({scriptSource: `ShadyDOM = {force: true}`});
       Page.addScriptToEvaluateOnLoad({scriptSource: shadyDomPolyfill});

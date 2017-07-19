@@ -11,7 +11,9 @@
     "lint": "eslint src/*.js test/*.js",
     "monitor": "nodemon src/main.js",
     "monitor-inspect": "nodemon --inspect src/main.js --cache",
-    "test": "ava test/*.js"
+    "test": "ava test/*.js",
+    "start-emulator": "(gcloud beta emulators datastore start --project bot-render &) |& grep -m1 'now running' && gcloud beta emulators datastore env-init && export GCLOUD_PROJECT='bot-render'",
+    "test-emulator": "yarn start-emulator && $(gcloud beta emulators datastore env-init) && yarn test"
   },
   "license": "Apache-2.0",
   "dependencies": {
