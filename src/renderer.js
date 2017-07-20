@@ -68,7 +68,6 @@ function render(url, injectShadyDom) {
     Emulation.setVirtualTimePolicy({policy: 'pauseIfNetworkFetchesPending', budget: currentTimeBudget});
 
     Emulation.virtualTimeBudgetExpired(async(event) => {
-      setTimeout(async() => {
       // Reset the virtual time budget if there is still outstanding work. Converge the virtual time
       // budget just in case network requests are firing on a regular timer.
       if (outstandingRequests.size || !pageLoadEventFired) {
@@ -82,7 +81,6 @@ function render(url, injectShadyDom) {
       let result = await Runtime.evaluate({expression: 'document.firstElementChild.outerHTML'});
       CDP.Close({id: client.target.id});
       resolve(result.result.value);
-      }, 1000);
     });
   });
 }
