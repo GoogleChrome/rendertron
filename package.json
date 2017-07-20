@@ -7,13 +7,13 @@
   },
   "main": "src/main.js",
   "scripts": {
-    "start": "node src/main.js --cache",
+    "start": "node src/main.js",
     "lint": "eslint src/*.js test/*.js",
     "monitor": "nodemon src/main.js",
-    "monitor-inspect": "nodemon --inspect src/main.js --cache",
-    "test": "ava test/*.js",
+    "monitor-inspect": "nodemon --inspect src/main.js",
+    "test": "ava test/app-test.js",
     "start-emulator": "(gcloud beta emulators datastore start --project emulator-project &) 2>&1 | grep -m1 'now running'",
-    "test-emulator": "yarn start-emulator && $(gcloud beta emulators datastore env-init) && export GCLOUD_PROJECT='emulator-project' && yarn test"
+    "test-cache": "yarn start-emulator && $(gcloud beta emulators datastore env-init) && export GCLOUD_PROJECT='emulator-project' && ava test/cache-test.js"
   },
   "license": "Apache-2.0",
   "dependencies": {

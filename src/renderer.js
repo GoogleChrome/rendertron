@@ -4,6 +4,15 @@ const CDP = require('chrome-remote-interface');
 const fs = require('fs');
 const shadyDomPolyfill = fs.readFileSync(require.resolve('@webcomponents/shadydom'), 'utf8');
 
+/**
+ * Executed on the page after the page has loaded. Strips script and
+ * import tags to prevent further loading of resources.
+ */
+function stripPage() {
+  const elements = document.querySelectorAll('script, link[rel=import]');
+  elements.forEach((e) => e.remove());
+}
+
 function render(url, injectShadyDom) {
   return new Promise(async(resolve, reject) => {
     const tab = await CDP.New();
@@ -66,6 +75,8 @@ function render(url, injectShadyDom) {
         Emulation.setVirtualTimePolicy({policy: 'pauseIfNetworkFetchesPending', budget: currentTimeBudget});
         return;
       }
+
+      await Runtime.evaluate({expression: `(${stripPage.toString()})()`});
 
       let result = await Runtime.evaluate({expression: 'document.firstElementChild.outerHTML'});
       CDP.Close({id: client.target.id});
