@@ -1,3 +1,5 @@
 <script>
-  document.head.textContent = 'my head element';
+  var element = document.createElement('title');
+  element.textContent = 'document' + '-title';
+  document.head.appendChild(element);
 </script>

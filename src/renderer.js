@@ -4,6 +4,15 @@ const CDP = require('chrome-remote-interface');
 const fs = require('fs');
 const shadyDomPolyfill = fs.readFileSync(require.resolve('@webcomponents/shadydom'), 'utf8');
 
+/**
+ * Executed on the page after the page has loaded. Strips script and
+ * import tags to prevent further loading of resources.
+ */
+function stripPage() {
+  const elements = document.querySelectorAll('script, link[rel=import]');
+  elements.forEach((e) => e.remove());
+}
+
 function render(url, injectShadyDom) {
   return new Promise(async(resolve, reject) => {
     const tab = await CDP.New();
@@ -59,6 +68,7 @@ function render(url, injectShadyDom) {
     Emulation.setVirtualTimePolicy({policy: 'pauseIfNetworkFetchesPending', budget: currentTimeBudget});
 
     Emulation.virtualTimeBudgetExpired(async(event) => {
+      setTimeout(async() => {
       // Reset the virtual time budget if there is still outstanding work. Converge the virtual time
       // budget just in case network requests are firing on a regular timer.
       if (outstandingRequests.size || !pageLoadEventFired) {
@@ -67,9 +77,12 @@ function render(url, injectShadyDom) {
         return;
       }
 
+      await Runtime.evaluate({expression: `(${stripPage.toString()})()`});
+
       let result = await Runtime.evaluate({expression: 'document.firstElementChild.outerHTML'});
       CDP.Close({id: client.target.id});
       resolve(result.result.value);
+      }, 1000);
     });
   });
 }

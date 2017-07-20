@@ -14,6 +14,7 @@ install:
   - source $HOME/gcloud/google-cloud-sdk/path.bash.inc
 script:
   - yarn lint
-  - yarn test-emulator
+  - yarn test
+  - yarn test-cache
 addons:
   chrome: stable

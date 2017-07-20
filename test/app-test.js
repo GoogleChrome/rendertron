@@ -26,7 +26,7 @@ test('renders basic script', async(t) => {
   const testFile = path.resolve(__dirname, 'resources/basic-script.html');
   const res = await server.get('/?url=file://' + testFile);
   t.is(res.status, 200);
-  t.is(res.text.replace(/\n/, ''), '<html><head>my head element</head><body></body></html>');
+  t.true(res.text.indexOf('document-title') != -1);
 });
 
 test('renders script after page load event', async(t) => {
@@ -60,4 +60,16 @@ test('renders shadow DOM - webcomponents-lite.js polyfill', async(t) => {
   const res = await server.get('/?url=' + encodeURIComponent(url));
   t.is(res.status, 200);
   t.true(res.text.indexOf('shadow-root-text') != -1);
+});
+
+test('script tags are stripped', async(t) => {
+  const server = await createServer();
+  const testFile = path.resolve(__dirname, 'resources/include-script.html');
+  const url = 'file://' + testFile;
+  const res = await server.get('/?url=' + encodeURIComponent(url));
+  t.is(res.status, 200);
+  t.false(res.text.indexOf('script src') != -1);
+  t.true(res.text.indexOf('injectedElement') != -1);
+  // TODO(samli): Imports should be tested too. However, imports fail due to
+  // CORS policy on file:///. Test files need to be hosted on a local server.
 });
