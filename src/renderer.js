@@ -13,16 +13,17 @@ function stripPage() {
   elements.forEach((e) => e.remove());
 }
 
-function render(url, injectShadyDom) {
+function render(url, injectShadyDom, config) {
   return new Promise(async(resolve, reject) => {
     const tab = await CDP.New();
     const client = await CDP({tab: tab});
 
-    const {Page, Runtime, Network, Emulation} = client;
+    const {Page, Runtime, Network, Emulation, Console} = client;
 
     await Promise.all([
       Page.enable(),
       Runtime.enable(),
+      Console.enable(),
       Network.enable(),
       Network.clearBrowserCache(),
       Network.setCacheDisabled({cacheDisabled: true}),
@@ -37,6 +38,12 @@ function render(url, injectShadyDom) {
       // Deprecated in Chrome 61.
       Page.addScriptToEvaluateOnLoad({scriptSource: `ShadyDOM = {force: true}`});
       Page.addScriptToEvaluateOnLoad({scriptSource: shadyDomPolyfill});
+    }
+
+    if (config.debug) {
+      Console.messageAdded((event) => {
+        console.log(`[${event.message.level}] ${event.message.text}`);
+      });
     }
 
     Page.navigate({url: url});
