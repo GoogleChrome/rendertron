@@ -38,4 +38,4 @@ RUN npm install || \
     fi) && false)
 
 ENTRYPOINT [ "npm" ]
-CMD ["start"]
+CMD ["run", "start"]
