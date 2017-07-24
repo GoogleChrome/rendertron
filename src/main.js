@@ -9,14 +9,14 @@ const app = express();
 const cache = require('./cache');
 
 // Set up app command line flag options.
+let config = {};
 const optionsDefinitions = [
   {name: 'cache', type: Boolean, defaultValue: false},
   {name: 'debug', type: Boolean, defaultValue: false}
 ];
 
-const config = commandLineArgs(optionsDefinitions);
-
 if (!module.parent) {
+  config = commandLineArgs(optionsDefinitions);
   if (config.cache) {
     app.get('/', cache.middleware());
     // Always clear the cache for now, while things are changing.
