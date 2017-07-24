@@ -56,8 +56,7 @@ test('renders shadow DOM - polyfill loader', async(t) => {
 test('renders shadow DOM - webcomponents-lite.js polyfill', async(t) => {
   const server = await createServer();
   const testFile = path.resolve(__dirname, 'resources/shadow-dom-polyfill-all.html');
-  const url = 'file://' + testFile + '?wc-shadydom=true';
-  const res = await server.get('/?url=' + encodeURIComponent(url));
+  const res = await server.get('/?url=file://' + testFile + '&wc-inject-shadydom=true');
   t.is(res.status, 200);
   t.true(res.text.indexOf('shadow-root-text') != -1);
 });
