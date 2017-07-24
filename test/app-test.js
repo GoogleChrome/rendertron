@@ -37,6 +37,8 @@ test('renders script after page load event', async(t) => {
   t.true(res.text.indexOf('injectedElement') != -1);
 });
 
+// This test is failing as the polyfills (shady polyfill & scoping shim) are not
+// yet injected properly.
 test.failing('renders shadow DOM - no polyfill', async(t) => {
   const server = await createServer();
   const testFile = path.resolve(__dirname, 'resources/shadow-dom-no-polyfill.html');

@@ -102,7 +102,7 @@ directing requests to the bot-render service.
 
 If you are using web components v1 and either `webcomponents-lite.js` or `webcomponents-loader.js`,
 set the query parameter `wc-inject-shadydom=true` when directing requests to the bot-render
-service. This renderer service force the necessary polyfills to be loaded and enabled.
+service. This renderer service will force the necessary polyfills to be loaded and enabled.
 
 ## Middleware
 This is a list of middleware available to use with the bot-render service:
