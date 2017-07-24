@@ -2,7 +2,6 @@
 
 const CDP = require('chrome-remote-interface');
 const fs = require('fs');
-const shadyDomPolyfill = fs.readFileSync(require.resolve('@webcomponents/shadydom'), 'utf8');
 
 /**
  * Executed on the page after the page has loaded. Strips script and
@@ -35,8 +34,9 @@ function render(url, injectShadyDom) {
     //   addScriptToEvaluateOnNewDocument({source: `ShadyDOM = {force: true}`})
     if (injectShadyDom) {
       // Deprecated in Chrome 61.
+      Page.addScriptToEvaluateOnLoad({scriptSource: `customElements.forcePolyfill = true`});
       Page.addScriptToEvaluateOnLoad({scriptSource: `ShadyDOM = {force: true}`});
-      Page.addScriptToEvaluateOnLoad({scriptSource: shadyDomPolyfill});
+      Page.addScriptToEvaluateOnLoad({scriptSource: `ShadyCSS = {shimcssproperties: true}`});
     }
 
     Page.navigate({url: url});
