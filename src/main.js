@@ -9,13 +9,15 @@ const app = express();
 const cache = require('./cache');
 
 // Set up app command line flag options.
+let config = {};
 const optionsDefinitions = [
-  {name: 'cache', type: Boolean, defaultValue: false}
+  {name: 'cache', type: Boolean, defaultValue: false},
+  {name: 'debug', type: Boolean, defaultValue: false}
 ];
-if (!module.parent) {
-  const options = commandLineArgs(optionsDefinitions);
 
-  if (options.cache) {
+if (!module.parent) {
+  config = commandLineArgs(optionsDefinitions);
+  if (config.cache) {
     app.get('/', cache.middleware());
     // Always clear the cache for now, while things are changing.
     cache.clearCache();
@@ -26,7 +28,7 @@ app.use(compression());
 
 app.get('/', async function(request, response) {
   const injectShadyDom = !!request.query['wc-inject-shadydom'];
-  const html = await render(request.query.url, injectShadyDom).catch((err) => console.error(err));
+  const html = await render(request.query.url, injectShadyDom, config).catch((err) => console.error(err));
   response.send(html);
 });
 
