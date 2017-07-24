@@ -1,7 +1,6 @@
 'use strict';
 
 const CDP = require('chrome-remote-interface');
-const fs = require('fs');
 
 /**
  * Executed on the page after the page has loaded. Strips script and
