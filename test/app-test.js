@@ -74,3 +74,24 @@ test('script tags are stripped', async(t) => {
   // TODO(samli): Imports should be tested too. However, imports fail due to
   // CORS policy on file:///. Test files need to be hosted on a local server.
 });
+
+test('server status code should be forwarded', async(t) => {
+  const server = await createServer();
+  const res = await server.get('/?url=http://httpstat.us/404');
+  t.is(res.status, 404);
+  t.true(res.text.indexOf('404 Not Found') != -1);
+});
+
+test('http status code should be able to be set via a meta tag', async(t) => {
+  const server = await createServer();
+  const testFile = path.resolve(__dirname, 'resources/http-meta-status-code.html');
+  const res = await server.get('/?url=file://' + testFile + '&wc-inject-shadydom=true');
+  t.is(res.status, 400);
+});
+
+test('http status codes need to be respected from top to bottom', async(t) => {
+  const server = await createServer();
+  const testFile = path.resolve(__dirname, 'resources/http-meta-status-code-multiple.html');
+  const res = await server.get('/?url=file://' + testFile + '&wc-inject-shadydom=true');
+  t.is(res.status, 401);
+});

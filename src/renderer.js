@@ -3,6 +3,17 @@
 const CDP = require('chrome-remote-interface');
 
 /**
+ * Finds any meta tags setting the status code.
+ * @return {?number} status code
+ */
+function getStatusCode() {
+  const metaElement = document.querySelector('meta[name="render:status_code"]');
+  if (!metaElement)
+    return undefined;
+  return parseInt(metaElement.getAttribute('content')) || undefined;
+}
+
+/**
  * Executed on the page after the page has loaded. Strips script and
  * import tags to prevent further loading of resources.
  */
@@ -49,8 +60,17 @@ function render(url, injectShadyDom, config) {
 
     // Check that all outstanding network requests have finished loading.
     const outstandingRequests = new Map();
+    let initialRequestId = undefined;
     Network.requestWillBeSent((event) => {
+      if (!initialRequestId)
+        initialRequestId = event.requestId;
       outstandingRequests.set(event.requestId, event);
+    });
+
+    let statusCode = 200;
+    Network.responseReceived((event) => {
+      if (event.requestId == initialRequestId && event.response.status != 0)
+        statusCode = event.response.status;
     });
 
     Network.loadingFinished((event) => {
@@ -83,10 +103,17 @@ function render(url, injectShadyDom, config) {
       }
 
       await Runtime.evaluate({expression: `(${stripPage.toString()})()`});
+      let result = await Runtime.evaluate({expression: `(${getStatusCode.toString()})()`});
+      // Original status codes which aren't either 200 or 304 always return with that
+      // status code, regardless of meta tags.
+      if ((statusCode == 200 || statusCode == 304) && result.result.value)
+        statusCode = result.result.value;
 
-      let result = await Runtime.evaluate({expression: 'document.firstElementChild.outerHTML'});
+      result = await Runtime.evaluate({expression: 'document.firstElementChild.outerHTML'});
       CDP.Close({id: client.target.id});
-      resolve(result.result.value);
+      resolve({
+        status: statusCode || 200,
+        body: result.result.value});
     });
   });
 }

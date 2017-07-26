@@ -109,6 +109,13 @@ If you are using web components v1 and either `webcomponents-lite.js` or `webcom
 set the query parameter `wc-inject-shadydom=true` when directing requests to the bot-render
 service. This renderer service will force the necessary polyfills to be loaded and enabled.
 
+### Status codes
+Status codes from the initial requested URL are preserved. If this is a 200, or 304, you can
+set the HTTP status returned by the rendering service by adding a meta tag.
+```html
+<meta name="render:status_code" content="404" />
+```
+
 ## Middleware
 This is a list of middleware available to use with the bot-render service:
  * [Firebase functions](https://github.com/justinribeiro/pwa-firebase-functions-botrender) (Community maintained)

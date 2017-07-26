@@ -28,8 +28,8 @@ app.use(compression());
 
 app.get('/', async function(request, response) {
   const injectShadyDom = !!request.query['wc-inject-shadydom'];
-  const html = await render(request.query.url, injectShadyDom, config).catch((err) => console.error(err));
-  response.send(html);
+  const result = await render(request.query.url, injectShadyDom, config).catch((err) => console.error(err));
+  response.status(result.status).send(result.body);
 });
 
 app.get('/_ah/health', (request, response) => response.send('OK'));
