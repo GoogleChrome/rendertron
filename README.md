@@ -5,8 +5,9 @@ can be set up to serve pages to search engines, social networks and link renderi
 bots.
 
 ## Contents
-- [Installation & deploying](#installation--deploying)
+- [Installing & deploying](#installation--deploying)
 - [Rendering](#rendering)
+  - [Query parameters](#query-parameters)
   - [Web components](#web-components)
   - [Middleware](#middleware)
 
@@ -45,12 +46,16 @@ docker build -t bot-render . --no-cache=true
 ```
 
 ### Running the container
+The container enables the cache to run by default, so be sure to disable the cache when running locally.
 
-There are two ways to run the container locally:
+Building the container:
+```bash
+docker run -it -p 8080:8080 --name bot-render-container bot-render
+```
+
+In the case where your kernel lacks user namespace support or are receiving a `ECONNREFUSED` error when trying to access the service in the container (as noted in issues [2](https://github.com/samuelli/bot-render/issues/2) and [3](https://github.com/samuelli/bot-render/issues/3)), the two recommended methods below should solve this:
 1. [Recommended] - Use [Jessie Frazelle' seccomp profile](https://github.com/jessfraz/dotfiles/blob/master/etc/docker/seccomp/chrome.json) and `-security-opt` flag
 2. Utilize the `--cap-add SYS_ADMIN` flag
-
-In the case where your kernel lacks user namespace support or are receiving a `ECONNREFUSED` error when trying to access the service in the container (as noted in issues [2](https://github.com/samuelli/bot-render/issues/2) and [3](https://github.com/samuelli/bot-render/issues/3)), both methods above should resolve the problem.
 
 [Recommended] Start a container with the built image using Jessie Frazelle' seccomp profile for Chrome:
 ```bash
