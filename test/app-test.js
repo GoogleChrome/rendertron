@@ -3,6 +3,16 @@
 const request = require('supertest');
 const path = require('path');
 const test = require('ava');
+const express = require('express');
+
+const app = express();
+app.use(express.static(path.resolve(__dirname, 'resources')));
+const testBase = 'http://localhost:1234/';
+
+test.before(async(t) => {
+  await app.listen(1234);
+});
+
 
 /**
  * This deletes server from the require cache and reloads
@@ -23,16 +33,14 @@ test('health check responds correctly', async(t) => {
 
 test('renders basic script', async(t) => {
   const server = await createServer();
-  const testFile = path.resolve(__dirname, 'resources/basic-script.html');
-  const res = await server.get('/?url=file://' + testFile);
+  const res = await server.get(`/?url=${testBase}basic-script.html`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('document-title') != -1);
 });
 
 test('renders script after page load event', async(t) => {
   const server = await createServer();
-  const testFile = path.resolve(__dirname, 'resources/script-after-load.html');
-  const res = await server.get('/?url=file://' + testFile);
+  const res = await server.get(`/?url=${testBase}script-after-load.html`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('injectedElement') != -1);
 });
@@ -41,38 +49,33 @@ test('renders script after page load event', async(t) => {
 // yet injected properly.
 test.failing('renders shadow DOM - no polyfill', async(t) => {
   const server = await createServer();
-  const testFile = path.resolve(__dirname, 'resources/shadow-dom-no-polyfill.html');
-  const res = await server.get('/?url=file://' + testFile + '&wc-inject-shadydom=true');
+  const res = await server.get(`/?url=${testBase}shadow-dom-no-polyfill.html&wc-inject-shadydom=true`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('shadow-root-text') != -1);
 });
 
 test('renders shadow DOM - polyfill loader', async(t) => {
   const server = await createServer();
-  const testFile = path.resolve(__dirname, 'resources/shadow-dom-polyfill-loader.html');
-  const res = await server.get('/?url=file://' + testFile + '&wc-inject-shadydom=true');
+  const res = await server.get(`/?url=${testBase}shadow-dom-polyfill-loader.html&wc-inject-shadydom=true`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('shadow-root-text') != -1);
 });
 
 test('renders shadow DOM - webcomponents-lite.js polyfill', async(t) => {
   const server = await createServer();
-  const testFile = path.resolve(__dirname, 'resources/shadow-dom-polyfill-all.html');
-  const res = await server.get('/?url=file://' + testFile + '&wc-inject-shadydom=true');
+  const res = await server.get(`/?url=${testBase}shadow-dom-polyfill-all.html&wc-inject-shadydom=true`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('shadow-root-text') != -1);
 });
 
-test('script tags are stripped', async(t) => {
+test('script tags and link[rel=import] tags are stripped', async(t) => {
   const server = await createServer();
-  const testFile = path.resolve(__dirname, 'resources/include-script.html');
-  const url = 'file://' + testFile;
-  const res = await server.get('/?url=' + encodeURIComponent(url));
+  const res = await server.get(`/?url=${testBase}include-script.html`);
   t.is(res.status, 200);
   t.false(res.text.indexOf('script src') != -1);
   t.true(res.text.indexOf('injectedElement') != -1);
-  // TODO(samli): Imports should be tested too. However, imports fail due to
-  // CORS policy on file:///. Test files need to be hosted on a local server.
+  t.false(res.text.indexOf('link rel') != -1);
+  t.true(res.text.indexOf('element-text') != -1);
 });
 
 test('server status code should be forwarded', async(t) => {
