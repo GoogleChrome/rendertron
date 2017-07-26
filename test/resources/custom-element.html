@@ -1,0 +1,10 @@
+<script>
+  class MyElement extends HTMLElement {
+    constructor() {
+      super();
+
+      this.innerHTML = '<div>element-' + 'text</div>';
+    }
+  }
+  customElements.define('custom-element', MyElement);
+</script>
