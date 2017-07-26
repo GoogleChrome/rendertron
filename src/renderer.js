@@ -7,7 +7,7 @@ const CDP = require('chrome-remote-interface');
  * @return {?number} status code
  */
 function getStatusCode() {
-  const metaElement = document.querySelector('meta[name="render:status-code"]');
+  const metaElement = document.querySelector('meta[name="render:status_code"]');
   if (!metaElement)
     return undefined;
   return parseInt(metaElement.getAttribute('content')) || undefined;
