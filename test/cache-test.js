@@ -71,3 +71,23 @@ test('compression preserved', async(t) => {
   t.is(res.header['content-encoding'], 'gzip');
   t.is(res.text, expectedBody);
 });
+
+let statusCallCount = 0;
+app.get('/status/:status', (request, response) => {
+  // Every second call sends a different status.
+  if (statusCallCount % 2 == 0) {
+    response.sendStatus(request.params.status);
+  } else {
+    response.sendStatus(456);
+  }
+  statusCallCount++;
+});
+
+test('original status is preserved', async(t) => {
+  let res = await server.get('/status/123');
+  t.is(res.status, 123);
+
+  // Non 200 status code should not be cached.
+  res = await server.get('/status/123');
+  t.is(res.status, 456);
+});
