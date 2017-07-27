@@ -24,8 +24,8 @@ function stripPage() {
 
 function render(url, injectShadyDom, config) {
   return new Promise(async(resolve, reject) => {
-    const tab = await CDP.New();
-    const client = await CDP({tab: tab});
+    const tab = await CDP.New({port: config.port});
+    const client = await CDP({tab: tab, port: config.port});
 
     const {Page, Runtime, Network, Emulation, Console} = client;
 
@@ -110,7 +110,7 @@ function render(url, injectShadyDom, config) {
         statusCode = result.result.value;
 
       result = await Runtime.evaluate({expression: 'document.firstElementChild.outerHTML'});
-      CDP.Close({id: client.target.id});
+      CDP.Close({id: client.target.id, port: config.port});
       resolve({
         status: statusCode || 200,
         body: result.result.value});
