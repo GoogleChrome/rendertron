@@ -113,10 +113,6 @@
   version "6.0.66"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-6.0.66.tgz#5680b74a6135d33d4c00447e7c3dc691a4601625"
 
-"@webcomponents/shadydom@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@webcomponents/shadydom/-/shadydom-1.0.0.tgz#404366cf92aa175c22cfdb1c5d0d364a9cbb0108"
-
 "@webcomponents/webcomponentsjs@^1.0.3":
   version "1.0.3"
   resolved "https://registry.yarnpkg.com/@webcomponents/webcomponentsjs/-/webcomponentsjs-1.0.3.tgz#632514dda2252c0b1cfa3ae9f641477fa9084e5d"
@@ -298,6 +294,10 @@ assert-plus@^0.2.0:
 async-each@^1.0.0:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/async-each/-/async-each-1.0.1.tgz#19d386a1d9edc6e7c1c85d388aedbcc56d33602d"
+
+async@1.5.2:
+  version "1.5.2"
+  resolved "https://registry.yarnpkg.com/async/-/async-1.5.2.tgz#ec6a61ae56480c0c3cb241c95618e20892f9672a"
 
 async@^2.1.2, async@^2.3.0, async@^2.4.0:
   version "2.5.0"
@@ -2162,6 +2162,12 @@ is-npm@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/is-npm/-/is-npm-1.0.0.tgz#f2fb63a65e4905b406c86072765a1a4dc793b9f4"
 
+is-number-like@^1.0.3:
+  version "1.0.8"
+  resolved "https://registry.yarnpkg.com/is-number-like/-/is-number-like-1.0.8.tgz#2e129620b50891042e44e9bbbb30593e75cfbbe3"
+  dependencies:
+    lodash.isfinite "^3.3.2"
+
 is-number@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/is-number/-/is-number-2.1.0.tgz#01fcbbb393463a548f2f466cce16dece49db908f"
@@ -2511,6 +2517,10 @@ lodash.isarray@^3.0.0:
 lodash.isequal@^4.5.0:
   version "4.5.0"
   resolved "https://registry.yarnpkg.com/lodash.isequal/-/lodash.isequal-4.5.0.tgz#415c4478f2bcc30120c22ce10ed3226f7d3e18e0"
+
+lodash.isfinite@^3.3.2:
+  version "3.3.2"
+  resolved "https://registry.yarnpkg.com/lodash.isfinite/-/lodash.isfinite-3.3.2.tgz#fb89b65a9a80281833f0b7478b3a5104f898ebb3"
 
 lodash.keys@^3.0.0:
   version "3.1.2"
@@ -3100,6 +3110,13 @@ plur@^2.0.0:
 pluralize@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/pluralize/-/pluralize-4.0.0.tgz#59b708c1c0190a2f692f1c7618c446b052fd1762"
+
+portscanner@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/portscanner/-/portscanner-2.1.1.tgz#eabb409e4de24950f5a2a516d35ae769343fbb96"
+  dependencies:
+    async "1.5.2"
+    is-number-like "^1.0.3"
 
 prelude-ls@~1.1.2:
   version "1.1.2"
