@@ -25,6 +25,7 @@ function stripPage() {
 /**
  * Injects a <base> tag which allows other resources to load. This
  * has no effect on serialised output, but allows it to verify render quality.
+ * @param {string} url - Requested URL to set as the base.
  */
 function injectBaseHref(url) {
   const base = document.createElement('base');
