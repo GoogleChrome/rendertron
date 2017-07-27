@@ -37,7 +37,7 @@ app.get('/_ah/health', (request, response) => response.send('OK'));
 
 app.get('/_ah/stop', async(request, response) => {
   await config.chrome.kill();
-  response.send('OK')
+  response.send('OK');
 });
 
 const appPromise = portscanner.findAPortNotInUse(9000, 15000, '127.0.0.1').then((port) => {
