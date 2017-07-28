@@ -24,8 +24,7 @@
     "chrome-remote-interface": "^0.24.1",
     "command-line-args": "^4.0.6",
     "compression": "^1.7.0",
-    "express": "^4.15.2",
-    "portscanner": "^2.1.1"
+    "express": "^4.15.2"
   },
   "devDependencies": {
     "ava": "^0.20.0",

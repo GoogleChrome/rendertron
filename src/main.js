@@ -5,7 +5,6 @@ const chromeLauncher = require('chrome-launcher');
 const express = require('express');
 const compression = require('compression');
 const commandLineArgs = require('command-line-args');
-const portscanner = require('portscanner');
 const app = express();
 const cache = require('./cache');
 
@@ -40,14 +39,13 @@ app.get('/_ah/stop', async(request, response) => {
   response.send('OK');
 });
 
-const appPromise = portscanner.findAPortNotInUse(9000, 15000, '127.0.0.1').then((port) => {
-  config.port = port;
-  return chromeLauncher.launch({
-    chromeFlags: ['--headless', '--disable-gpu', '--remote-debugging-address=0.0.0.0'],
-    port: port
-  });
+const appPromise = chromeLauncher.launch({
+  chromeFlags: ['--headless', '--disable-gpu', '--remote-debugging-address=0.0.0.0'],
+  port: 0
 }).then((chrome) => {
+  console.log('Chrome launched with debugging on port', chrome.port);
   config.chrome = chrome;
+  config.port = chrome.port;
   // Don't open a port when running from inside a module (eg. tests). Importing
   // module can control this.
   const port = process.env.PORT || '3000';
@@ -57,6 +55,10 @@ const appPromise = portscanner.findAPortNotInUse(9000, 15000, '127.0.0.1').then(
     });
   }
   return app;
+}).catch((error) => {
+  console.error(error);
+  // Critical failure, exit with error code.
+  process.exit(1);
 });
 
 module.exports = appPromise;
