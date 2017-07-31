@@ -98,3 +98,11 @@ test('http status codes need to be respected from top to bottom', async(t) => {
   const res = await server.get('/render/file://' + testFile + '?wc-inject-shadydom=true');
   t.is(res.status, 401);
 });
+
+test('screenshot is an image', async(t) => {
+  const server = await createServer();
+  const res = await server.get(`/screenshot/${testBase}basic-script.html`);
+  t.is(res.status, 200);
+  t.is(res.header['content-type'], 'image/png');
+  t.is(res.body.length, parseInt(res.header['content-length']));
+});
