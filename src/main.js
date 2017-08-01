@@ -1,6 +1,6 @@
 'use strict';
 
-const render = require('./renderer');
+const renderer = require('./renderer');
 const chromeLauncher = require('chrome-launcher');
 const express = require('express');
 const compression = require('compression');
@@ -26,10 +26,23 @@ if (!module.parent) {
 
 app.use(compression());
 
-app.get('/', async function(request, response) {
-  const injectShadyDom = !!request.query['wc-inject-shadydom'];
-  const result = await render(request.query.url, injectShadyDom, config).catch((err) => console.error(err));
+app.get('/', (request, response) => {
+  response.sendStatus(200);
+});
+
+app.get('/render/:url(*)', async(request, response) => {
+  const result = await renderer.serialize(request.params.url, request.query, config).catch((err) => console.error(err));
   response.status(result.status).send(result.body);
+});
+
+app.get('/screenshot/:url(*)', async(request, response) => {
+  const result = await renderer.captureScreenshot(request.params.url, request.query, config).catch((err) => console.error(err));
+  const img = new Buffer(result, 'base64');
+  response.set({
+    'Content-Type': 'image/png',
+    'Content-Length': img.length
+  });
+  response.end(img);
 });
 
 app.get('/_ah/health', (request, response) => response.send('OK'));

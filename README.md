@@ -5,11 +5,69 @@ can be set up to serve pages to search engines, social networks and link renderi
 bots.
 
 ## Contents
-- [Installing & deploying](#installation--deploying)
-- [Rendering](#rendering)
+- [Middleware](#middleware)
+- [API](#api)
+  - [Render](#render)
+  - [Screenshot](#screenshot)
+- [FAQ](#faq)
   - [Query parameters](#query-parameters)
   - [Web components](#web-components)
-  - [Middleware](#middleware)
+  - [Status codes](#status-codes)
+- [Installing & deploying](#installing--deploying)
+
+## Middleware
+Once you have the service up and running, you'll need to implement the differential serving
+layer. This checks the user agent to determine whether prerendering is required.
+
+This is a list of middleware available to use with the bot-render service:
+ * [Firebase functions](https://github.com/justinribeiro/pwa-firebase-functions-botrender) (Community maintained)
+
+## API
+
+### Render
+```
+/render/<url>
+```
+
+The `render` endpoint will render your page and serialize your page. Available options:
+ * `wc-inject-shadydom` default `false` - used to correctly render Web Components v1. See
+ [Using with web components](#web-components) for more information.
+
+### Screenshot
+```
+/screenshot/<url>
+```
+
+The `screenshot` endpoint can be used to verify that your page is rendering correctly.
+Available options:
+ * `width` default `1000` - used to set the viewport width
+ * `height` default `1000` - used to set the viewport height
+
+## FAQ
+
+### Query parameters
+When setting query parameters as part of your URL, ensure they are encoded correctly. In JS,
+this would be `encodeURIComponent(myURLWithParams)`.
+
+### Web components
+Headless Chrome supports web components but shadow DOM is difficult to serialize effectively.
+As such, shady DOM is required for web components.
+
+If you are using web components v0 (deprecated), you will need to enable Shady DOM to
+render correctly. In Polymer 1.x, which uses web components v0, Shady DOM is enabled by default.
+If you are using Shadow DOM, override this by setting the query parameter `dom=shady` when
+directing requests to the bot-render service.
+
+If you are using web components v1 and either `webcomponents-lite.js` or `webcomponents-loader.js`,
+set the query parameter `wc-inject-shadydom=true` when directing requests to the bot-render
+service. This renderer service will force the necessary polyfills to be loaded and enabled.
+
+### Status codes
+Status codes from the initial requested URL are preserved. If this is a 200, or 304, you can
+set the HTTP status returned by the rendering service by adding a meta tag.
+```html
+<meta name="render:status_code" content="404" />
+```
 
 ## Installing & deploying
 
@@ -88,34 +146,3 @@ docker rm -f $(docker ps -a -q)
 gcloud app deploy app.yaml --project <your-project-id>
 ```
 
-## Rendering
-Once you have the service up and running, you'll need to implement the differential serving
-layer. This checks the user agent to determine whether prerendering is required.
-
-### Query parameters
-When setting query parameters as part of your URL, ensure they are encoded correctly. In JS,
-this would be `encodeURIComponent(myURLWithParams)`.
-
-### Web components
-Headless Chrome supports web components but shadow DOM is difficult to serialize effectively.
-As such, shady DOM is required for web components.
-
-If you are using web components v0 (deprecated), you will need to enable Shady DOM to
-render correctly. In Polymer 1.x, which uses web components v0, Shady DOM is enabled by default.
-If you are using Shadow DOM, override this by setting the query parameter `dom=shady` when
-directing requests to the bot-render service.
-
-If you are using web components v1 and either `webcomponents-lite.js` or `webcomponents-loader.js`,
-set the query parameter `wc-inject-shadydom=true` when directing requests to the bot-render
-service. This renderer service will force the necessary polyfills to be loaded and enabled.
-
-### Status codes
-Status codes from the initial requested URL are preserved. If this is a 200, or 304, you can
-set the HTTP status returned by the rendering service by adding a meta tag.
-```html
-<meta name="render:status_code" content="404" />
-```
-
-## Middleware
-This is a list of middleware available to use with the bot-render service:
- * [Firebase functions](https://github.com/justinribeiro/pwa-firebase-functions-botrender) (Community maintained)
