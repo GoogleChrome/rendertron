@@ -1,0 +1,114 @@
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link href="https://fonts.googleapis.com/css?family=Orbitron" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+<style>
+  body {
+    background: black;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Orbitron', sans-serif;
+    margin: 40px 0;
+  }
+
+  input[type=url] {
+    width: calc(100vw - 100px);
+    max-width: 800px;
+    padding: 30px;
+    border: none;
+    font-size: 24px;
+    background: black;
+    border-radius: 10px;
+    box-shadow: #99f3ff 0px 0px 4px 4px;
+    color: white;
+    font-family: 'Orbitron', sans-serif;
+  }
+
+  input[type=checkbox] {
+    background: black;
+    border: 3px solid white;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    box-shadow: #99f3ff 0px 0px 5px 3px;
+    border-radius: 3px;
+  }
+
+  input[type=checkbox]:checked {
+    background: #99f3ff;
+  }
+
+  #options {
+    margin-top: 60px;
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 800px;
+    justify-content: center;
+  }
+
+  #options button {
+    width: 300px;
+    height: 300px;
+    margin: 32px;
+    border: 1px solid #99f3ff;
+    color: white;
+    background: none;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Orbitron', sans-serif;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+
+  #options button i {
+    font-size: 96px;
+  }
+
+  #options button span {
+    margin-top: 24px;
+    max-width: 200px;
+    line-height: 24px;
+  }
+
+  :focus, #url:focus {
+    transition: 100ms box-shadow cubic-bezier(0, 0, 0.2, 1);
+    box-shadow: #99f3ff 0px 0px 7px 6px;
+  }
+</style>
+
+<input id="url" type="url" placeholder="Enter a URL" autocapitalize="off" spellcheck="false">
+
+<div id="options">
+  <button onclick="takeScreenshot()">
+    <i class="material-icons">photo_camera</i>
+    <span>Take screenshot</span>
+  </button>
+  <button onclick="render(false)">
+    <i class="material-icons">cloud_upload</i>
+    <span>Render &amp; serialize</span>
+  </button>
+  <button onclick="render(true)">
+    <i class="material-icons">code</i>
+    <span>Render &amp; serialize with web components v1</span>
+  </button>
+</div>
+
+
+<script>
+function render(webcomponents) {
+  if (!url.value)
+    return;
+  var queryParams = webcomponents ? '?wc-inject-shadydom=true' : '';
+  window.location.href += `render/${url.value}${queryParams}`;
+}
+
+function takeScreenshot() {
+  if (!url.value)
+    return;
+  window.location.href += `screenshot/${url.value}?width=${window.innerWidth}&height=${window.innerHeight}`;
+}
+</script>

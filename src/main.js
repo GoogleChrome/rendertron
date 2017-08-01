@@ -5,6 +5,7 @@ const chromeLauncher = require('chrome-launcher');
 const express = require('express');
 const compression = require('compression');
 const commandLineArgs = require('command-line-args');
+const path = require('path');
 const app = express();
 const cache = require('./cache');
 
@@ -27,7 +28,7 @@ if (!module.parent) {
 app.use(compression());
 
 app.get('/', (request, response) => {
-  response.sendStatus(200);
+  response.sendFile(path.resolve(__dirname, 'index.html'));
 });
 
 app.get('/render/:url(*)', async(request, response) => {
