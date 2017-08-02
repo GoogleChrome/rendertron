@@ -15,15 +15,6 @@ class Renderer {
       return parseInt(metaElement.getAttribute('content')) || undefined;
     }
 
-    /**
-     * Executed on the page after the page has loaded. Strips script and
-     * import tags to prevent further loading of resources.
-     */
-    function stripPage() {
-      const elements = document.querySelectorAll('script, link[rel=import]');
-      elements.forEach((e) => e.remove());
-    }
-
     return new Promise(async(resolve, reject) => {
       const {Page, Runtime, Network, Emulation, Console} = client;
 
@@ -100,7 +91,6 @@ class Renderer {
           return;
         }
 
-        await Runtime.evaluate({expression: `(${stripPage.toString()})()`});
         let result = await Runtime.evaluate({expression: `(${getStatusCode.toString()})()`});
         // Original status codes which aren't either 200 or 304 always return with that
         // status code, regardless of meta tags.
@@ -113,6 +103,15 @@ class Renderer {
   }
 
   serialize(url, options, config) {
+    /**
+     * Executed on the page after the page has loaded. Strips script and
+     * import tags to prevent further loading of resources.
+     */
+    function stripPage() {
+      const elements = document.querySelectorAll('script, link[rel=import]');
+      elements.forEach((e) => e.remove());
+    }
+
     /**
      * Injects a <base> tag which allows other resources to load. This
      * has no effect on serialised output, but allows it to verify render quality.
@@ -132,6 +131,7 @@ class Renderer {
 
       let renderResult = await this._loadPage(client, url, options, config);
 
+      await Runtime.evaluate({expression: `(${stripPage.toString()})()`});
       await Runtime.evaluate({expression: `(${injectBaseHref.toString()})('${url}')`});
 
       let result = await Runtime.evaluate({expression: 'document.firstElementChild.outerHTML'});
@@ -151,6 +151,7 @@ class Renderer {
 
       const width = parseInt(options['width']) || 1000;
       const height = parseInt(options['height']) || 1000;
+      await Emulation.setDeviceMetricsOverride({width: width, height: height, mobile: true, deviceScaleFactor: 3.5, fitWindow: false, screenWidth: width, screenHeight: height});
       await Emulation.setVisibleSize({width: width, height: height});
 
       await this._loadPage(client, url, options, config);
