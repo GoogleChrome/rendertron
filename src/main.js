@@ -18,7 +18,8 @@ const optionsDefinitions = [
 if (!module.parent) {
   config = commandLineArgs(optionsDefinitions);
   if (config.cache) {
-    app.get('/', cache.middleware());
+    app.get('/render/:url(*)', cache.middleware());
+    app.get('/screenshot/:url(*)', cache.middleware());
     // Always clear the cache for now, while things are changing.
     cache.clearCache();
   }

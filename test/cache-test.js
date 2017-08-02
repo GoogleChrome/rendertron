@@ -18,6 +18,7 @@ test.before(async(t) => {
 });
 
 app.get('/', (request, response) => {
+  handlerCalledCount++;
   response.end('Called ' + handlerCalledCount + ' times');
 });
 
@@ -34,6 +35,10 @@ test('caches content and serves same content on cache hit', async(t) => {
   res = await server.get('/?basictest');
   t.is(res.status, 200);
   t.is(res.text, 'Called ' + previousCount + ' times');
+
+  res = await server.get('/?basictest2');
+  t.is(res.status, 200);
+  t.is(res.text, 'Called ' + (previousCount + 1) + ' times');
 });
 
 app.get('/set-header', (request, response) => {
