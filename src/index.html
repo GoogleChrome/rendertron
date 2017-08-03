@@ -18,7 +18,7 @@
         align-items: center;
         justify-content: center;
         font-family: 'Orbitron', sans-serif;
-        margin: 40px 0;
+        margin: 0;
         min-height: 100vh;
       }
 
@@ -34,16 +34,6 @@
         color: white;
         font-family: 'Orbitron', sans-serif;
         text-align: center;
-      }
-
-      input[type=checkbox] {
-        background: black;
-        border: 3px solid white;
-        -webkit-appearance: none;
-        width: 16px;
-        height: 16px;
-        box-shadow: #99f3ff 0px 0px 5px 3px;
-        border-radius: 3px;
       }
 
       input[type=checkbox]:checked {
@@ -67,6 +57,7 @@
         background: none;
         display: flex;
         flex-direction: column;
+        font-size: 18px;
         font-family: 'Orbitron', sans-serif;
         align-items: center;
         justify-content: center;
@@ -83,9 +74,14 @@
         line-height: 24px;
       }
 
-      :focus, #url:focus {
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      :focus, #url:focus, #options button:hover {
         transition: 100ms box-shadow cubic-bezier(0, 0, 0.2, 1);
-        box-shadow: #99f3ff 0px 0px 7px 6px;
+        box-shadow: #99f3ff 0px 0px 7px 4px;
       }
     </style>
   </head>
@@ -104,6 +100,11 @@
       <button onclick="render(true)">
         <i class="material-icons">code</i>
         <span>Render &amp; serialize with web components v1</span>
+      </button>
+      <a href="https://github.com/samuelli/bot-render">
+        <button>
+          <i class="material-icons">insert_drive_file</i>
+          <span>View documentation</span>
       </button>
     </div>
 
