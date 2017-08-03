@@ -1,2 +1,4 @@
 runtime: custom
 env: flex
+resources:
+  cpu: 8
