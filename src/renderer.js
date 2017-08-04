@@ -86,7 +86,8 @@ class Renderer {
         // Reset the virtual time budget if there is still outstanding work. Converge the virtual time
         // budget just in case network requests are firing on a regular timer.
         if (outstandingRequests.size || !pageLoadEventFired) {
-          currentTimeBudget = currentTimeBudget / 2;
+          // Budget must be an integer.
+          currentTimeBudget = Math.ceil(currentTimeBudget / 2);
           Emulation.setVirtualTimePolicy({policy: 'pauseIfNetworkFetchesPending', budget: currentTimeBudget});
           return;
         }
@@ -147,10 +148,14 @@ class Renderer {
       const tab = await CDP.New({port: config.port});
       const client = await CDP({tab: tab, port: config.port});
 
-      const {Page, Emulation} = client;
+      const {Animation, Page, Emulation} = client;
 
-      const width = parseInt(options['width']) || 1000;
-      const height = parseInt(options['height']) || 1000;
+      // Accelerate global animation timeline so that loading animations
+      // are hopefully complete by the time we take the screenshot.
+      Animation.setPlaybackRate({playbackRate: 1000});
+
+      const width = Math.min(1500, parseInt(options['width']) || 1000);
+      const height = Math.min(1500, parseInt(options['height']) || 1000);
       await Emulation.setDeviceMetricsOverride({width: width, height: height, mobile: true, deviceScaleFactor: 3.5, fitWindow: false, screenWidth: width, screenHeight: height});
       await Emulation.setVisibleSize({width: width, height: height});
 
