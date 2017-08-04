@@ -76,4 +76,20 @@ const appPromise = chromeLauncher.launch({
   process.exit(1);
 });
 
+
+let exceptionCount = 0;
+function logUncaughtError(error) {
+  console.error('Uncaught exception');
+  console.error(error);
+  exceptionCount++;
+  // Restart instance due to lots of failures.
+  if (exceptionCount > 100) {
+    console.log(`Detected ${exceptionCount} errors, shutting instance down`);
+    process.exit(1);
+  }
+}
+
+process.on('uncaughtException', logUncaughtError);
+process.on('unhandledRejection', logUncaughtError);
+
 module.exports = appPromise;
