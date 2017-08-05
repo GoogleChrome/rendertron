@@ -103,6 +103,6 @@ test('screenshot is an image', async(t) => {
   const server = await createServer();
   const res = await server.get(`/screenshot/${testBase}basic-script.html`);
   t.is(res.status, 200);
-  t.is(res.header['content-type'], 'image/png');
+  t.is(res.header['content-type'], 'image/jpeg');
   t.is(res.body.length, parseInt(res.header['content-length']));
 });
