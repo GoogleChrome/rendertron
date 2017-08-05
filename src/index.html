@@ -19,25 +19,36 @@
         justify-content: center;
         font-family: 'Orbitron', sans-serif;
         margin: 0;
-        min-height: 100vh;
+        min-height: calc(100vh - 80px);
+        padding: 40px 0;
+      }
+
+      #search-bar {
+        width: calc(100vw - 170px);
+        max-width: 800px;
+        position: relative;
       }
 
       input[type=url] {
-        width: calc(100vw - 100px);
-        max-width: 800px;
+        width: 100%;
         padding: 30px;
+        box-sizing: border-box;
         border: none;
         font-size: 24px;
         background: black;
         border-radius: 10px;
-        box-shadow: #99f3ff 0px 0px 4px 4px;
+        border: 2px solid #99f3ff;
         color: white;
         font-family: 'Orbitron', sans-serif;
         text-align: center;
       }
 
-      input[type=checkbox]:checked {
-        background: #99f3ff;
+      progress-bar {
+        --progress-bar-color: #99f3ff;
+        height: 10px;
+        position: absolute;
+        margin-top: -10px;
+        border-radius: 0 0 10px 10px;
       }
 
       #options {
@@ -48,10 +59,14 @@
         justify-content: center;
       }
 
+      #options > * {
+        margin: 32px;
+      }
+
       #options button {
+        display: block;
         width: 300px;
         height: 300px;
-        margin: 32px;
         border: 1px solid #99f3ff;
         color: white;
         background: none;
@@ -62,6 +77,22 @@
         align-items: center;
         justify-content: center;
         cursor: pointer;
+      }
+
+      .loading {
+        box-shadow: #99f3ff 0px 0px 7px 4px;
+        animation: pulse 1s infinite alternate cubic-bezier(0.4, 0, 0.2, 1)
+      }
+
+      @keyframes pulse {
+        from {
+          filter: blur(0px);
+          transform: none;
+        }
+        to {
+          filter: blur(1px);
+          transform: scale(1.05);
+        }
       }
 
       #options button i {
@@ -86,42 +117,53 @@
     </style>
   </head>
   <body>
-    <input id="url" type="url" placeholder="Enter a URL" autocapitalize="off" spellcheck="false">
+    <div id="search-bar">
+      <input id="url" type="url" placeholder="Enter a URL" autocapitalize="off" spellcheck="false">
+      <progress-bar hidden></progress-bar>
+    </div>
 
     <div id="options">
-      <button onclick="takeScreenshot()">
+      <button onclick="takeScreenshot(this)">
         <i class="material-icons">photo_camera</i>
         <span>Take screenshot</span>
       </button>
-      <button onclick="render(false)">
+      <button onclick="render(this, false)">
         <i class="material-icons">cloud_upload</i>
         <span>Render &amp; serialize</span>
       </button>
-      <button onclick="render(true)">
+      <button onclick="render(this, true)">
         <i class="material-icons">code</i>
         <span>Render &amp; serialize with web components v1</span>
       </button>
-      <a href="https://github.com/samuelli/bot-render">
-        <button>
+      <a href="https://github.com/samuelli/bot-render" target="_blank">
+        <button tabindex="-1">
           <i class="material-icons">insert_drive_file</i>
           <span>View documentation</span>
-      </button>
+        </button>
+      </a>
     </div>
 
 
+
     <script>
-    function render(webcomponents) {
+    function render(element, webcomponents) {
       if (!url.value)
         return;
+      element.classList.add('loading');
+      document.querySelector('progress-bar').removeAttribute('hidden');
       var queryParams = webcomponents ? '?wc-inject-shadydom=true' : '';
       window.location.href += `render/${url.value}${queryParams}`;
     }
 
-    function takeScreenshot() {
+    function takeScreenshot(element) {
       if (!url.value)
         return;
+      element.classList.add('loading');
+      document.querySelector('progress-bar').removeAttribute('hidden');
       window.location.href += `screenshot/${url.value}?width=${window.innerWidth}&height=${window.innerHeight}`;
     }
     </script>
+
+    <link rel="import" href="bower_components/progress-bar/progress-bar.html">
   </body>
 </html>

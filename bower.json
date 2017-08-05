@@ -1,0 +1,6 @@
+{
+  "name": "bot-render",
+  "dependencies": {
+    "progress-bar": "samuelli/progress-bar#^2.0.1"
+  }
+}

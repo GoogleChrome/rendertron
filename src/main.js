@@ -28,6 +28,8 @@ if (!module.parent) {
 
 app.use(compression());
 
+app.use('/bower_components', express.static('bower_components'));
+
 app.get('/', (request, response) => {
   response.sendFile(path.resolve(__dirname, 'index.html'));
 });
