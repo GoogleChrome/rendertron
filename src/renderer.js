@@ -154,14 +154,14 @@ class Renderer {
       // are hopefully complete by the time we take the screenshot.
       Animation.setPlaybackRate({playbackRate: 1000});
 
-      const width = Math.min(1500, parseInt(options['width']) || 1000);
-      const height = Math.min(1500, parseInt(options['height']) || 1000);
+      const width = Math.min(2000, parseInt(options['width']) || 1000);
+      const height = Math.min(2000, parseInt(options['height']) || 1000);
       await Emulation.setDeviceMetricsOverride({width: width, height: height, mobile: true, deviceScaleFactor: 3.5, fitWindow: false, screenWidth: width, screenHeight: height});
       await Emulation.setVisibleSize({width: width, height: height});
 
       await this._loadPage(client, url, options, config);
 
-      let {data} = await Page.captureScreenshot();
+      let {data} = await Page.captureScreenshot({format: 'jpeg', quality: 60});
 
       CDP.Close({id: client.target.id, port: config.port});
       resolve(data);

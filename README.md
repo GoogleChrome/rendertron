@@ -40,8 +40,8 @@ The `render` endpoint will render your page and serialize your page. Available o
 
 The `screenshot` endpoint can be used to verify that your page is rendering correctly.
 Available options:
- * `width` default `1000` - used to set the viewport width (max 1500)
- * `height` default `1000` - used to set the viewport height (max 1500)
+ * `width` default `1000` - used to set the viewport width (max 2000)
+ * `height` default `1000` - used to set the viewport height (max 2000)
 
 ## FAQ
 
