@@ -55,7 +55,7 @@ app.get('/screenshot/:url(*)', async(request, response) => {
       'Content-Length': img.length
     });
     response.end(img);
-  } catch(err) {
+  } catch (err) {
     let message = `Cannot render ${request.params.url}`;
     if (err && err.message)
       message += ` - "${err.message}"`;
