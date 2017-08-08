@@ -13,6 +13,7 @@ bots.
   - [Query parameters](#query-parameters)
   - [Web components](#web-components)
   - [Status codes](#status-codes)
+  - [Rendering budget timeout](#rendering-budget-timeout)
 - [Installing & deploying](#installing--deploying)
 
 ## Middleware
@@ -68,6 +69,10 @@ set the HTTP status returned by the rendering service by adding a meta tag.
 ```html
 <meta name="render:status_code" content="404" />
 ```
+
+### Rendering budget timeout
+There is a hard limit of 10 seconds for rendering. Ensure you don't hit this budget by ensuring
+your application is rendered well before the budget expires.
 
 ## Installing & deploying
 
