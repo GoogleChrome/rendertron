@@ -82,7 +82,19 @@ class Renderer {
       let currentTimeBudget = 10000;
       Emulation.setVirtualTimePolicy({policy: 'pauseIfNetworkFetchesPending', budget: currentTimeBudget});
 
-      Emulation.virtualTimeBudgetExpired(async(event) => {
+      let budgetExpired = async() => {
+        let result = await Runtime.evaluate({expression: `(${getStatusCode.toString()})()`});
+        // Original status codes which aren't either 200 or 304 always return with that
+        // status code, regardless of meta tags.
+        if ((statusCode == 200 || statusCode == 304) && result.result.value)
+          statusCode = result.result.value;
+
+        resolve({status: statusCode || 200});
+        budgetExpired = () => {};
+        clearTimeout(timeoutId);
+      };
+
+      Emulation.virtualTimeBudgetExpired((event) => {
         // Reset the virtual time budget if there is still outstanding work. Converge the virtual time
         // budget just in case network requests are firing on a regular timer.
         if (outstandingRequests.size || !pageLoadEventFired) {
@@ -91,15 +103,17 @@ class Renderer {
           Emulation.setVirtualTimePolicy({policy: 'pauseIfNetworkFetchesPending', budget: currentTimeBudget});
           return;
         }
-
-        let result = await Runtime.evaluate({expression: `(${getStatusCode.toString()})()`});
-        // Original status codes which aren't either 200 or 304 always return with that
-        // status code, regardless of meta tags.
-        if ((statusCode == 200 || statusCode == 304) && result.result.value)
-          statusCode = result.result.value;
-
-        resolve({status: statusCode || 200});
+        budgetExpired();
       });
+
+      // Set a hard limit of 10 seconds.
+      let timeoutId = setTimeout(() => {
+        console.log(`10 second time budget limit reached.
+          Attempted rendering: ${url}
+          Page load event fired: ${pageLoadEventFired}
+          Outstanding network requests: ${outstandingRequests.size}`);
+        budgetExpired();
+      }, 10000);
     });
   }
 
