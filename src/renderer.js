@@ -15,6 +15,15 @@ class Renderer {
       return parseInt(metaElement.getAttribute('content')) || undefined;
     }
 
+    /**
+     * Listens for the 'render-complete' event.
+     */
+    function listenForCompletionEvent() {
+      document.addEventListener('render-complete', () => {
+        console.log('Rendering complete');
+      });
+    }
+
     return new Promise(async(resolve, reject) => {
       const {Page, Runtime, Network, Emulation, Console} = client;
 
@@ -23,8 +32,6 @@ class Renderer {
         Runtime.enable(),
         Console.enable(),
         Network.enable(),
-        Network.clearBrowserCache(),
-        Network.setCacheDisabled({cacheDisabled: true}),
         Network.setBypassServiceWorker({bypass: true}),
       ]);
 
@@ -38,6 +45,9 @@ class Renderer {
         Page.addScriptToEvaluateOnLoad({scriptSource: `ShadyDOM = {force: true}`});
         Page.addScriptToEvaluateOnLoad({scriptSource: `ShadyCSS = {shimcssproperties: true}`});
       }
+
+      // Add hook for completion event.
+      Page.addScriptToEvaluateOnLoad({scriptSource: `(${listenForCompletionEvent.toString()})()`});
 
       if (config.debug) {
         Console.messageAdded((event) => {
@@ -85,7 +95,19 @@ class Renderer {
       let currentTimeBudget = 10000;
       Emulation.setVirtualTimePolicy({policy: 'pauseIfNetworkFetchesPending', budget: currentTimeBudget});
 
-      Emulation.virtualTimeBudgetExpired(async(event) => {
+      let budgetExpired = async() => {
+        let result = await Runtime.evaluate({expression: `(${getStatusCode.toString()})()`});
+        // Original status codes which aren't either 200 or 304 always return with that
+        // status code, regardless of meta tags.
+        if ((statusCode == 200 || statusCode == 304) && result.result.value)
+          statusCode = result.result.value;
+
+        resolve({status: statusCode || 200});
+        budgetExpired = () => {};
+        clearTimeout(timeoutId);
+      };
+
+      Emulation.virtualTimeBudgetExpired((event) => {
         // Reset the virtual time budget if there is still outstanding work. Converge the virtual time
         // budget just in case network requests are firing on a regular timer.
         if (outstandingRequests.size || !pageLoadEventFired) {
@@ -94,14 +116,23 @@ class Renderer {
           Emulation.setVirtualTimePolicy({policy: 'pauseIfNetworkFetchesPending', budget: currentTimeBudget});
           return;
         }
+        budgetExpired();
+      });
 
-        let result = await Runtime.evaluate({expression: `(${getStatusCode.toString()})()`});
-        // Original status codes which aren't either 200 or 304 always return with that
-        // status code, regardless of meta tags.
-        if ((statusCode == 200 || statusCode == 304) && result.result.value)
-          statusCode = result.result.value;
+      // Set a hard limit of 10 seconds.
+      let timeoutId = setTimeout(() => {
+        console.log(`10 second time budget limit reached.
+          Attempted rendering: ${url}
+          Page load event fired: ${pageLoadEventFired}
+          Outstanding network requests: ${outstandingRequests.size}`);
+        budgetExpired();
+      }, 10000);
 
-        resolve({status: statusCode || 200});
+      // Listen for the message that signals that rendering event was fired.
+      Console.messageAdded((event) => {
+        if (event.message.text === 'Rendering complete') {
+          budgetExpired();
+        }
       });
     });
   }

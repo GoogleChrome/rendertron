@@ -118,3 +118,10 @@ test('unknown url fails', async(t) => {
   const res = await server.get(`/render/http://unknown.blah.com`);
   t.is(res.status, 400);
 });
+
+test('explicit render event ends early', async(t) => {
+  const server = await createServer();
+  const res = await server.get(`/render/${testBase}explicit-render-event.html`);
+  t.is(res.status, 200);
+  t.true(res.text.indexOf('async loaded') != -1);
+});
