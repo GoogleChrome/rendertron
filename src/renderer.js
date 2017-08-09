@@ -15,6 +15,15 @@ class Renderer {
       return parseInt(metaElement.getAttribute('content')) || undefined;
     }
 
+    /**
+     * Listens for the 'render-complete' event.
+     */
+    function listenForCompletionEvent() {
+      document.addEventListener('render-complete', () => {
+        console.log('Rendering complete');
+      });
+    }
+
     return new Promise(async(resolve, reject) => {
       const {Page, Runtime, Network, Emulation, Console} = client;
 
@@ -38,6 +47,9 @@ class Renderer {
         Page.addScriptToEvaluateOnLoad({scriptSource: `ShadyDOM = {force: true}`});
         Page.addScriptToEvaluateOnLoad({scriptSource: `ShadyCSS = {shimcssproperties: true}`});
       }
+
+      // Add hook for completion event.
+      Page.addScriptToEvaluateOnLoad({scriptSource: `(${listenForCompletionEvent.toString()})()`});
 
       if (config.debug) {
         Console.messageAdded((event) => {
@@ -114,6 +126,13 @@ class Renderer {
           Outstanding network requests: ${outstandingRequests.size}`);
         budgetExpired();
       }, 10000);
+
+      // Listen for the message that signals that rendering event was fired.
+      Console.messageAdded((event) => {
+        if (event.message.text === 'Rendering complete') {
+          budgetExpired();
+        }
+      });
     });
   }
 

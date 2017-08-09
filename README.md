@@ -50,6 +50,14 @@ Available options:
 When setting query parameters as part of your URL, ensure they are encoded correctly. In JS,
 this would be `encodeURIComponent(myURLWithParams)`.
 
+### Explicit rendering event
+In some cases, like if you have a video playing on your page, it can be difficult to determine
+when your page has loaded. You can fire an event to indicate that the page has completed
+loading and rendering.
+```js
+  myElement.dispatchEvent(new Event('render-complete', { bubbles: true, composed: true}));
+```
+
 ### Web components
 Headless Chrome supports web components but shadow DOM is difficult to serialize effectively.
 As such, shady DOM is required for web components.

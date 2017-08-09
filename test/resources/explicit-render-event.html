@@ -1,0 +1,9 @@
+<script>
+  setTimeout(() => {
+    document.body.textContent = 'async loaded';
+    document.body.dispatchEvent(new Event('render-complete', { bubbles: true, composed: true}));
+  }, 5000);
+  setTimeout(() => {
+    document.body.textContent = 'should not be reached';
+  }, 10000);
+</script>
