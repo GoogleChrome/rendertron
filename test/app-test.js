@@ -106,3 +106,10 @@ test('screenshot is an image', async(t) => {
   t.is(res.header['content-type'], 'image/jpeg');
   t.is(res.body.length, parseInt(res.header['content-length']));
 });
+
+test('explicit render event ends early', async(t) => {
+  const server = await createServer();
+  const res = await server.get(`/render/${testBase}explicit-render-event.html`);
+  t.is(res.status, 200);
+  t.true(res.text.indexOf('async loaded') != -1);
+});
