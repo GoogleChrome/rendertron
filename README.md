@@ -11,9 +11,11 @@ bots.
   - [Screenshot](#screenshot)
 - [FAQ](#faq)
   - [Query parameters](#query-parameters)
+  - [Auto detecting loading function](#auto-detecting-loading-function)
+  - [Rendering budget timeout](#rendering-budget-timeout)
+  - [Explicit rendering event](#explicit-rendering-event)
   - [Web components](#web-components)
   - [Status codes](#status-codes)
-  - [Rendering budget timeout](#rendering-budget-timeout)
 - [Installing & deploying](#installing--deploying)
 
 ## Middleware
@@ -50,10 +52,18 @@ Available options:
 When setting query parameters as part of your URL, ensure they are encoded correctly. In JS,
 this would be `encodeURIComponent(myURLWithParams)`.
 
+### Auto detecting loading function
+The service detects when a page has loaded by looking at the page load event, ensuring there
+are no outstanding network requests and that the page has had ample time to render.
+
+### Rendering budget timeout
+There is a hard limit of 10 seconds for rendering. Ensure you don't hit this budget by ensuring
+your application is rendered well before the budget expires.
+
 ### Explicit rendering event
-In some cases, like if you have a video playing on your page, it can be difficult to determine
-when your page has loaded. You can fire an event to indicate that the page has completed
-loading and rendering.
+In some cases, the auto loading function may be insufficient, for example if there is content
+being streamed on the page. To explicitly signal when the page is visually complete, fire an
+event as follows:
 ```js
   myElement.dispatchEvent(new Event('render-complete', { bubbles: true, composed: true}));
 ```
@@ -77,10 +87,6 @@ set the HTTP status returned by the rendering service by adding a meta tag.
 ```html
 <meta name="render:status_code" content="404" />
 ```
-
-### Rendering budget timeout
-There is a hard limit of 10 seconds for rendering. Ensure you don't hit this budget by ensuring
-your application is rendered well before the budget expires.
 
 ## Installing & deploying
 
