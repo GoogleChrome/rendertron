@@ -55,7 +55,7 @@ class Renderer {
         });
       }
 
-      Page.navigate({url: url});
+      Page.navigate({url: url}).catch(reject);
 
       // Check that all outstanding network requests have finished loading.
       const outstandingRequests = new Map();
@@ -77,6 +77,9 @@ class Renderer {
       });
 
       Network.loadingFailed((event) => {
+        if (event.requestId == initialRequestId) {
+          reject({message: event.errorText});
+        }
         outstandingRequests.delete(event.requestId);
       });
 
@@ -161,16 +164,20 @@ class Renderer {
 
       const {Runtime} = client;
 
-      let renderResult = await this._loadPage(client, url, options, config);
+      try {
+        let renderResult = await this._loadPage(client, url, options, config);
 
-      await Runtime.evaluate({expression: `(${stripPage.toString()})()`});
-      await Runtime.evaluate({expression: `(${injectBaseHref.toString()})('${url}')`});
+        await Runtime.evaluate({expression: `(${stripPage.toString()})()`});
+        await Runtime.evaluate({expression: `(${injectBaseHref.toString()})('${url}')`});
 
-      let result = await Runtime.evaluate({expression: 'document.firstElementChild.outerHTML'});
-      CDP.Close({id: client.target.id, port: config.port});
-      resolve({
-        status: renderResult.status,
-        body: result.result.value});
+        let result = await Runtime.evaluate({expression: 'document.firstElementChild.outerHTML'});
+        CDP.Close({id: client.target.id, port: config.port});
+        resolve({
+          status: renderResult.status,
+          body: result.result.value});
+      } catch (error) {
+        reject(error);
+      }
     });
   }
 
@@ -190,12 +197,15 @@ class Renderer {
       await Emulation.setDeviceMetricsOverride({width: width, height: height, mobile: true, deviceScaleFactor: 3.5, fitWindow: false, screenWidth: width, screenHeight: height});
       await Emulation.setVisibleSize({width: width, height: height});
 
-      await this._loadPage(client, url, options, config);
+      try {
+        await this._loadPage(client, url, options, config);
+        let {data} = await Page.captureScreenshot({format: 'jpeg', quality: 60});
 
-      let {data} = await Page.captureScreenshot({format: 'jpeg', quality: 60});
-
-      CDP.Close({id: client.target.id, port: config.port});
-      resolve(data);
+        CDP.Close({id: client.target.id, port: config.port});
+        resolve(data);
+      } catch (error) {
+        reject(error);
+      }
     });
   }
 }

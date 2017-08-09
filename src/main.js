@@ -35,18 +35,32 @@ app.get('/', (request, response) => {
 });
 
 app.get('/render/:url(*)', async(request, response) => {
-  const result = await renderer.serialize(request.params.url, request.query, config).catch((err) => console.error(err));
-  response.status(result.status).send(result.body);
+  try {
+    const result = await renderer.serialize(request.params.url, request.query, config);
+    response.status(result.status).send(result.body);
+  } catch (err) {
+    let message = `Cannot render ${request.params.url}`;
+    if (err && err.message)
+      message += ` - "${err.message}"`;
+    response.status(400).send(message);
+  }
 });
 
 app.get('/screenshot/:url(*)', async(request, response) => {
-  const result = await renderer.captureScreenshot(request.params.url, request.query, config).catch((err) => console.error(err));
-  const img = new Buffer(result, 'base64');
-  response.set({
-    'Content-Type': 'image/jpeg',
-    'Content-Length': img.length
-  });
-  response.end(img);
+  try {
+    const result = await renderer.captureScreenshot(request.params.url, request.query, config).catch((err) => console.error(err));
+    const img = new Buffer(result, 'base64');
+    response.set({
+      'Content-Type': 'image/jpeg',
+      'Content-Length': img.length
+    });
+    response.end(img);
+  } catch (err) {
+    let message = `Cannot render ${request.params.url}`;
+    if (err && err.message)
+      message += ` - "${err.message}"`;
+    response.status(400).send(message);
+  }
 });
 
 app.get('/_ah/health', (request, response) => response.send('OK'));
@@ -80,18 +94,22 @@ const appPromise = chromeLauncher.launch({
 
 
 let exceptionCount = 0;
-function logUncaughtError(error) {
+async function logUncaughtError(error) {
   console.error('Uncaught exception');
   console.error(error);
   exceptionCount++;
-  // Restart instance due to lots of failures.
-  if (exceptionCount > 100) {
+  // Restart instance due to several failures.
+  if (exceptionCount > 5) {
     console.log(`Detected ${exceptionCount} errors, shutting instance down`);
+    if (config && config.chrome)
+      await config.chrome.kill();
     process.exit(1);
   }
 }
 
-process.on('uncaughtException', logUncaughtError);
-process.on('unhandledRejection', logUncaughtError);
+if (!module.parent) {
+  process.on('uncaughtException', logUncaughtError);
+  process.on('unhandledRejection', logUncaughtError);
+}
 
 module.exports = appPromise;

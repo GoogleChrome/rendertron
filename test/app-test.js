@@ -107,6 +107,18 @@ test('screenshot is an image', async(t) => {
   t.is(res.body.length, parseInt(res.header['content-length']));
 });
 
+test('invalid url fails', async(t) => {
+  const server = await createServer();
+  const res = await server.get(`/render/abc`);
+  t.is(res.status, 400);
+});
+
+test('unknown url fails', async(t) => {
+  const server = await createServer();
+  const res = await server.get(`/render/http://unknown.blah.com`);
+  t.is(res.status, 400);
+});
+
 test('explicit render event ends early', async(t) => {
   const server = await createServer();
   const res = await server.get(`/render/${testBase}explicit-render-event.html`);
