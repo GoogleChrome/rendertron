@@ -23,8 +23,6 @@ class Renderer {
         Runtime.enable(),
         Console.enable(),
         Network.enable(),
-        Network.clearBrowserCache(),
-        Network.setCacheDisabled({cacheDisabled: true}),
         Network.setBypassServiceWorker({bypass: true}),
       ]);
 
