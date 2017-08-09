@@ -98,8 +98,8 @@ async function logUncaughtError(error) {
   console.error('Uncaught exception');
   console.error(error);
   exceptionCount++;
-  // Restart instance due to lots of failures.
-  if (exceptionCount > 0) {
+  // Restart instance due to several failures.
+  if (exceptionCount > 5) {
     console.log(`Detected ${exceptionCount} errors, shutting instance down`);
     if (config && config.chrome)
       await config.chrome.kill();
