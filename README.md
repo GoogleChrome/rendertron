@@ -17,6 +17,7 @@ bots.
   - [Web components](#web-components)
   - [Status codes](#status-codes)
 - [Installing & deploying](#installing--deploying)
+  - [Config](#config)
 
 ## Middleware
 Once you have the service up and running, you'll need to implement the differential serving
@@ -89,6 +90,13 @@ set the HTTP status returned by the rendering service by adding a meta tag.
 ```
 
 ## Installing & deploying
+
+### Config
+When deploying the service, set configuration variables by including a `config.json` in the
+root. Available configuration options:
+ * `cache` default `false` - set to `true` to enable caching on Google Cloud using datastore
+ * `debug` default `false` - set to `true` to log console messages from within the
+ rendered pages.
 
 ### Dependencies
 This project requires Node 7+ and Docker ([installation instructions](https://docs.docker.com/engine/installation/)). For deployment this
