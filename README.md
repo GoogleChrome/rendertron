@@ -97,6 +97,8 @@ root. Available configuration options:
  * `cache` default `false` - set to `true` to enable caching on Google Cloud using datastore
  * `debug` default `false` - set to `true` to log console messages from within the
  rendered pages.
+ * `renderOnly` - restrict the endpoint to only service requests for certain domains. Specified
+ as an array of strings. eg. `['http://render.only.this.domain']`
 
 ### Dependencies
 This project requires Node 7+ and Docker ([installation instructions](https://docs.docker.com/engine/installation/)). For deployment this
