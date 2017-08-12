@@ -49,7 +49,7 @@ class Renderer {
       // Add hook for completion event.
       Page.addScriptToEvaluateOnLoad({scriptSource: `(${listenForCompletionEvent.toString()})()`});
 
-      if (config.debug) {
+      if (!!config['debug']) {
         Console.messageAdded((event) => {
           console.log(`[${event.message.level}] ${event.message.text}`);
         });

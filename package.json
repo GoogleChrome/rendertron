@@ -8,7 +8,6 @@
   "main": "src/main.js",
   "scripts": {
     "start": "node src/main.js",
-    "start-prod": "node src/main.js --cache",
     "lint": "eslint src/*.js test/*.js",
     "monitor": "nodemon src/main.js",
     "monitor-inspect": "nodemon --inspect src/main.js",
@@ -22,7 +21,6 @@
     "@webcomponents/webcomponentsjs": "^1.0.3",
     "chrome-launcher": "^0.3.1",
     "chrome-remote-interface": "^0.24.1",
-    "command-line-args": "^4.0.6",
     "compression": "^1.7.0",
     "express": "^4.15.2"
   },

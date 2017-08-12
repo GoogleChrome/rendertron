@@ -1,29 +1,30 @@
 'use strict';
 
+const assert = require('assert');
 const renderer = require('./renderer');
 const chromeLauncher = require('chrome-launcher');
 const express = require('express');
+const fs = require('fs');
 const compression = require('compression');
-const commandLineArgs = require('command-line-args');
 const path = require('path');
 const app = express();
 const cache = require('./cache');
 
-// Set up app command line flag options.
+// Load config from config.json if it exists.
 let config = {};
-const optionsDefinitions = [
-  {name: 'cache', type: Boolean, defaultValue: false},
-  {name: 'debug', type: Boolean, defaultValue: false}
-];
+const configPath = path.resolve(__dirname, '../config.json');
 
-if (!module.parent) {
-  config = commandLineArgs(optionsDefinitions);
-  if (config.cache) {
-    app.get('/render/:url(*)', cache.middleware());
-    app.get('/screenshot/:url(*)', cache.middleware());
-    // Always clear the cache for now, while things are changing.
-    cache.clearCache();
-  }
+if (fs.existsSync(configPath)) {
+  config = JSON.parse(fs.readFileSync(configPath));
+  assert(config instanceof Object);
+}
+
+// Only start a cache if configured and not in testing.
+if (!module.parent && !!config['cache']) {
+  app.get('/render/:url(*)', cache.middleware());
+  app.get('/screenshot/:url(*)', cache.middleware());
+  // Always clear the cache for now, while things are changing.
+  cache.clearCache();
 }
 
 app.use(compression());
