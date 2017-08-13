@@ -27,6 +27,14 @@ if (!module.parent && !!config['cache']) {
   cache.clearCache();
 }
 
+// Allows the config to be overriden
+app.setConfig = (newConfig) => {
+  const oldConfig = config;
+  config = newConfig;
+  config.chrome = oldConfig.chrome;
+  config.port = oldConfig.port;
+};
+
 app.use(compression());
 
 app.use('/bower_components', express.static('bower_components'));
@@ -35,7 +43,23 @@ app.get('/', (request, response) => {
   response.sendFile(path.resolve(__dirname, 'index.html'));
 });
 
+function isRestricted(url) {
+  if (!config['renderOnly'])
+    return false;
+  for (let i = 0; i < config['renderOnly'].length; i++) {
+    if (url.startsWith(config['renderOnly'][i])) {
+      return false;
+    }
+  }
+  return true;
+}
+
 app.get('/render/:url(*)', async(request, response) => {
+  if (isRestricted(request.params.url)) {
+    response.status(403).send('Render request forbidden, domain excluded');
+    return;
+  }
+
   try {
     const result = await renderer.serialize(request.params.url, request.query, config);
     response.status(result.status).send(result.body);
@@ -48,6 +72,11 @@ app.get('/render/:url(*)', async(request, response) => {
 });
 
 app.get('/screenshot/:url(*)', async(request, response) => {
+  if (isRestricted(request.params.url)) {
+    response.status(403).send('Render request forbidden, domain excluded');
+    return;
+  }
+
   try {
     const result = await renderer.captureScreenshot(request.params.url, request.query, config).catch((err) => console.error(err));
     const img = new Buffer(result, 'base64');

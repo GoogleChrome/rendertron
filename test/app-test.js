@@ -17,11 +17,14 @@ test.before(async(t) => {
 /**
  * This deletes server from the require cache and reloads
  * the server, allowing for a clean state between each test.
+ * @param {?Object} config
  * @return {!Object} app server
  */
-async function createServer() {
+async function createServer(config) {
   delete require.cache[require.resolve('../src/main.js')];
   const app = await require('../src/main.js');
+  if (config)
+    app.setConfig(config);
   return request(app);
 }
 
@@ -124,4 +127,15 @@ test('explicit render event ends early', async(t) => {
   const res = await server.get(`/render/${testBase}explicit-render-event.html`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('async loaded') != -1);
+});
+
+test('whitelist ensures other urls do not get rendered', async(t) => {
+  const server = await createServer({
+    renderOnly: [testBase]
+  });
+  let res = await server.get(`/render/${testBase}basic-script.html`);
+  t.is(res.status, 200);
+
+  res = await server.get(`/render/http://anotherDomain.com`);
+  t.is(res.status, 403);
 });
