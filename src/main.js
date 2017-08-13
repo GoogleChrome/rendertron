@@ -60,18 +60,13 @@ function isRestricted(url) {
 // If configured, report action & time to Google Analytics.
 function track(action, time) {
   if (config['analyticsTrackingId']) {
-    var post_options = {
+    const postOptions = {
       host: 'www.google-analytics.com',
       path: '/debug/collect',
       method: 'POST'
     };
 
-    var post = https.request(post_options, function(res) {
-        res.setEncoding('utf8');
-        res.on('data', function (chunk) {
-            console.log('Response: ' + chunk);
-        });
-    });
+    const post = https.request(postOptions);
     post.write(`v=1&t=event&ec=render&ea=${action}&ev=${Math.round(time)}&tid=${config['analyticsTrackingId']}&cid=${uuidv4()}`);
     post.end();
   }
@@ -84,7 +79,7 @@ app.get('/render/:url(*)', async(request, response) => {
   }
 
   try {
-    var start = now();
+    const start = now();
     const result = await renderer.serialize(request.params.url, request.query, config);
     response.status(result.status).send(result.body);
     track('render', now() - start);
@@ -103,7 +98,7 @@ app.get('/screenshot/:url(*)', async(request, response) => {
   }
 
   try {
-    var start = now();
+    const start = now();
     const result = await renderer.captureScreenshot(request.params.url, request.query, config).catch((err) => console.error(err));
     const img = new Buffer(result, 'base64');
     response.set({
