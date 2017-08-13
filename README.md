@@ -94,6 +94,8 @@ set the HTTP status returned by the rendering service by adding a meta tag.
 ### Config
 When deploying the service, set configuration variables by including a `config.json` in the
 root. Available configuration options:
+ * `analyticsTrackingId` default `""` - set to a Google Analytics property tracking id to
+ send event hits to analytics.
  * `cache` default `false` - set to `true` to enable caching on Google Cloud using datastore
  * `debug` default `false` - set to `true` to log console messages from within the
  rendered pages.

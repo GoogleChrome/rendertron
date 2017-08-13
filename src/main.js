@@ -7,8 +7,11 @@ const express = require('express');
 const fs = require('fs');
 const compression = require('compression');
 const path = require('path');
+const https = require('https');
 const app = express();
 const cache = require('./cache');
+const now = require('performance-now');
+const uuidv4 = require('uuid/v4');
 
 // Load config from config.json if it exists.
 let config = {};
@@ -54,6 +57,26 @@ function isRestricted(url) {
   return true;
 }
 
+// If configured, report action & time to Google Analytics.
+function track(action, time) {
+  if (config['analyticsTrackingId']) {
+    var post_options = {
+      host: 'www.google-analytics.com',
+      path: '/debug/collect',
+      method: 'POST'
+    };
+
+    var post = https.request(post_options, function(res) {
+        res.setEncoding('utf8');
+        res.on('data', function (chunk) {
+            console.log('Response: ' + chunk);
+        });
+    });
+    post.write(`v=1&t=event&ec=render&ea=${action}&ev=${Math.round(time)}&tid=${config['analyticsTrackingId']}&cid=${uuidv4()}`);
+    post.end();
+  }
+}
+
 app.get('/render/:url(*)', async(request, response) => {
   if (isRestricted(request.params.url)) {
     response.status(403).send('Render request forbidden, domain excluded');
@@ -61,8 +84,10 @@ app.get('/render/:url(*)', async(request, response) => {
   }
 
   try {
+    var start = now();
     const result = await renderer.serialize(request.params.url, request.query, config);
     response.status(result.status).send(result.body);
+    track('render', now() - start);
   } catch (err) {
     let message = `Cannot render ${request.params.url}`;
     if (err && err.message)
@@ -78,6 +103,7 @@ app.get('/screenshot/:url(*)', async(request, response) => {
   }
 
   try {
+    var start = now();
     const result = await renderer.captureScreenshot(request.params.url, request.query, config).catch((err) => console.error(err));
     const img = new Buffer(result, 'base64');
     response.set({
@@ -85,6 +111,7 @@ app.get('/screenshot/:url(*)', async(request, response) => {
       'Content-Length': img.length
     });
     response.end(img);
+    track('screenshot', now() - start);
   } catch (err) {
     let message = `Cannot render ${request.params.url}`;
     if (err && err.message)
