@@ -62,7 +62,7 @@ function track(action, time) {
   if (config['analyticsTrackingId']) {
     const postOptions = {
       host: 'www.google-analytics.com',
-      path: '/debug/collect',
+      path: '/collect',
       method: 'POST'
     };
 
