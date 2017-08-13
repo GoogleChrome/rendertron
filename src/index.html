@@ -19,14 +19,23 @@
         justify-content: center;
         font-family: 'Orbitron', sans-serif;
         margin: 0;
-        min-height: calc(100vh - 80px);
-        padding: 40px 0;
+        min-height: calc(100vh - 40px);
+        padding: 20px 0;
+      }
+
+      h1 {
+        font-size: 60px;
+        color: white;
+        border-bottom: 1px solid #99f3ff;
+        margin: 64px 32px;
       }
 
       #search-bar {
-        width: calc(100vw - 170px);
-        max-width: 800px;
+        min-width: 300px;
+        width: calc(100% - 40px);
+        max-width: 664px;
         position: relative;
+        box-sizing: border-box;
       }
 
       input[type=url] {
@@ -52,7 +61,7 @@
       }
 
       #options {
-        margin-top: 60px;
+        margin-top: 32px;
         display: flex;
         flex-wrap: wrap;
         max-width: 800px;
@@ -114,9 +123,17 @@
         transition: 100ms box-shadow cubic-bezier(0, 0, 0.2, 1);
         box-shadow: #99f3ff 0px 0px 7px 4px;
       }
+
+      @media (max-width: 500px) {
+        h1 {
+          font-size: 40px;
+        }
+      }
     </style>
   </head>
   <body>
+    <h1>Rendertron</h1>
+
     <div id="search-bar">
       <input id="url" type="url" placeholder="Enter a URL" autocapitalize="off" spellcheck="false">
       <progress-bar hidden></progress-bar>
@@ -152,7 +169,7 @@
       element.classList.add('loading');
       document.querySelector('progress-bar').removeAttribute('hidden');
       var queryParams = webcomponents ? '?wc-inject-shadydom=true' : '';
-      window.location.href += `render/${url.value}${queryParams}`;
+      window.location.href += `render/${url.value.replace('?', '%3F')}${queryParams}`;
     }
 
     function takeScreenshot(element) {
@@ -160,7 +177,7 @@
         return;
       element.classList.add('loading');
       document.querySelector('progress-bar').removeAttribute('hidden');
-      window.location.href += `screenshot/${url.value}?width=${window.innerWidth}&height=${window.innerHeight}`;
+      window.location.href += `screenshot/${url.value.replace('?', '%3F')}?width=${window.innerWidth}&height=${window.innerHeight}`;
     }
     </script>
 
