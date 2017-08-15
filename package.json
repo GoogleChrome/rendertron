@@ -23,7 +23,9 @@
     "chrome-remote-interface": "^0.24.1",
     "compression": "^1.7.0",
     "express": "^4.15.2",
-    "progress-bar-element": "^2.0.1"
+    "performance-now": "^2.1.0",
+    "progress-bar-element": "^2.0.1",
+    "uuid": "^3.1.0"
   },
   "devDependencies": {
     "ava": "^0.20.0",
