@@ -3120,6 +3120,10 @@ process-nextick-args@^1.0.7, process-nextick-args@~1.0.6:
   version "1.0.7"
   resolved "https://registry.yarnpkg.com/process-nextick-args/-/process-nextick-args-1.0.7.tgz#150e20b756590ad3f91093f25a4f2ad8bff30ba3"
 
+progress-bar-element@^2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/progress-bar-element/-/progress-bar-element-2.0.1.tgz#e8491534f19fc9497106f320c58eded2f0b32367"
+
 progress@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/progress/-/progress-2.0.0.tgz#8a1be366bf8fc23db2bd23f10c6fe920b4389d1f"
