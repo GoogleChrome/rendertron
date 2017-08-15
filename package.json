@@ -22,7 +22,8 @@
     "chrome-launcher": "^0.3.1",
     "chrome-remote-interface": "^0.24.1",
     "compression": "^1.7.0",
-    "express": "^4.15.2"
+    "express": "^4.15.2",
+    "progress-bar-element": "^2.0.1"
   },
   "devDependencies": {
     "ava": "^0.20.0",
