@@ -156,9 +156,9 @@ Start a container with the built image using SYS_ADMIN:
 docker run -it -p 8080:8080 --cap-add SYS_ADMIN --name bot-render-container bot-render
 ```
 
-Send a request to the server running inside the container:
+Load the homepage in any browser:
 ```bash
-curl http://localhost:8080/?url=https://dynamic-meta.appspot.com
+http://localhost:8080/
 ```
 
 Stop the container:

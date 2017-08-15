@@ -37,7 +37,7 @@ app.setConfig = (newConfig) => {
 
 app.use(compression());
 
-app.use('/bower_components', express.static('bower_components'));
+app.use('/node_modules', express.static(path.resolve(__dirname, '../node_modules')));
 
 app.get('/', (request, response) => {
   response.sendFile(path.resolve(__dirname, 'index.html'));
