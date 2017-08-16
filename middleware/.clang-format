@@ -8,3 +8,4 @@ AllowShortIfStatementsOnASingleLine: false
 AllowShortLoopsOnASingleLine: false
 BinPackArguments: false
 BinPackParameters: false
+SpacesBeforeTrailingComments: 1

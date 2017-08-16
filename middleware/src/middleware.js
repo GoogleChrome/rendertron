@@ -1,7 +1,6 @@
 'use strict';
 
 const request = require('request');
-const url = require('url');
 
 /**
  * A default set of user agent patterns for bots/crawlers that do not perform
@@ -24,37 +23,62 @@ const botUserAgents = module.exports.botUserAgents = [
   'vkShare',
 ];
 
+/* eslint-disable no-multi-spaces */
+
 /**
- * Return a new Express middleware function that proxies requests to a
- * Rendertron bot rendering service. Options:
+ * A default set of file extensions for static assets that do not need to be
+ * proxied.
+ */
+const staticFileExtensions = [
+  'ai',  'avi',  'css', 'dat',  'dmg', 'doc',     'doc',  'exe', 'flv',
+  'gif', 'ico',  'iso', 'jpeg', 'jpg', 'js',      'less', 'm4a', 'm4v',
+  'mov', 'mp3',  'mp4', 'mpeg', 'mpg', 'pdf',     'png',  'ppt', 'psd',
+  'rar', 'rss',  'svg', 'swf',  'tif', 'torrent', 'ttf',  'txt', 'wav',
+  'wmv', 'woff', 'xls', 'xml',  'zip',
+];
+
+/* eslint-enable no-multi-spaces */
+
+/**
+ * @return {!Object} A new Express middleware function that proxies requests to
+ * a Rendertron bot rendering service. Options:
  *
- * - proxyURL: Base URL of the Rendertron proxy service. Required.
- * - userAgentMatcher: RegExp to match user agent headers against. Defaults to
- *   a set of bots that do not perform well with pages that require JavaScript.
- * - injectShadyDOM: Force web components polyfills to be loaded and enabled.
+ * @param {!Object} options Configuration object with the following properties:
+ * - proxyUrl: Base URL of the Rendertron proxy service. Required.
+ * - userAgentPattern: Regular expression to match user agent to proxy.
+ *   Defaults to a set of bots that do not perform well with pages that require
+ *   JavaScript.
+ * - excludeUrlPattern: Regular expression used to exclude request URL paths.
+ *   Defaults to a set of typical static asset file extensions.
+ * - injectShadyDom: Force web components polyfills to be loaded and enabled.
  * - timeout: Millisecond timeout for proxy requests.
  */
 module.exports.makeMiddleware = function(options) {
-  if (!options || !options.proxyURL) {
-    throw new Error('Must set options.proxyURL.');
+  if (!options || !options.proxyUrl) {
+    throw new Error('Must set options.proxyUrl.');
   }
-  const proxyURL = options.proxyURL;
-  const userAgentMatcher =
-      options.userAgentMatcher || new RegExp(botUserAgents.join('|'), 'i');
-  const injectShadyDOM = !!options.injectShadyDOM;
-  const timeout = options.timeout || 10000;  // Milliseconds.
+  const proxyUrl = options.proxyUrl;
+  const userAgentPattern =
+      options.userAgentPattern || new RegExp(botUserAgents.join('|'), 'i');
+  const excludeUrlPattern = options.excludeUrlPattern ||
+      new RegExp(`\\.(${staticFileExtensions.join('|')})$`, 'i');
+  const injectShadyDom = !!options.injectShadyDom;
+  // The Rendertron service itself has a hard limit of 10 seconds to render, so
+  // let's give a little more time than that by default.
+  const timeout = options.timeout || 11000; // Milliseconds.
 
   return function rendertronMiddleware(req, res, next) {
-    if (!userAgentMatcher.test(req.headers['user-agent'])) {
+    if (!userAgentPattern.test(req.headers['user-agent']) ||
+        excludeUrlPattern.test(req.path)) {
       next();
       return;
     }
-    const incomingURL =
+    const incomingUrl =
         req.protocol + '://' + req.get('host') + req.originalUrl;
-    let renderURL = proxyURL + encodeURIComponent(incomingURL);
-    if (injectShadyDOM) {
-      renderURL += '?wc-inject-shadydom';
+    let renderUrl = proxyUrl + encodeURIComponent(incomingUrl);
+    if (injectShadyDom) {
+      renderUrl += '?wc-inject-shadydom';
     }
-    request({url: renderURL, timeout}).pipe(res);
+    request({url: renderUrl, timeout}).pipe(res);
   };
-}
+};

@@ -12,11 +12,11 @@ install:
     fi
   - ${HOME}/gcloud/google-cloud-sdk/bin/gcloud components install beta cloud-datastore-emulator
   - source $HOME/gcloud/google-cloud-sdk/path.bash.inc
-  - cd middleware && yarn
+  - (cd middleware && yarn)
 script:
   - yarn lint
   - yarn test
   - yarn test-cache
-  - cd middleware && yarn lint && yarn test
+  - (cd middleware && yarn lint && yarn test)
 addons:
   chrome: stable
