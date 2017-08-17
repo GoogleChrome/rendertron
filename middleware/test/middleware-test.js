@@ -7,8 +7,9 @@ const test = require('ava');
 const rendertron = require('../src/middleware');
 
 /**
- * Start the given Express app on localhost with a random port and return its
- * HTTP URL.
+ * Start the given Express app on localhost with a random port.
+ * @param {!Object} app The app.
+ * @return {Promise<string>}Promise of the URL.
  */
 async function listen(app) {
   return new Promise((resolve) => {
@@ -21,6 +22,8 @@ async function listen(app) {
 /**
  * Make an Express app that uses the Rendertron middleware and returns
  * "fallthrough" if the middleware skipped the request (i.e. called `next`).
+ * @param {Object} options Rendertron middleware options.
+ * @return {!Object} The app.
  */
 function makeApp(options) {
   return express()
@@ -31,6 +34,7 @@ function makeApp(options) {
 /**
  * Make an Express app that takes the place of a Rendertron server instance and
  * always responds with "proxy <decoded url>".
+ * @return {!Object} The app.
  */
 function makeProxy() {
   return express().use((req, res) => {
@@ -41,8 +45,15 @@ function makeProxy() {
 const bot = 'slackbot';
 const human = 'Chrome';
 
-async function get(userAgent, url, path) {
-  return await supertest(url).get(path).set('User-Agent', userAgent);
+/**
+ * GET a URL with the given user agent.
+ * @param {string} userAgent The user agent string.
+ * @param {string} host The host part of the URL.
+ * @param {string} path The path part of the URL.
+ * @return {Promise<!Object>} Promise of the GET response.
+ */
+async function get(userAgent, host, path) {
+  return await supertest(host).get(path).set('User-Agent', userAgent);
 }
 
 test('makes a middleware function', async (t) => {
