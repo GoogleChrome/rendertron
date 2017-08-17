@@ -57,7 +57,10 @@ module.exports.makeMiddleware = function(options) {
   if (!options || !options.proxyUrl) {
     throw new Error('Must set options.proxyUrl.');
   }
-  const proxyUrl = options.proxyUrl;
+  let proxyUrl = options.proxyUrl;
+  if (!proxyUrl.endsWith('/')) {
+    proxyUrl += '/';
+  }
   const userAgentPattern =
       options.userAgentPattern || new RegExp(botUserAgents.join('|'), 'i');
   const excludeUrlPattern = options.excludeUrlPattern ||
@@ -79,6 +82,12 @@ module.exports.makeMiddleware = function(options) {
     if (injectShadyDom) {
       renderUrl += '?wc-inject-shadydom';
     }
-    request({url: renderUrl, timeout}).pipe(res);
+    request({url: renderUrl, timeout}, (e) => {
+      if (e) {
+        console.error(
+            `[rendertron middleware] ${e.code} error fetching ${renderUrl}`);
+        next();
+      }
+    }).pipe(res);
   };
 };
