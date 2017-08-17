@@ -1,0 +1,46 @@
+{
+  "name": "rendertron-middleware",
+  "version": "0.1.0",
+  "description": "Express middleware for the rendertron service.",
+  "engines": {
+    "node": ">=7"
+  },
+  "main": "src/middleware.js",
+  "types": "src/middleware.d.ts",
+  "scripts": {
+    "lint": "eslint src/*.js test/*.js",
+    "test": "ava"
+  },
+  "license": "Apache-2.0",
+  "dependencies": {
+    "request": "^2.81.0"
+  },
+  "devDependencies": {
+    "ava": "^0.20.0",
+    "eslint": "^4.1.1",
+    "eslint-config-google": "^0.8.0",
+    "express": "^4.15.4",
+    "supertest": "^3.0.0"
+  },
+  "eslintConfig": {
+    "extends": "google",
+    "env": {
+      "node": true
+    },
+    "rules": {
+      "new-cap": 0,
+      "max-len": 0,
+      "no-warning-comments": 0,
+      "curly": 0,
+      "comma-dangle": 0,
+      "eqeqeq": 0,
+      "no-eq-null": 0,
+      "require-jsdoc": 0,
+      "space-before-function-paren": 0
+    },
+    "parserOptions": {
+      "ecmaVersion": 8,
+      "sourceType": "module"
+    }
+  }
+}
