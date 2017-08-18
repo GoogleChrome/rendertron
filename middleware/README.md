@@ -1,5 +1,5 @@
 [![Build status](https://img.shields.io/travis/samuelli/bot-render.svg?style=flat-square)](https://travis-ci.org/samuelli/bot-render)
-[![NPM version](http://img.shields.io/npm/v/rendetron-middleware.svg)](https://www.npmjs.com/package/rendetron-middleware)
+[![NPM version](http://img.shields.io/npm/v/rendertron-middleware.svg)](https://www.npmjs.com/package/rendertron-middleware)
 
 # rendertron-middleware
 
