@@ -1,8 +1,14 @@
-# bot-render [![Build status](https://img.shields.io/travis/samuelli/bot-render.svg?style=flat-square)](https://travis-ci.org/samuelli/bot-render)
+# Rendertron [![Build status](https://img.shields.io/travis/GoogleChrome/rendertron.svg?style=flat-square)](https://travis-ci.org/GoogleChrome/rendertron)
 
-A Docker container which runs headless Chrome and renders web pages on the fly, which
-can be set up to serve pages to search engines, social networks and link rendering
-bots.
+> Rendertron is a dockerized, headless Chrome rendering solution designed to render & serialise web pages on the fly.
+
+Rendertron is designed to enable your Progressive Web App (PWA) to serve the correct
+content to any bot that doesn't render or execute Javascript. Rendertron runs as a
+standalone HTTP server. Rendertron renders requested pages using Headless Chrome,
+[auto-detecting](#auto-detecting-loading-function) when your PWA has completed loading
+and serializes the response back to the original request. To use Rendertron, your application
+configures [middleware](#middleware) to determine whether to proxy a request to Rendertron.
+Rendertron is compatible with all client side technologies, including [web components](#web-components).
 
 ## Contents
 - [Middleware](#middleware)
@@ -23,8 +29,12 @@ bots.
 Once you have the service up and running, you'll need to implement the differential serving
 layer. This checks the user agent to determine whether prerendering is required.
 
-This is a list of middleware available to use with the bot-render service:
+This is a list of middleware available to use with the Rendertron service:
+ * [Express.js middleware](/middleware)
  * [Firebase functions](https://github.com/justinribeiro/pwa-firebase-functions-botrender) (Community maintained)
+
+Rendertron is also compatible with [prerender.io middleware](https://prerender.io/documentation/install-middleware).
+Note: the user agent lists differ there.
 
 ## API
 
@@ -51,7 +61,10 @@ Available options:
 
 ### Query parameters
 When setting query parameters as part of your URL, ensure they are encoded correctly. In JS,
-this would be `encodeURIComponent(myURLWithParams)`.
+this would be `encodeURIComponent(myURLWithParams)`. For example to specify `page=home`:
+```
+https://render-tron.appspot.com/render/http://my.domain/%3Fpage%3Dhome
+```
 
 ### Auto detecting loading function
 The service detects when a page has loaded by looking at the page load event, ensuring there
@@ -71,15 +84,16 @@ event as follows:
 
 ### Web components
 Headless Chrome supports web components but shadow DOM is difficult to serialize effectively.
-As such, shady DOM is required for web components.
+As such, [shady DOM](https://github.com/webcomponents/shadydom) (a lightweight shim for Shadow DOM)
+is required for web components.
 
 If you are using web components v0 (deprecated), you will need to enable Shady DOM to
 render correctly. In Polymer 1.x, which uses web components v0, Shady DOM is enabled by default.
 If you are using Shadow DOM, override this by setting the query parameter `dom=shady` when
-directing requests to the bot-render service.
+directing requests to the Rendertron service.
 
 If you are using web components v1 and either `webcomponents-lite.js` or `webcomponents-loader.js`,
-set the query parameter `wc-inject-shadydom=true` when directing requests to the bot-render
+set the query parameter `wc-inject-shadydom=true` when directing requests to the Rendertron
 service. This renderer service will force the necessary polyfills to be loaded and enabled.
 
 ### Status codes
@@ -90,18 +104,6 @@ set the HTTP status returned by the rendering service by adding a meta tag.
 ```
 
 ## Installing & deploying
-
-### Config
-When deploying the service, set configuration variables by including a `config.json` in the
-root. Available configuration options:
- * `analyticsTrackingId` default `""` - set to a Google Analytics property tracking id to
- send event hits to analytics.
- * `cache` default `false` - set to `true` to enable caching on Google Cloud using datastore
- * `debug` default `false` - set to `true` to log console messages from within the
- rendered pages.
- * `renderOnly` - restrict the endpoint to only service requests for certain domains. Specified
- as an array of strings. eg. `['http://render.only.this.domain']`. This is a strict prefix
- match, so ensure you specify the exact protocols that will be used (eg. http, https).
 
 ### Dependencies
 This project requires Node 7+ and Docker ([installation instructions](https://docs.docker.com/engine/installation/)). For deployment this
@@ -132,7 +134,7 @@ http://localhost:3000/?url=https://dynamic-meta.appspot.com
 ### Docker
 After installing docker, build the docker image:
 ```bash
-docker build -t bot-render . --no-cache=true
+docker build -t rendertron . --no-cache=true
 ```
 
 ### Running the container
@@ -140,22 +142,22 @@ The container enables the cache to run by default, so be sure to disable the cac
 
 Building the container:
 ```bash
-docker run -it -p 8080:8080 --name bot-render-container bot-render
+docker run -it -p 8080:8080 --name rendertron-container rendertron
 ```
 
-In the case where your kernel lacks user namespace support or are receiving a `ECONNREFUSED` error when trying to access the service in the container (as noted in issues [2](https://github.com/samuelli/bot-render/issues/2) and [3](https://github.com/samuelli/bot-render/issues/3)), the two recommended methods below should solve this:
+In the case where your kernel lacks user namespace support or are receiving a `ECONNREFUSED` error when trying to access the service in the container (as noted in issues [2](https://github.com/GoogleChrome/rendertron/issues/2) and [3](https://github.com/GoogleChrome/rendertron/issues/3)), the two recommended methods below should solve this:
 1. [Recommended] - Use [Jessie Frazelle' seccomp profile](https://github.com/jessfraz/dotfiles/blob/master/etc/docker/seccomp/chrome.json) and `-security-opt` flag
 2. Utilize the `--cap-add SYS_ADMIN` flag
 
 [Recommended] Start a container with the built image using Jessie Frazelle' seccomp profile for Chrome:
 ```bash
 wget https://raw.githubusercontent.com/jfrazelle/dotfiles/master/etc/docker/seccomp/chrome.json -O ~/chrome.json
-docker run -it -p 8080:8080 --security-opt seccomp=$HOME/chrome.json --name bot-render-container bot-render
+docker run -it -p 8080:8080 --security-opt seccomp=$HOME/chrome.json --name rendertron-container rendertron
 ```
 
 Start a container with the built image using SYS_ADMIN:
 ```bash
-docker run -it -p 8080:8080 --cap-add SYS_ADMIN --name bot-render-container bot-render
+docker run -it -p 8080:8080 --cap-add SYS_ADMIN --name rendertron-container rendertron
 ```
 
 Load the homepage in any browser:
@@ -165,7 +167,7 @@ http://localhost:8080/
 
 Stop the container:
 ```bash
-docker kill bot-render-container
+docker kill rendertron-container
 ```
 
 Clear containers:
@@ -177,4 +179,17 @@ docker rm -f $(docker ps -a -q)
 ```
 gcloud app deploy app.yaml --project <your-project-id>
 ```
+
+### Config
+When deploying the service, set configuration variables by including a `config.json` in the
+root. Available configuration options:
+ * `analyticsTrackingId` default `""` - set to a Google Analytics property
+ [tracking id](https://support.google.com/analytics/answer/1008080?hl=en#trackingID) to
+ send Rendertron rendering events to analytics.
+ * `cache` default `false` - set to `true` to enable caching on Google Cloud using datastore
+ * `debug` default `false` - set to `true` to log console messages from within the
+ rendered pages.
+ * `renderOnly` - restrict the endpoint to only service requests for certain domains. Specified
+ as an array of strings. eg. `['http://render.only.this.domain']`. This is a strict prefix
+ match, so ensure you specify the exact protocols that will be used (eg. http, https).
 
