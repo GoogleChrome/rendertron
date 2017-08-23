@@ -10,6 +10,11 @@ and serializes the response back to the original request. To use Rendertron, you
 configures [middleware](#middleware) to determine whether to proxy a request to Rendertron.
 Rendertron is compatible with all client side technologies, including [web components](#web-components).
 
+**Demo endpoint**
+
+A demo Rendertron service is available at https://render-tron.appspot.com/. It is not designed
+to be used as a production endpoint. You can use it, but there are no uptime guarantees.
+
 ## Contents
 - [Middleware](#middleware)
 - [API](#api)
