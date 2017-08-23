@@ -1,6 +1,6 @@
 {
   "name": "rendertron-middleware",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Express middleware for the rendertron service.",
   "engines": {
     "node": ">=6"
