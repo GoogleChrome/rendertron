@@ -72,7 +72,7 @@ class Cache {
           const headers = JSON.parse(results[0].headers);
           response.set(headers);
           let payload = JSON.parse(results[0].payload);
-          if (typeof(payload) == 'object' && payload.type == 'Buffer')
+          if (payload && typeof(payload) == 'object' && payload.type == 'Buffer')
             payload = new Buffer(payload);
           response.send(payload);
           return;
