@@ -112,13 +112,18 @@ class Renderer {
       Emulation.setVirtualTimePolicy({policy: 'pauseIfNetworkFetchesPending', budget: currentTimeBudget});
 
       let budgetExpired = async() => {
-        let result = await Runtime.evaluate({expression: `(${getStatusCode.toString()})()`});
-        // Original status codes which aren't either 200 or 304 always return with that
-        // status code, regardless of meta tags.
-        if ((statusCode == 200 || statusCode == 304) && result.result.value)
-          statusCode = result.result.value;
+        try {
+          let result = await Runtime.evaluate({expression: `(${getStatusCode.toString()})()`});
+          // Original status codes which aren't either 200 or 304 always return with that
+          // status code, regardless of meta tags.
+          if ((statusCode == 200 || statusCode == 304) && result.result.value)
+            statusCode = result.result.value;
 
-        resolve({status: statusCode || 200});
+          resolve({status: statusCode || 200});
+        } catch (err) {
+          reject(err);
+        }
+
         budgetExpired = () => {};
         clearTimeout(timeoutId);
       };
