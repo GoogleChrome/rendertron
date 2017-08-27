@@ -41,10 +41,19 @@ class Renderer {
     }
 
     return new Promise(async(resolve, reject) => {
-      const {Page, Runtime, Network, Emulation, Console} = client;
+      const {Page, Security, Runtime, Network, Emulation, Console} = client;
+
+      Security.certificateError(({eventId}) => {
+        Security.handleCertificateError({
+            eventId,
+            action: 'continue'
+        });
+      });
 
       await Promise.all([
         Page.enable(),
+        Security.enable(),
+        Security.setOverrideCertificateErrors({override: true}),
         Runtime.enable(),
         Console.enable(),
         Network.enable(),
