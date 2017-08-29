@@ -96,7 +96,7 @@ module.exports.makeMiddleware = function(options) {
         req.protocol + '://' + req.get('host') + req.originalUrl;
     let renderUrl = proxyUrl + encodeURIComponent(incomingUrl);
     if (injectShadyDom) {
-      renderUrl += '?wc-inject-shadydom';
+      renderUrl += '?wc-inject-shadydom=true';
     }
     request({url: renderUrl, timeout}, (e) => {
       if (e) {

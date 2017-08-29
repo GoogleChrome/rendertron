@@ -109,7 +109,7 @@ test('adds shady dom parameter', async (t) => {
 
   const res = await get(bot, appUrl, '/foo');
   t.is(res.status, 200);
-  t.is(res.text, 'proxy ' + appUrl + '/foo?wc-inject-shadydom');
+  t.is(res.text, 'proxy ' + appUrl + '/foo?wc-inject-shadydom=true');
 });
 
 test('excludes static file paths by default', async (t) => {
