@@ -55,7 +55,8 @@ class Renderer {
       // serialize the page.
       // TODO(samli): This needs to change to use the non-deprecated API after Chrome 61
       //   addScriptToEvaluateOnNewDocument({source: `ShadyDOM = {force: true}`})
-      if (!!options['wc-inject-shadydom']) {
+      const shadyFlag = options['wc-inject-shadydom'];
+      if (shadyFlag == '' || !!shadyFlag) {
         // Deprecated in Chrome 61.
         Page.addScriptToEvaluateOnLoad({scriptSource: `customElements.forcePolyfill = true`});
         Page.addScriptToEvaluateOnLoad({scriptSource: `ShadyDOM = {force: true}`});
