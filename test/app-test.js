@@ -23,12 +23,19 @@ const express = require('express');
 
 const app = express();
 app.use(express.static(path.resolve(__dirname, 'resources')));
+
+const appInstances = [];
 const testBase = 'http://localhost:1234/';
 
 test.before(async(t) => {
   await app.listen(1234);
 });
 
+test.after.always(async(t) => {
+  for (let app of appInstances) {
+    await app.stop();
+  }
+});
 
 /**
  * This deletes server from the require cache and reloads
@@ -41,6 +48,7 @@ async function createServer(config) {
   const app = await require('../src/main.js');
   if (config)
     app.setConfig(config);
+  appInstances.push(app);
   return request(app);
 }
 
@@ -113,15 +121,15 @@ test('server status code should be forwarded', async(t) => {
 
 test('http status code should be able to be set via a meta tag', async(t) => {
   const server = await createServer();
-  const testFile = path.resolve(__dirname, 'resources/http-meta-status-code.html');
-  const res = await server.get('/render/file://' + testFile + '?wc-inject-shadydom=true');
+  const testFile = 'http-meta-status-code.html';
+  const res = await server.get(`/render/${testBase}${testFile}?wc-inject-shadydom=true`);
   t.is(res.status, 400);
 });
 
 test('http status codes need to be respected from top to bottom', async(t) => {
   const server = await createServer();
-  const testFile = path.resolve(__dirname, 'resources/http-meta-status-code-multiple.html');
-  const res = await server.get('/render/file://' + testFile + '?wc-inject-shadydom=true');
+  const testFile = 'http-meta-status-code-multiple.html';
+  const res = await server.get(`/render/${testBase}${testFile}?wc-inject-shadydom=true`);
   t.is(res.status, 401);
 });
 
@@ -136,13 +144,19 @@ test('screenshot is an image', async(t) => {
 test('invalid url fails', async(t) => {
   const server = await createServer();
   const res = await server.get(`/render/abc`);
-  t.is(res.status, 400);
+  t.is(res.status, 403);
 });
 
 test('unknown url fails', async(t) => {
   const server = await createServer();
   const res = await server.get(`/render/http://unknown.blah.com`);
   t.is(res.status, 400);
+});
+
+test('file url fails', async(t) => {
+  const server = await createServer();
+  const res = await server.get(`/render/file:///dev/fd/0`);
+  t.is(res.status, 403);
 });
 
 test('explicit render event ends early', async(t) => {

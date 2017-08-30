@@ -17,24 +17,29 @@
 'use strict';
 
 const assert = require('assert');
-const renderer = require('./renderer');
-const chromeLauncher = require('chrome-launcher');
-const express = require('express');
 const fs = require('fs');
-const compression = require('compression');
-const path = require('path');
 const https = require('https');
-const app = express();
-const cache = require('./cache');
+const path = require('path');
+const url = require('url');
+const chromeLauncher = require('chrome-launcher');
+const compression = require('compression');
+const express = require('express');
 const now = require('performance-now');
 const uuidv4 = require('uuid/v4');
+const cache = require('./cache');
+const renderer = require('./renderer');
+
+const app = express();
+
+const CONFIG_PATH = path.resolve(__dirname, '../config.json');
+const PROGRESS_BAR_PATH = path.resolve(__dirname, '../node_modules/progress-bar-element/progress-bar.html');
+const PORT = process.env.PORT || '3000';
+
+let config = {};
 
 // Load config from config.json if it exists.
-let config = {};
-const configPath = path.resolve(__dirname, '../config.json');
-
-if (fs.existsSync(configPath)) {
-  config = JSON.parse(fs.readFileSync(configPath));
+if (fs.existsSync(CONFIG_PATH)) {
+  config = JSON.parse(fs.readFileSync(CONFIG_PATH));
   assert(config instanceof Object);
 }
 
@@ -55,21 +60,24 @@ app.setConfig = (newConfig) => {
 };
 
 app.use(compression());
-
-app.use('/node_modules', express.static(path.resolve(__dirname, '../node_modules')));
+app.use('/progress-bar.html', express.static(PROGRESS_BAR_PATH));
 
 app.get('/', (request, response) => {
   response.sendFile(path.resolve(__dirname, 'index.html'));
 });
 
-function isRestricted(url) {
-  if (!config['renderOnly'])
-    return false;
+function isRestricted(urlReq) {
+  const protocol = (url.parse(urlReq).protocol || '');
+
+  if (!protocol.match(/^https?/)) return true;
+  if (!config['renderOnly']) return false;
+
   for (let i = 0; i < config['renderOnly'].length; i++) {
-    if (url.startsWith(config['renderOnly'][i])) {
+    if (urlReq.startsWith(config['renderOnly'][i])) {
       return false;
     }
   }
+
   return true;
 }
 
@@ -100,10 +108,8 @@ app.get('/render/:url(*)', async(request, response) => {
     response.status(result.status).send(result.body);
     track('render', now() - start);
   } catch (err) {
-    let message = `Cannot render ${request.params.url}`;
-    if (err && err.message)
-      message += ` - "${err.message}"`;
-    response.status(400).send(message);
+    response.status(400).send('Cannot render requested URL');
+    console.error(err);
   }
 });
 
@@ -124,19 +130,16 @@ app.get('/screenshot/:url(*)', async(request, response) => {
     response.end(img);
     track('screenshot', now() - start);
   } catch (err) {
-    let message = `Cannot render ${request.params.url}`;
-    if (err && err.message)
-      message += ` - "${err.message}"`;
-    response.status(400).send(message);
+    response.status(400).send('Cannot render requested URL');
+    console.error(err);
   }
 });
 
 app.get('/_ah/health', (request, response) => response.send('OK'));
 
-app.get('/_ah/stop', async(request, response) => {
+app.stop = async() => {
   await config.chrome.kill();
-  response.send('OK');
-});
+};
 
 const appPromise = chromeLauncher.launch({
   chromeFlags: ['--headless', '--disable-gpu', '--remote-debugging-address=0.0.0.0'],
@@ -147,10 +150,9 @@ const appPromise = chromeLauncher.launch({
   config.port = chrome.port;
   // Don't open a port when running from inside a module (eg. tests). Importing
   // module can control this.
-  const port = process.env.PORT || '3000';
   if (!module.parent) {
-    app.listen(port, function() {
-      console.log('Listening on port', port);
+    app.listen(PORT, function() {
+      console.log('Listening on port', PORT);
     });
   }
   return app;
@@ -162,6 +164,7 @@ const appPromise = chromeLauncher.launch({
 
 
 let exceptionCount = 0;
+
 async function logUncaughtError(error) {
   console.error('Uncaught exception');
   console.error(error);
@@ -170,7 +173,7 @@ async function logUncaughtError(error) {
   if (exceptionCount > 5) {
     console.log(`Detected ${exceptionCount} errors, shutting instance down`);
     if (config && config.chrome)
-      await config.chrome.kill();
+      await app.stop();
     process.exit(1);
   }
 }
