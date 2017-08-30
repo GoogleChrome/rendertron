@@ -26,7 +26,6 @@ app.use(express.static(path.resolve(__dirname, 'resources')));
 
 const appInstances = [];
 const testBase = 'http://localhost:1234/';
-process.env.NODE_ENV = 'development';
 
 test.before(async(t) => {
   await app.listen(1234);
@@ -47,8 +46,9 @@ test.after.always(async(t) => {
 async function createServer(config) {
   delete require.cache[require.resolve('../src/main.js')];
   const app = await require('../src/main.js');
-  if (config) app.setConfig(config);
-  await appInstances.push(app);
+  if (config)
+    app.setConfig(config);
+  appInstances.push(app);
   return request(app);
 }
 

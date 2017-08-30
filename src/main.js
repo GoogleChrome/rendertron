@@ -34,7 +34,6 @@ const app = express();
 const CONFIG_PATH = path.resolve(__dirname, '../config.json');
 const PROGRESS_BAR_PATH = path.resolve(__dirname, '../node_modules/progress-bar-element/progress-bar.html');
 const PORT = process.env.PORT || '3000';
-const ENVIRONMENT = process.env.NODE_ENV;
 
 let config = {};
 
@@ -137,14 +136,6 @@ app.get('/screenshot/:url(*)', async(request, response) => {
 });
 
 app.get('/_ah/health', (request, response) => response.send('OK'));
-
-// only expose chrome disable in development
-if (ENVIRONMENT === 'development') {
-  app.get('/_ah/stop', async(request, response) => {
-    await app.stop();
-    response.send('OK');
-  });
-}
 
 app.stop = async() => {
   await config.chrome.kill();
