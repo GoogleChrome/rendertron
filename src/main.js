@@ -139,10 +139,14 @@ app.get('/_ah/health', (request, response) => response.send('OK'));
 // only expose chrome disable in development
 if (ENVIRONMENT === 'development') {
   app.get('/_ah/stop', async(request, response) => {
-    await config.chrome.kill();
+    await app.stop();
     response.send('OK');
   });
 }
+
+app.stop = async () => {
+  await config.chrome.kill();
+};
 
 const appPromise = chromeLauncher.launch({
   chromeFlags: ['--headless', '--disable-gpu', '--remote-debugging-address=0.0.0.0'],
@@ -176,7 +180,7 @@ async function logUncaughtError(error) {
   if (exceptionCount > 5) {
     console.log(`Detected ${exceptionCount} errors, shutting instance down`);
     if (config && config.chrome)
-      await config.chrome.kill();
+      await app.stop();
     process.exit(1);
   }
 }
