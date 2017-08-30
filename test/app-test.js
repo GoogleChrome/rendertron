@@ -34,7 +34,7 @@ test.before(async(t) => {
 
 test.after.always(async(t) => {
   for (let app of appInstances) {
-    app.stop();
+    await app.stop();
   }
 });
 
