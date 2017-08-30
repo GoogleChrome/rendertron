@@ -108,8 +108,9 @@ app.get('/render/:url(*)', async(request, response) => {
     const result = await renderer.serialize(request.params.url, request.query, config);
     response.status(result.status).send(result.body);
     track('render', now() - start);
-  } catch (_) {
+  } catch (err) {
     response.status(400).send('Cannot render requested URL');
+    console.error(err);
   }
 });
 
@@ -131,6 +132,7 @@ app.get('/screenshot/:url(*)', async(request, response) => {
     track('screenshot', now() - start);
   } catch (err) {
     response.status(400).send('Cannot render requested URL');
+    console.error(err);
   }
 });
 

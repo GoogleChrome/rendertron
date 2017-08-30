@@ -114,15 +114,15 @@ test('server status code should be forwarded', async(t) => {
 
 test('http status code should be able to be set via a meta tag', async(t) => {
   const server = await createServer();
-  const testFile = 'resources/http-meta-status-code.html';
-  const res = await server.get('/render/http://' + testFile + '?wc-inject-shadydom=true');
+  const testFile = 'http-meta-status-code.html';
+  const res = await server.get(`/render/${testBase}${testFile}?wc-inject-shadydom=true`);
   t.is(res.status, 400);
 });
 
 test('http status codes need to be respected from top to bottom', async(t) => {
   const server = await createServer();
-  const testFile = 'resources/http-meta-status-code-multiple.html';
-  const res = await server.get('/render/http://' + testFile + '?wc-inject-shadydom=true');
+  const testFile = 'http-meta-status-code-multiple.html';
+  const res = await server.get(`/render/${testBase}${testFile}?wc-inject-shadydom=true`);
   t.is(res.status, 401);
 });
 

@@ -26,8 +26,7 @@ class Renderer {
      */
     function getStatusCode() {
       const metaElement = document.querySelector('meta[name="render:status_code"]');
-      if (!metaElement)
-        return undefined;
+      if (!metaElement) return;
       return parseInt(metaElement.getAttribute('content')) || undefined;
     }
 
