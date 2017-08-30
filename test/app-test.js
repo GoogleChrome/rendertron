@@ -80,6 +80,13 @@ test('renders shadow DOM - polyfill loader', async(t) => {
   t.true(res.text.indexOf('shadow-root-text') != -1);
 });
 
+test('renders shadow DOM - polyfill loader - different flag', async(t) => {
+  const server = await createServer();
+  const res = await server.get(`/render/${testBase}shadow-dom-polyfill-loader.html?wc-inject-shadydom`);
+  t.is(res.status, 200);
+  t.true(res.text.indexOf('shadow-root-text') != -1);
+});
+
 test('renders shadow DOM - webcomponents-lite.js polyfill', async(t) => {
   const server = await createServer();
   const res = await server.get(`/render/${testBase}shadow-dom-polyfill-all.html?wc-inject-shadydom=true`);
