@@ -28,11 +28,11 @@ const appInstances = [];
 const testBase = 'http://localhost:1234/';
 process.env.NODE_ENV = 'development';
 
-test.before(async t => {
+test.before(async(t) => {
   await app.listen(1234);
 });
 
-test.after.always(async t => {
+test.after.always(async(t) => {
   for (let app of appInstances) {
     app.stop();
   }

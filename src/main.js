@@ -144,7 +144,7 @@ if (ENVIRONMENT === 'development') {
   });
 }
 
-app.stop = async () => {
+app.stop = async() => {
   await config.chrome.kill();
 };
 
