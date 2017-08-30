@@ -100,7 +100,7 @@ app.get('/render/:url(*)', async(request, response) => {
     response.status(result.status).send(result.body);
     track('render', now() - start);
   } catch (err) {
-    let message = `Cannot render ${request.params.url}`;
+    let message = `Cannot render encodeURIComponent(${request.params.url})`;
     if (err && err.message)
       message += ` - "${err.message}"`;
     response.status(400).send(message);
@@ -124,7 +124,7 @@ app.get('/screenshot/:url(*)', async(request, response) => {
     response.end(img);
     track('screenshot', now() - start);
   } catch (err) {
-    let message = `Cannot render ${request.params.url}`;
+    let message = `Cannot render encodeURIComponent(${request.params.url})`;
     if (err && err.message)
       message += ` - "${err.message}"`;
     response.status(400).send(message);
