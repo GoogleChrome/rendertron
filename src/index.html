@@ -200,6 +200,13 @@ the License.
     function takeScreenshot(element) {
       if (!url.value)
         return;
+      
+      var httpRegex = /(http(s?))\:\/\//gi;
+
+      if(!httpRegex.test(url.value)) {
+        url.value = "https://" + url.value;
+      }
+
       element.classList.add('loading');
       document.querySelector('progress-bar').removeAttribute('hidden');
       window.location.href += `screenshot/${url.value.replace('?', '%3F')}?width=${window.innerWidth}&height=${window.innerHeight}`;
