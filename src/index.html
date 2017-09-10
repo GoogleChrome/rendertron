@@ -204,7 +204,7 @@ the License.
       var httpRegex = /(http(s?))\:\/\//gi;
 
       if(!httpRegex.test(url.value)) {
-        url.value = "https://" + url.value;
+        url.value = 'https://' + url.value;
       }
 
       element.classList.add('loading');
