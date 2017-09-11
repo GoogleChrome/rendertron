@@ -109,6 +109,7 @@ app.get('/render/:url(*)', async(request, response) => {
     track('render', now() - start);
   } catch (err) {
     response.status(400).send('Cannot render requested URL');
+    console.error('Cannot render requested URL');
     console.error(err);
   }
 });
@@ -121,7 +122,7 @@ app.get('/screenshot/:url(*)', async(request, response) => {
 
   try {
     const start = now();
-    const result = await renderer.captureScreenshot(request.params.url, request.query, config).catch((err) => console.error(err));
+    const result = await renderer.captureScreenshot(request.params.url, request.query, config);
     const img = new Buffer(result, 'base64');
     response.set({
       'Content-Type': 'image/jpeg',
@@ -131,6 +132,7 @@ app.get('/screenshot/:url(*)', async(request, response) => {
     track('screenshot', now() - start);
   } catch (err) {
     response.status(400).send('Cannot render requested URL');
+    console.error('Cannot render requested URL');
     console.error(err);
   }
 });

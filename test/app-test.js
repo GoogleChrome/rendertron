@@ -176,3 +176,9 @@ test('whitelist ensures other urls do not get rendered', async(t) => {
   res = await server.get(`/render/http://anotherDomain.com`);
   t.is(res.status, 403);
 });
+
+test('unknown url fails safely on screenshot', async(t) => {
+  const server = await createServer();
+  const res = await server.get(`/render/http://unknown.blah.com`);
+  t.is(res.status, 400);
+});
