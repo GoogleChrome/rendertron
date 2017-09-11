@@ -34,6 +34,7 @@ const app = express();
 const CONFIG_PATH = path.resolve(__dirname, '../config.json');
 const PROGRESS_BAR_PATH = path.resolve(__dirname, '../node_modules/progress-bar-element/progress-bar.html');
 const PORT = process.env.PORT || '3000';
+const CHROME_FLAGS_DEFAULT = ['--headless', '--disable-gpu', '--remote-debugging-address=0.0.0.0'];
 
 let config = {};
 
@@ -142,8 +143,8 @@ app.stop = async() => {
 };
 
 const appPromise = chromeLauncher.launch({
-  chromeFlags: ['--headless', '--disable-gpu', '--remote-debugging-address=0.0.0.0'],
-  port: 0
+  chromeFlags: process.env.CHROME_FLAGS ? process.env.CHROME_FLAGS.split(' ') : CHROME_FLAGS_DEFAULT,
+  port: process.env.CHROME_REMOTE_DEBUGGING_PORT || 0
 }).then((chrome) => {
   console.log('Chrome launched with debugging on port', chrome.port);
   config.chrome = chrome;
