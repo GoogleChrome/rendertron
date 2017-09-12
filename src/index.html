@@ -194,7 +194,7 @@ the License.
     <script>
     function render(element, webcomponents) {
       if (!url.value) {
-        onEmptyUrl(url);
+        onEmptyUrl();
         return;
       }
 
@@ -206,7 +206,7 @@ the License.
 
     function takeScreenshot(element) {
       if (!url.value) {
-        onEmptyUrl(url);
+        onEmptyUrl();
         return;
       }
 
@@ -221,7 +221,7 @@ the License.
       window.location.href += `screenshot/${url.value.replace('?', '%3F')}?width=${window.innerWidth}&height=${window.innerHeight}`;
     }
 
-    function onEmptyUrl(url) {
+    function onEmptyUrl() {
       url.classList.add('error');
     }
     </script>
