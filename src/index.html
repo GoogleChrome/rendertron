@@ -118,6 +118,10 @@ the License.
         animation: pulse 1s infinite alternate cubic-bezier(0.4, 0, 0.2, 1)
       }
 
+      .error {
+        border-color: #FF9999 !important;
+      }
+
       @keyframes pulse {
         from {
           filter: blur(0px);
@@ -189,8 +193,11 @@ the License.
 
     <script>
     function render(element, webcomponents) {
-      if (!url.value)
+      if (!url.value) {
+        onEmptyUrl();
         return;
+      }
+
       element.classList.add('loading');
       document.querySelector('progress-bar').removeAttribute('hidden');
       var queryParams = webcomponents ? '?wc-inject-shadydom=true' : '';
@@ -198,9 +205,11 @@ the License.
     }
 
     function takeScreenshot(element) {
-      if (!url.value)
+      if (!url.value) {
+        onEmptyUrl();
         return;
-      
+      }
+
       var httpRegex = /(http(s?))\:\/\//gi;
 
       if(!httpRegex.test(url.value)) {
@@ -210,6 +219,10 @@ the License.
       element.classList.add('loading');
       document.querySelector('progress-bar').removeAttribute('hidden');
       window.location.href += `screenshot/${url.value.replace('?', '%3F')}?width=${window.innerWidth}&height=${window.innerHeight}`;
+    }
+
+    function onEmptyUrl() {
+      url.classList.add('error');
     }
     </script>
 
