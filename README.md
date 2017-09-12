@@ -166,7 +166,7 @@ Start a container with the built image using SYS_ADMIN:
 docker run -it -p 8080:8080 --cap-add SYS_ADMIN --name rendertron-container rendertron
 ```
 
-To check if your kernel is compatible with Docker, follow [Docker's instructions](https://docs.docker.com/engine/installation/linux/linux-postinstall/#troubleshooting). For CentOS 7, which doesn't have user namespaces enable it, you will [need to enable them](https://github.com/GoogleChrome/rendertron/issues/96#issuecomment-328305721).
+To check if your kernel is compatible with Docker, follow [Docker's instructions](https://docs.docker.com/engine/installation/linux/linux-postinstall/#troubleshooting). For CentOS 7, which doesn't have user namespaces enabled, you will [need to enable them](https://github.com/GoogleChrome/rendertron/issues/96#issuecomment-328305721).
 
 ### Using the container
 Load the homepage in any browser:
