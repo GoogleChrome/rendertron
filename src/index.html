@@ -118,6 +118,10 @@ the License.
         animation: pulse 1s infinite alternate cubic-bezier(0.4, 0, 0.2, 1)
       }
 
+      .error {
+        border-color: #FF9999 !important;
+      }
+
       @keyframes pulse {
         from {
           filter: blur(0px);
@@ -190,7 +194,7 @@ the License.
     <script>
     function render(element, webcomponents) {
       if (!url.value) {
-        onEmptyUrl();
+        onEmptyUrl(url);
         return;
       }
 
@@ -202,7 +206,7 @@ the License.
 
     function takeScreenshot(element) {
       if (!url.value) {
-        onEmptyUrl();
+        onEmptyUrl(url);
         return;
       }
 
@@ -217,8 +221,8 @@ the License.
       window.location.href += `screenshot/${url.value.replace('?', '%3F')}?width=${window.innerWidth}&height=${window.innerHeight}`;
     }
 
-    function onEmptyUrl() {
-      document.getElementById('url').style.borderColor = '#FF9999';
+    function onEmptyUrl(url) {
+      url.classList.add('error');
     }
     </script>
 
