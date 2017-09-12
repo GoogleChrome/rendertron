@@ -150,6 +150,7 @@ Building the container:
 docker run -it -p 8080:8080 --name rendertron-container rendertron
 ```
 
+### Connection error (ECONNREFUSED)
 In the case where your kernel lacks user namespace support or are receiving a `ECONNREFUSED` error when trying to access the service in the container (as noted in issues [2](https://github.com/GoogleChrome/rendertron/issues/2) and [3](https://github.com/GoogleChrome/rendertron/issues/3)), the two recommended methods below should solve this:
 1. [Recommended] - Use [Jessie Frazelle' seccomp profile](https://github.com/jessfraz/dotfiles/blob/master/etc/docker/seccomp/chrome.json) and `-security-opt` flag
 2. Utilize the `--cap-add SYS_ADMIN` flag
@@ -165,6 +166,9 @@ Start a container with the built image using SYS_ADMIN:
 docker run -it -p 8080:8080 --cap-add SYS_ADMIN --name rendertron-container rendertron
 ```
 
+To check if your kernel is compatible with Docker, follow [Docker's instructions](https://docs.docker.com/engine/installation/linux/linux-postinstall/#troubleshooting). For CentOS 7, which doesn't have user namespaces enabled, you will [need to enable them](https://github.com/GoogleChrome/rendertron/issues/96#issuecomment-328305721).
+
+### Using the container
 Load the homepage in any browser:
 ```bash
 http://localhost:8080/
