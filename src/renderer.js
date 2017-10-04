@@ -76,20 +76,33 @@ class Renderer {
       // Check that all outstanding network requests have finished loading.
       const outstandingRequests = new Map();
       let initialRequestId = undefined;
+      let networkIdleTimeout = undefined;
+
       Network.requestWillBeSent((event) => {
         if (!initialRequestId)
           initialRequestId = event.requestId;
         outstandingRequests.set(event.requestId, event);
+        if (networkIdleTimeout) {
+          clearTimeout(networkIdleTimeout);
+          networkIdleTimeout = undefined;
+          networkIdle = false;
+        }
       });
 
       let statusCode = 200;
+
       Network.responseReceived((event) => {
-        if (event.requestId == initialRequestId && event.response.status != 0)
+        if (event.requestId == initialRequestId &&
+          event.response.status != 0 &&
+          event.response.status != 304)
           statusCode = event.response.status;
       });
 
       Network.loadingFinished((event) => {
         outstandingRequests.delete(event.requestId);
+        if (outstandingRequests.size == 0) {
+          networkIdleTimeout = setTimeout(networkNowIdle, 500);
+        }
       });
 
       Network.loadingFailed((event) => {
@@ -97,57 +110,60 @@ class Renderer {
           reject({message: event.errorText});
         }
         outstandingRequests.delete(event.requestId);
+        if (outstandingRequests.size == 0) {
+          networkIdleTimeout = setTimeout(networkNowIdle, 500);
+        }
       });
 
       // Ensure the page load event has fired.
       let pageLoadEventFired = false;
       Page.loadEventFired(() => {
         pageLoadEventFired = true;
+        triggerTimeBudget();
       });
 
-      // Set a virtual time budget of 10 seconds. This 10 second timer is paused while there are
-      // any active network requests. This allows for a maximum of 10 seconds in script/rendering
-      // time. Once the page is idle, the virtual time budget expires immediately.
-      let currentTimeBudget = 10000;
-      Emulation.setVirtualTimePolicy({policy: 'pauseIfNetworkFetchesPending', budget: currentTimeBudget});
+      // Called when the network has been quiet for 500ms.
+      let networkIdle = false;
+      let networkNowIdle = () => {
+        networkIdle = true;
+        triggerTimeBudget();
+      };
 
-      let budgetExpired = async() => {
+      let triggerTimeBudget = () => {
+        // Set a virtual time budget of 5 seconds for script/rendering. Once the page is
+        // idle, the virtual time budget expires immediately.
+        if (networkIdle && pageLoadEventFired)
+          Emulation.setVirtualTimePolicy({policy: 'advance', budget: 5000});
+      };
+
+      let pageReady = async() => {
         let result = await Runtime.evaluate({expression: `(${getStatusCode.toString()})()`});
-        // Original status codes which aren't either 200 or 304 always return with that
-        // status code, regardless of meta tags.
-        if ((statusCode == 200 || statusCode == 304) && result.result.value)
+
+        // Original status codes which aren't 200 always return with that status code,
+        // regardless of meta tags.
+        if (statusCode == 200 && result.result.value)
           statusCode = result.result.value;
 
         resolve({status: statusCode || 200});
-        budgetExpired = () => {};
-        clearTimeout(timeoutId);
+        pageReady = () => {};
+        clearTimeout(maxTimeout);
       };
 
-      Emulation.virtualTimeBudgetExpired((event) => {
-        // Reset the virtual time budget if there is still outstanding work. Converge the virtual time
-        // budget just in case network requests are firing on a regular timer.
-        if (outstandingRequests.size || !pageLoadEventFired) {
-          // Budget must be an integer.
-          currentTimeBudget = Math.ceil(currentTimeBudget / 2);
-          Emulation.setVirtualTimePolicy({policy: 'pauseIfNetworkFetchesPending', budget: currentTimeBudget});
-          return;
-        }
-        budgetExpired();
-      });
+      Emulation.virtualTimeBudgetExpired(pageReady);
 
       // Set a hard limit of 10 seconds.
-      let timeoutId = setTimeout(() => {
+      let maxTimeout = setTimeout(() => {
         console.log(`10 second time budget limit reached.
           Attempted rendering: ${url}
           Page load event fired: ${pageLoadEventFired}
           Outstanding network requests: ${outstandingRequests.size}`);
-        budgetExpired();
+        pageReady();
       }, 10000);
 
       // Listen for the message that signals that rendering event was fired.
       Console.messageAdded((event) => {
         if (event.message.text === 'Rendering complete') {
-          budgetExpired();
+          pageReady();
         }
       });
     });
