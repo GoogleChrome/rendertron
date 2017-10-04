@@ -47,7 +47,6 @@ class Renderer {
         Runtime.enable(),
         Console.enable(),
         Network.enable(),
-        Network.setBypassServiceWorker({bypass: true}),
       ]);
 
       // Inject the Shady DOM polyfill if web components v1 is used, so we can
