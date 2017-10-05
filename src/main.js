@@ -105,6 +105,7 @@ app.get('/render/:url(*)', async(request, response) => {
   try {
     const start = now();
     const result = await renderer.serialize(request.params.url, request.query, config);
+    response.set('x-renderer', 'rendertron');
     response.status(result.status).send(result.body);
     track('render', now() - start);
   } catch (err) {
