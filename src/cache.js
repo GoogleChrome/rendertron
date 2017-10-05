@@ -71,6 +71,7 @@ class Cache {
         if (results[0].expires.getTime() >= new Date().getTime()) {
           const headers = JSON.parse(results[0].headers);
           response.set(headers);
+          response.set('x-rendertron-cached', results[0].saved.toUTCString());
           let payload = JSON.parse(results[0].payload);
           if (payload && typeof(payload) == 'object' && payload.type == 'Buffer')
             payload = new Buffer(payload);

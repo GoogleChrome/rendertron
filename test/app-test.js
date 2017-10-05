@@ -63,6 +63,7 @@ test('renders basic script', async(t) => {
   const res = await server.get(`/render/${testBase}basic-script.html`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('document-title') != -1);
+  t.is(res.header['x-renderer'], 'rendertron');
 });
 
 test('renders script after page load event', async(t) => {
