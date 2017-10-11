@@ -231,7 +231,7 @@ class Renderer {
 
       const width = Math.min(2000, parseInt(options['width']) || 1000);
       const height = Math.min(2000, parseInt(options['height']) || 1000);
-      await Emulation.setDeviceMetricsOverride({width: width, height: height, mobile: true, deviceScaleFactor: 3.5, fitWindow: false, screenWidth: width, screenHeight: height});
+      await Emulation.setDeviceMetricsOverride({width: width, height: height, mobile: true, deviceScaleFactor: 1, fitWindow: false, screenWidth: width, screenHeight: height});
       await Emulation.setVisibleSize({width: width, height: height});
 
       try {
