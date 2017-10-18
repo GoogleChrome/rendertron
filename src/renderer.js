@@ -135,10 +135,10 @@ class Renderer {
 
         // Set a virtual time budget of 5 seconds for script/rendering. Once the page is
         // idle, the virtual time budget expires immediately.
-        if (networkIdle && pageLoadEventFired)
+        if (networkIdle && pageLoadEventFired) {
           Emulation.setVirtualTimePolicy({policy: 'advance', budget: 5000});
-
-        timeBudgetStarted = true;
+          timeBudgetStarted = true;
+        }
       };
 
       let pageReady = async() => {
