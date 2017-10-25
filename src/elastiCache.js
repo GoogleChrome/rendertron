@@ -1,5 +1,9 @@
 const redis = require('ioredis');
 const _ = require('lodash');
+const dotenv = require('dotenv').config();
+
+const host = process.env.ELASTICACHE_CONFIGURATION_ENDPOINT || 'localhost';
+const lazyConnect = process.env.LAZY_CONNECT == 'false' ? false : true;
 
 // uncomment the line below if you want to use moment to set the cache deletion time
 // const moment = require('moment-timezone');
@@ -9,14 +13,14 @@ const _ = require('lodash');
 // change lazyConnect to true if you want redis client to connect to the redis server as soon as it's created
 // with lazyConnect: true, it will only connect when running query against the redis database
 // const redisClient = new redis.Cluster([
-//   {host: 'your-elastiCache-configuration-endpoint', port: 6379, lazyConnect: true}
+//   {host: host, port: 6379, lazyConnect: lazyConnect}
 // ]);
 
 // AWS ElastiCache with redis cluster mode OFF
 // uncomment the lines below and replace the host with your node endpoint
 // change lazyConnect to true if you want redis client to connect to the redis server as soon as it's created
 // with lazyConnect: true, it will only connect when running query against the redis database
-const redisClient = new redis({host: 'localhost', port: 6379, lazyConnect: true});
+const redisClient = new redis({host: host, port: 6379, lazyConnect: lazyConnect});
 
 let redisReady = false;
 

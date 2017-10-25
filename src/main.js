@@ -28,6 +28,7 @@ const now = require('performance-now');
 const uuidv4 = require('uuid/v4');
 const cache = require('./cache');
 const renderer = require('./renderer');
+const dotenv = require('dotenv').config();
 
 const app = express();
 
@@ -37,7 +38,7 @@ const PORT = process.env.PORT || '3000';
 
 // google-cloud => using google-cloud/datastore for caching
 // elastiCache => using AWS ElastiCache for caching
-const cacheMode = 'google-cloud';
+const cacheMode = process.env.CACHE_MODE || 'google-cloud';
 
 let config = {};
 
@@ -53,7 +54,7 @@ if (!module.parent && !!config['cache']) {
   app.get('/screenshot/:url(*)', cache.middleware());
   if (cacheMode == 'google-cloud') {
     // Always clear the cache for now, while things are changing.
-   cache.clearCache();
+    cache.clearCache();
   }
 }
 
@@ -103,22 +104,22 @@ function track(action, time) {
 }
 
 app.get('/render/:url(*)', async(request, response) => {
-    if (isRestricted(request.params.url)) {
-      response.status(403).send('Render request forbidden, domain excluded');
-      return;
-    }
+  if (isRestricted(request.params.url)) {
+    response.status(403).send('Render request forbidden, domain excluded');
+    return;
+  }
 
-    try {
-      const start = now();
-      const result = await renderer.serialize(request.params.url, request.query, config);
-      response.set('x-renderer', 'rendertron');
-      response.status(result.status).send(result.body);
-      track('render', now() - start);
-    } catch (err) {
-      response.status(400).send('Cannot render requested URL');
-      console.error('Cannot render requested URL');
-      console.error(err);
-    }
+  try {
+    const start = now();
+    const result = await renderer.serialize(request.params.url, request.query, config);
+    response.set('x-renderer', 'rendertron');
+    response.status(result.status).send(result.body);
+    track('render', now() - start);
+  } catch (err) {
+    response.status(400).send('Cannot render requested URL');
+    console.error('Cannot render requested URL');
+    console.error(err);
+  }
 });
 
 app.get('/screenshot/:url(*)', async(request, response) => {
