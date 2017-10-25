@@ -37,7 +37,7 @@ const PORT = process.env.PORT || '3000';
 
 // google-cloud => using google-cloud/datastore for caching
 // elastiCache => using AWS ElastiCache for caching
-const cacheMode = 'elastiCache';
+const cacheMode = 'google-cloud';
 
 let config = {};
 
@@ -48,14 +48,14 @@ if (fs.existsSync(CONFIG_PATH)) {
 }
 
 // Only start a cache if configured and not in testing.
-//if (!module.parent && !!config['cache']) {
+if (!module.parent && !!config['cache']) {
   app.get('/render/:url(*)', cache.middleware(cacheMode));
-//  app.get('/screenshot/:url(*)', cache.middleware());
-//  if (cacheMode == 'google-cloud'){
+  app.get('/screenshot/:url(*)', cache.middleware());
+  if (cacheMode == 'google-cloud'){
     //Always clear the cache for now, while things are changing.
-//    cache.clearCache();
-//  }
-//}
+    cache.clearCache();
+  }
+}
 
 // Allows the config to be overriden
 app.setConfig = (newConfig) => {
