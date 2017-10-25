@@ -12,7 +12,7 @@ const _ = require('lodash');
 
 // AWS ElastiCache with redis cluster mode OFF
 // uncomment the lines below and replace the host with your node endpoint
-const redisClient = new redis({host:'localhost',port:6379});
+const redisClient = new redis({host: 'localhost', port: 6379});
 
 let redisReady = false;
 
@@ -35,7 +35,7 @@ class ElastiCache {
    * @param {String} headers
    * @param {String} payload
    */
-  async cacheContent (key, headers, payload) {
+  async cacheContent(key, headers, payload) {
     const pagePayload = JSON.stringify(payload);
     const pageHeaders = JSON.stringify(headers);
 
@@ -51,7 +51,7 @@ class ElastiCache {
     ];
 
     // put the render result into cache
-    await redisClient.hmset(params, function(err, reply){
+    await redisClient.hmset(params, function(err, reply) {
       if (err) {
         console.error(err);
       } else {
@@ -63,8 +63,8 @@ class ElastiCache {
         // let start = Math.floor(moment.tz('America/New_York').valueOf()/1000);
         // let expirationTime = end - start + Math.floor(Math.random()*3600);
 
-        redisClient.expire(key, expirationTime, function (err, reply) {
-          if (err){
+        redisClient.expire(key, expirationTime, function(err, reply) {
+          if (err) {
             console.error(err);
           };
         });
@@ -80,8 +80,8 @@ class ElastiCache {
   async getContent(key) {
     if (redisReady) {
       return redisClient.hgetall(key)
-        .then(function (result) {
-          if (!_.isEmpty(result)){
+        .then(function(result) {
+          if (!_.isEmpty(result)) {
             let headers = JSON.parse(result.headers);
             let payload = JSON.parse(result.payload);
             if (payload && typeof(payload) == 'object' && payload.type == 'Buffer')
@@ -90,7 +90,7 @@ class ElastiCache {
           }
           return false;
         })
-        .catch(function (error) {
+        .catch(function(error) {
           console.error(error);
         });
     }

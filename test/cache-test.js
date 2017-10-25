@@ -25,7 +25,7 @@ const cache = require('../src/cache.js');
 const app = express();
 const server = request(app);
 
-app.use(cache.middleware());
+app.use(cache.middleware('google-cloud'));
 
 let handlerCalledCount = 0;
 
