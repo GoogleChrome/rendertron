@@ -48,6 +48,7 @@ class Cache {
 
   /**
    * Returns middleware function.
+   * @param {String} cacheMode
    * @return {function}
    */
   middleware(cacheMode) {
@@ -62,11 +63,11 @@ class Cache {
         }
       }
 
-      if (cacheMode === 'elastiCache'){
+      if (cacheMode === 'elastiCache') {
         const key = request.url;
         const results = await elastiCache.getContent(key);
 
-        if (results){
+        if (results) {
           const {headers, payload} = results;
           response.set(headers);
           response.send(payload);
@@ -108,9 +109,9 @@ class Cache {
       response.end = async function(content, ...args) {
         if (response.statusCode == 200) {
           accumulateContent(content);
-          if (cacheMode === 'google-cloud'){
+          if (cacheMode === 'google-cloud') {
             await this.cacheContent(key, response.getHeaders(), body);
-          } else if (cacheMode === 'elastiCache'){
+          } else if (cacheMode === 'elastiCache') {
             await elastiCache.cacheContent(request.url, response.getHeaders(), body);
           }
         }

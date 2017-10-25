@@ -51,8 +51,8 @@ if (fs.existsSync(CONFIG_PATH)) {
 if (!module.parent && !!config['cache']) {
   app.get('/render/:url(*)', cache.middleware(cacheMode));
   app.get('/screenshot/:url(*)', cache.middleware());
-  if (cacheMode == 'google-cloud'){
-    //Always clear the cache for now, while things are changing.
+  if (cacheMode == 'google-cloud') {
+    // Always clear the cache for now, while things are changing.
     cache.clearCache();
   }
 }
