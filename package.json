@@ -23,6 +23,9 @@
     "chrome-remote-interface": "^0.24.1",
     "compression": "^1.7.0",
     "express": "^4.15.2",
+    "ioredis": "^3.2.1",
+    "lodash": "^4.17.4",
+    "moment-timezone": "^0.5.13",
     "performance-now": "^2.1.0",
     "progress-bar-element": "^2.0.1",
     "uuid": "^3.1.0"

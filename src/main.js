@@ -35,6 +35,10 @@ const CONFIG_PATH = path.resolve(__dirname, '../config.json');
 const PROGRESS_BAR_PATH = path.resolve(__dirname, '../node_modules/progress-bar-element/progress-bar.html');
 const PORT = process.env.PORT || '3000';
 
+// google-cloud => using google-cloud/datastore for caching
+// elastiCache => using AWS ElastiCache for caching
+const cacheMode = 'elastiCache';
+
 let config = {};
 
 // Load config from config.json if it exists.
@@ -44,12 +48,14 @@ if (fs.existsSync(CONFIG_PATH)) {
 }
 
 // Only start a cache if configured and not in testing.
-if (!module.parent && !!config['cache']) {
-  app.get('/render/:url(*)', cache.middleware());
-  app.get('/screenshot/:url(*)', cache.middleware());
-  // Always clear the cache for now, while things are changing.
-  cache.clearCache();
-}
+//if (!module.parent && !!config['cache']) {
+  app.get('/render/:url(*)', cache.middleware(cacheMode));
+//  app.get('/screenshot/:url(*)', cache.middleware());
+//  if (cacheMode == 'google-cloud'){
+    //Always clear the cache for now, while things are changing.
+//    cache.clearCache();
+//  }
+//}
 
 // Allows the config to be overriden
 app.setConfig = (newConfig) => {
@@ -97,22 +103,22 @@ function track(action, time) {
 }
 
 app.get('/render/:url(*)', async(request, response) => {
-  if (isRestricted(request.params.url)) {
-    response.status(403).send('Render request forbidden, domain excluded');
-    return;
-  }
+    if (isRestricted(request.params.url)) {
+      response.status(403).send('Render request forbidden, domain excluded');
+      return;
+    }
 
-  try {
-    const start = now();
-    const result = await renderer.serialize(request.params.url, request.query, config);
-    response.set('x-renderer', 'rendertron');
-    response.status(result.status).send(result.body);
-    track('render', now() - start);
-  } catch (err) {
-    response.status(400).send('Cannot render requested URL');
-    console.error('Cannot render requested URL');
-    console.error(err);
-  }
+    try {
+      const start = now();
+      const result = await renderer.serialize(request.params.url, request.query, config);
+      response.set('x-renderer', 'rendertron');
+      response.status(result.status).send(result.body);
+      track('render', now() - start);
+    } catch (err) {
+      response.status(400).send('Cannot render requested URL');
+      console.error('Cannot render requested URL');
+      console.error(err);
+    }
 });
 
 app.get('/screenshot/:url(*)', async(request, response) => {
