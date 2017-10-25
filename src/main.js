@@ -53,7 +53,7 @@ if (!module.parent && !!config['cache']) {
   app.get('/screenshot/:url(*)', cache.middleware());
   if (cacheMode == 'google-cloud') {
     // Always clear the cache for now, while things are changing.
-    cache.clearCache();
+   cache.clearCache();
   }
 }
 

@@ -6,13 +6,17 @@ const _ = require('lodash');
 
 // AWS ElastiCache with redis cluster mode
 // uncomment the lines below and replace the host with your configuration endpoint
+// change lazyConnect to true if you want redis client to connect to the redis server as soon as it's created
+// with lazyConnect: true, it will only connect when running query against the redis database
 // const redisClient = new redis.Cluster([
-//   {host: 'your-elastiCache-configuration-endpoint', port: 6379}
+//   {host: 'your-elastiCache-configuration-endpoint', port: 6379, lazyConnect: true}
 // ]);
 
 // AWS ElastiCache with redis cluster mode OFF
 // uncomment the lines below and replace the host with your node endpoint
-const redisClient = new redis({host: 'localhost', port: 6379});
+// change lazyConnect to true if you want redis client to connect to the redis server as soon as it's created
+// with lazyConnect: true, it will only connect when running query against the redis database
+const redisClient = new redis({host: 'localhost', port: 6379, lazyConnect: true});
 
 let redisReady = false;
 
