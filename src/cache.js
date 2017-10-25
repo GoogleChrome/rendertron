@@ -110,6 +110,7 @@ class Cache {
         if (response.statusCode == 200) {
           accumulateContent(content);
           if (cacheMode === 'google-cloud') {
+            const key = datastore.key(['Page', request.url]);
             await this.cacheContent(key, response.getHeaders(), body);
           } else if (cacheMode === 'elastiCache') {
             await elastiCache.cacheContent(request.url, response.getHeaders(), body);
