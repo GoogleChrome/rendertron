@@ -69,12 +69,12 @@ class Cache {
        * @param {String} resultPayload
        * @return {object}
        */
-      function parsingContent(resultHeaders, resultPayload){
+      function parsingContent(resultHeaders, resultPayload) {
         let headers = JSON.parse(resultHeaders);
         let payload = JSON.parse(resultPayload);
         if (payload && typeof(payload) == 'object' && payload.type == 'Buffer')
           payload = new Buffer(payload);
-        return {headers, payload}
+        return {headers, payload};
       }
 
       if (cacheMode === 'elastiCache') {
