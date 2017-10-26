@@ -63,12 +63,26 @@ class Cache {
         }
       }
 
+      /**
+       * Parse the headers and payload
+       * @param {String} resultHeaders
+       * @param {String} resultPayload
+       * @return {object}
+       */
+      function parsingContent(resultHeaders, resultPayload){
+        let headers = JSON.parse(resultHeaders);
+        let payload = JSON.parse(resultPayload);
+        if (payload && typeof(payload) == 'object' && payload.type == 'Buffer')
+          payload = new Buffer(payload);
+        return {headers, payload}
+      }
+
       if (cacheMode === 'elastiCache') {
         const key = request.url;
-        const results = await elastiCache.getContent(key);
+        const result = await elastiCache.getContent(key);
 
-        if (results) {
-          const {headers, payload} = results;
+        if (result) {
+          const {headers, payload} = parsingContent(result.headers, result.payload);
           response.set(headers);
           response.send(payload);
           return;
@@ -82,12 +96,9 @@ class Cache {
         if (results.length && results[0] != undefined) {
           // Serve cached content if its not expired.
           if (results[0].expires.getTime() >= new Date().getTime()) {
-            const headers = JSON.parse(results[0].headers);
+            const {headers, payload} = parsingContent(results[0].headers, results[0].payload);
             response.set(headers);
             response.set('x-rendertron-cached', results[0].saved.toUTCString());
-            let payload = JSON.parse(results[0].payload);
-            if (payload && typeof(payload) == 'object' && payload.type == 'Buffer')
-              payload = new Buffer(payload);
             response.send(payload);
             return;
           }

@@ -90,11 +90,7 @@ class ElastiCache {
       return redisClient.hgetall(key)
         .then(function(result) {
           if (!_.isEmpty(result)) {
-            let headers = JSON.parse(result.headers);
-            let payload = JSON.parse(result.payload);
-            if (payload && typeof(payload) == 'object' && payload.type == 'Buffer')
-              payload = new Buffer(payload);
-            return {headers, payload};
+            return result;
           }
           return false;
         })
