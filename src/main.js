@@ -28,7 +28,7 @@ const now = require('performance-now');
 const uuidv4 = require('uuid/v4');
 const cache = require('./cache');
 const renderer = require('./renderer');
-const dotenv = require('dotenv').config();
+require('dotenv').config();
 
 const app = express();
 

@@ -1,6 +1,6 @@
 const redis = require('ioredis');
 const _ = require('lodash');
-const dotenv = require('dotenv').config();
+require('dotenv').config();
 
 const host = process.env.ELASTICACHE_CONFIGURATION_ENDPOINT || 'localhost';
 const lazyConnect = process.env.LAZY_CONNECT == 'false' ? false : true;
