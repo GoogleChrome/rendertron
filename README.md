@@ -79,12 +79,16 @@ are no outstanding network requests and that the page has had ample time to rend
 There is a hard limit of 10 seconds for rendering. Ensure you don't hit this budget by ensuring
 your application is rendered well before the budget expires.
 
-### Explicit rendering event
+### Explicit rendering flag
 In some cases, the auto loading function may be insufficient, for example if there is content
-being streamed on the page. To explicitly signal when the page is visually complete, fire an
-event as follows:
+being streamed on the page. To explicitly signal when the page is visually complete, set the `window.renderComplete` flag. Add this script in your initial response:
+```html
+<script>
+  window.renderComplete = false;
+</script>
+When rendering is complete, set the flag to `true`.
 ```js
-  myElement.dispatchEvent(new Event('render-complete', { bubbles: true, composed: true}));
+  window.renderComplete = true;
 ```
 
 ### Web components

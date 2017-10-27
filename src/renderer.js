@@ -18,6 +18,9 @@
 
 const CDP = require('chrome-remote-interface');
 
+const LOG_WAITING_FOR_FLAG = 'Rendertron: Waiting for rendering flag';
+const LOG_RENDER_COMPLETE = 'Rendertron: Rendering complete';
+
 class Renderer {
   _loadPage(client, url, options, config) {
     /**
@@ -31,11 +34,17 @@ class Renderer {
     }
 
     /**
-     * Listens for the 'render-complete' event.
+     * Listens for changes to the 'renderComplete' flag.
      */
-    function listenForCompletionEvent() {
-      document.addEventListener('render-complete', () => {
-        console.log('Rendering complete');
+    function listenToCompletionFlag() {
+      Object.defineProperty(window, 'renderComplete', {
+        set: function(value) {
+          if (value == false) {
+            console.log(LOG_WAITING_FOR_FLAG);
+          } else if (value == true) {
+            console.log(LOG_RENDER_COMPLETE);
+          }
+        }
       });
     }
 
@@ -62,7 +71,7 @@ class Renderer {
       }
 
       // Add hook for completion event.
-      Page.addScriptToEvaluateOnLoad({scriptSource: `(${listenForCompletionEvent.toString()})()`});
+      Page.addScriptToEvaluateOnLoad({scriptSource: `(${listenToCompletionFlag.toString()})()`});
 
       if (!!config['debug']) {
         Console.messageAdded((event) => {
@@ -128,9 +137,19 @@ class Renderer {
         triggerTimeBudget();
       };
 
+      // Check if an explicit `renderComplete` flag is being used.
+      let waitForFlag = false;
+      Console.messageAdded((event) => {
+        if (event.message.text === LOG_WAITING_FOR_FLAG) {
+          waitForFlag = true;
+        } else if (event.message.text === LOG_RENDER_COMPLETE) {
+          pageReady();
+        }
+      });
+
       let timeBudgetStarted = false;
       let triggerTimeBudget = () => {
-        if (timeBudgetStarted)
+        if (timeBudgetStarted || waitForFlag)
           return;
 
         // Set a virtual time budget of 5 seconds for script/rendering. Once the page is
@@ -164,13 +183,6 @@ class Renderer {
           Outstanding network requests: ${outstandingRequests.size}`);
         pageReady();
       }, 10000);
-
-      // Listen for the message that signals that rendering event was fired.
-      Console.messageAdded((event) => {
-        if (event.message.text === 'Rendering complete') {
-          pageReady();
-        }
-      });
     });
   }
 
