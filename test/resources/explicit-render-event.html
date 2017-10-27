@@ -14,9 +14,12 @@ License for the specific language governing permissions and limitations under
 the License.
 -->
 <script>
+  window.renderComplete = false;
+</script>
+<script>
   setTimeout(() => {
     document.body.textContent = 'async loaded';
-    document.body.dispatchEvent(new Event('render-complete', { bubbles: true, composed: true}));
+    window.renderComplete = true;
   }, 5000);
   setTimeout(() => {
     document.body.textContent = 'should not be reached';
