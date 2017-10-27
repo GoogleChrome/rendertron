@@ -1,0 +1,18 @@
+#!/usr/bin/env node
+
+'use strict';
+
+process.title = 'rendertron';
+
+var semver = require('semver');
+
+if (!semver.satisfies(process.version, '>=7')) {
+  console.log('Rendertron requires Node 7+');
+  process.exit(1);
+}
+
+require('../src/main.js').then((app) => {
+  app.listen(3000, function() {
+    console.log('Listening on port', 3000);
+  });
+});
