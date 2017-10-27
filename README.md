@@ -1,4 +1,4 @@
-# Rendertron [![Build status](https://img.shields.io/travis/GoogleChrome/rendertron.svg?style=flat-square)](https://travis-ci.org/GoogleChrome/rendertron)
+# Rendertron [![Build status](https://img.shields.io/travis/GoogleChrome/rendertron.svg?style=flat-square)](https://travis-ci.org/GoogleChrome/rendertron) [![NPM rendertron package](https://img.shields.io/npm/v/rendertron.svg)](https://npmjs.org/package/rendertron)
 
 > Rendertron is a dockerized, headless Chrome rendering solution designed to render & serialise web pages on the fly.
 
@@ -119,9 +119,9 @@ This project requires Node 7+ and Docker ([installation instructions](https://do
 project uses the [Google Cloud Platform SDK](https://cloud.google.com/sdk/).
 
 ### Installing
-Install node dependencies using:
+Install rendertron:
 ```bash
-npm install
+npm install -g rendertron
 ```
 
 Install Chrome:
@@ -132,7 +132,7 @@ apt-get install google-chrome
 ### Running locally
 With a local instance of Chrome installed, you can start the server locally:
 ```bash
-npm start
+rendertron
 ```
 
 To test a rendering, send a request:

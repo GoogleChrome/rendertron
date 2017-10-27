@@ -1,11 +1,14 @@
 {
-  "name": "bot-render",
-  "version": "1.0.0",
+  "name": "rendertron",
+  "version": "1.0.1",
   "description": "Renders webpages using headless Chrome for usage by bots",
+  "license": "Apache-2.0",
+  "repository": "https://github.com/GoogleChrome/rendertron",
   "engines": {
     "node": ">=7"
   },
   "main": "src/main.js",
+  "bin": "bin/rendertron",
   "scripts": {
     "start": "node src/main.js",
     "lint": "eslint src/*.js test/*.js",
@@ -15,7 +18,6 @@
     "start-emulator": "(gcloud beta emulators datastore start --project emulator-project &) 2>&1 | grep -m1 'now running'",
     "test-cache": "yarn start-emulator && $(gcloud beta emulators datastore env-init) && export GCLOUD_PROJECT='emulator-project' && ava test/cache-test.js"
   },
-  "license": "Apache-2.0",
   "dependencies": {
     "@google-cloud/datastore": "^1.0.6",
     "@webcomponents/webcomponentsjs": "^1.0.3",
