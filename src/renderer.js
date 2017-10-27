@@ -36,7 +36,7 @@ class Renderer {
     /**
      * Listens for changes to the 'renderComplete' flag.
      */
-    function listenForCompletionEvent() {
+    function listenToCompletionFlag() {
       Object.defineProperty(window, 'renderComplete', {
         set: function(value) {
           if (value == false) {
@@ -71,7 +71,7 @@ class Renderer {
       }
 
       // Add hook for completion event.
-      Page.addScriptToEvaluateOnLoad({scriptSource: `(${listenForCompletionEvent.toString()})()`});
+      Page.addScriptToEvaluateOnLoad({scriptSource: `(${listenToCompletionFlag.toString()})()`});
 
       if (!!config['debug']) {
         Console.messageAdded((event) => {
