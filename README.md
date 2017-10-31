@@ -86,7 +86,8 @@ being streamed on the page. To explicitly signal when the page is visually compl
 <script>
   window.renderComplete = false;
 </script>
-When rendering is complete, set the flag to `true`.
+```
+When rendering is complete, set the flag to `true`:
 ```js
   window.renderComplete = true;
 ```
