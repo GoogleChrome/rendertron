@@ -160,7 +160,12 @@ class Renderer {
         }
       };
 
-      let pageReady = async() => {
+      let pageReady = async function pageReadyFn() {
+        // Synchronously clear timeout & pageReady() to prevent it from
+        // being called again.
+        pageReady = () => {};
+        clearTimeout(maxTimeout);
+
         let result = await Runtime.evaluate({expression: `(${getStatusCode.toString()})()`});
 
         // Original status codes which aren't 200 always return with that status code,
@@ -169,8 +174,6 @@ class Renderer {
           statusCode = result.result.value;
 
         resolve({status: statusCode || 200});
-        pageReady = () => {};
-        clearTimeout(maxTimeout);
       };
 
       Emulation.virtualTimeBudgetExpired(pageReady);
