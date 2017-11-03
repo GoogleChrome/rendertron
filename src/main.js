@@ -97,6 +97,7 @@ function track(action, time) {
 }
 
 if (!!config['debug']) {
+  console.log(`Rendertron configured with ${JSON.stringify(config, null, 2)}`);
   app.get('/render/:url(*)', (req, res, next) => {
     console.log('Render requested for ' + req.params.url);
   });
