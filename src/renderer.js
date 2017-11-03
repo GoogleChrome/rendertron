@@ -40,9 +40,9 @@ class Renderer {
       Object.defineProperty(window, 'renderComplete', {
         set: function(value) {
           if (value == false) {
-            console.log(LOG_WAITING_FOR_FLAG);
+            console.log('Rendertron: Waiting for rendering flag');
           } else if (value == true) {
-            console.log(LOG_RENDER_COMPLETE);
+            console.log('Rendertron: Rendering complete');
           }
         }
       });
@@ -71,7 +71,7 @@ class Renderer {
       }
 
       // Add hook for completion event.
-      Page.addScriptToEvaluateOnLoad({scriptSource: `(${listenToCompletionFlag.toString()})()`});
+      Page.addScriptToEvaluateOnNewDocument({source: `(${listenToCompletionFlag.toString()})()`});
 
       if (!!config['debug']) {
         Console.messageAdded((event) => {
