@@ -183,3 +183,17 @@ test('unknown url fails safely on screenshot', async(t) => {
   const res = await server.get(`/render/http://unknown.blah.com`);
   t.is(res.status, 400);
 });
+
+test('pdf is a pdf', async(t) => {
+  const server = await createServer();
+  let res = await server.get(`/pdf/${testBase}basic-script.html`);
+  t.is(res.status, 200);
+  t.is(res.header['content-type'], 'application/pdf');
+  let length = parseInt(res.header['content-length']);
+  t.is(res.body.length, parseInt(res.header['content-length']));
+
+  res = await server.get(`/pdf/${testBase}basic-script.html?landscape`);
+  t.is(res.status, 200);
+  t.is(res.header['content-type'], 'application/pdf');
+  t.is(length, parseInt(res.header['content-length']));
+});

@@ -20,6 +20,7 @@ to be used as a production endpoint. You can use it, but there are no uptime gua
 - [API](#api)
   - [Render](#render)
   - [Screenshot](#screenshot)
+  - [PDF](#pdf)
 - [FAQ](#faq)
   - [Query parameters](#query-parameters)
   - [Auto detecting loading function](#auto-detecting-loading-function)
@@ -62,6 +63,24 @@ The `screenshot` endpoint can be used to verify that your page is rendering corr
 Available options:
  * `width` default `1000` - used to set the viewport width (max 2000)
  * `height` default `1000` - used to set the viewport height (max 2000)
+
+### PDF
+```
+/pdf/<url>
+```
+
+The `pdf` endpoint will render your page and print it to PDF. Available options:
+ * `landscape` boolean, default `false`
+ * `displayHeaderFooter` boolean, default `false`
+ * `printBackground` boolean, default `false`
+ * `scale` number, default `1`
+ * `paperWidth` number in inches, default `8.5in`
+ * `paperHeight` number in inches, default `11in`
+ * `marginTop` number in inches, default `1cm`
+ * `marginBottom` number in inches, default `1cm`
+ * `marginLeft` number in inches, default `1cm`
+ * `marginRight` number in inches, default `1cm`
+ * `pageRanges` string `1-5, 8, 11-13`
 
 ## FAQ
 
@@ -207,4 +226,3 @@ root. Available configuration options:
  * `renderOnly` - restrict the endpoint to only service requests for certain domains. Specified
  as an array of strings. eg. `['http://render.only.this.domain']`. This is a strict prefix
  match, so ensure you specify the exact protocols that will be used (eg. http, https).
-

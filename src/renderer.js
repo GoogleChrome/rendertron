@@ -260,6 +260,51 @@ class Renderer {
       }
     });
   }
+
+  printToPDF(url, options, config) {
+    return new Promise(async(resolve, reject) => {
+      function toNumber(string) {
+        const num = parseFloat(string);
+        return num !== NaN ? num : undefined;
+      }
+
+      function toBoolean(string) {
+        return string === '' || string === 'true' || string === true;
+      }
+
+      const tab = await CDP.New({port: config.port});
+      const client = await CDP({tab: tab, port: config.port});
+
+      const {Animation, Page} = client;
+
+      // Accelerate global animation timeline so that loading animations
+      // are hopefully complete by the time we take the screenshot.
+      Animation.setPlaybackRate({playbackRate: 1000});
+
+      try {
+        await this._loadPage(client, url, options, config);
+        let {data} = await Page.printToPDF({
+          landscape: toBoolean(options.landscape),
+          displayHeaderFooter: toBoolean(options.displayHeaderFooter),
+          printBackground: toBoolean(options.printBackground),
+          scale: toNumber(options.scale),
+          paperWidth: toNumber(options.paperWidth),
+          paperHeight: toNumber(options.paperHeight),
+          marginTop: toNumber(options.marginTop),
+          marginBottom: toNumber(options.marginBottom),
+          marginLeft: toNumber(options.marginLeft),
+          marginRight: toNumber(options.marginRight),
+          pageRanges: options.pageRanges,
+          ignoreInvalidPageRanges: true,
+        });
+
+        CDP.Close({id: client.target.id, port: config.port});
+        resolve(data);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
 }
 
 module.exports = new Renderer();
