@@ -22,6 +22,9 @@ RUN /usr/local/bin/install_node '>=7.6'
 
 COPY . /app/
 
+ADD thirdfonts /usr/share/fonts/thirdfonts
+RUN fc-cache -fv
+
 # Add botrender as a user
 RUN groupadd -r botrender && useradd -r -g botrender -G audio,video botrender \
     && mkdir -p /home/botrender && chown -R botrender:botrender /home/botrender \
