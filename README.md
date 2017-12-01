@@ -1,4 +1,4 @@
-# Rendertron [![Build status](https://img.shields.io/travis/GoogleChrome/rendertron.svg?style=flat-square)](https://travis-ci.org/GoogleChrome/rendertron) [![NPM rendertron package](https://img.shields.io/npm/v/rendertron.svg)](https://npmjs.org/package/rendertron)
+# Rendertron [![Build status](https://travis-ci.org/GoogleChrome/rendertron.svg?branch=master)](https://travis-ci.org/GoogleChrome/rendertron) [![NPM rendertron package](https://img.shields.io/npm/v/rendertron.svg)](https://npmjs.org/package/rendertron)
 
 > Rendertron is a dockerized, headless Chrome rendering solution designed to render & serialise web pages on the fly.
 
@@ -207,4 +207,3 @@ root. Available configuration options:
  * `renderOnly` - restrict the endpoint to only service requests for certain domains. Specified
  as an array of strings. eg. `['http://render.only.this.domain']`. This is a strict prefix
  match, so ensure you specify the exact protocols that will be used (eg. http, https).
-
