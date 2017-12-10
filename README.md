@@ -62,6 +62,7 @@ The `screenshot` endpoint can be used to verify that your page is rendering corr
 Available options:
  * `width` default `1000` - used to set the viewport width (max 2000)
  * `height` default `1000` - used to set the viewport height (max 2000)
+ * `quality` default `60` - used to set the quality of picture (max 100 and min 60)
 
 ## FAQ
 
