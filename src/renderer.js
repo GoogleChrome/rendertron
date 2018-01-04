@@ -81,12 +81,6 @@ class Renderer {
       // Add hook for completion event.
       Page.addScriptToEvaluateOnNewDocument({source: `(${listenToCompletionFlag.toString()})()`});
 
-      if (!!config['debug']) {
-        Console.messageAdded((event) => {
-          console.log(`[${event.message.level}] ${event.message.text}`);
-        });
-      }
-
       Page.navigate({url: url}).catch(onReject);
 
       // Check that all outstanding network requests have finished loading.
@@ -152,6 +146,8 @@ class Renderer {
           waitForFlag = true;
         } else if (event.message.text === LOG_RENDER_COMPLETE) {
           pageReady();
+        } else if (!!config['debug']) {
+          console.log(`[${event.message.level}] ${event.message.text}`);
         }
       });
 

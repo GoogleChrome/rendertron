@@ -100,9 +100,11 @@ if (!!config['debug']) {
   console.log(`Rendertron configured with ${JSON.stringify(config, null, 2)}`);
   app.get('/render/:url(*)', (req, res, next) => {
     console.log('Render requested for ' + req.params.url);
+    next();
   });
   app.get('/screenshot/:url(*)', (req, res, next) => {
     console.log('Screenshot requested for ' + req.params.url);
+    next();
   });
 }
 
