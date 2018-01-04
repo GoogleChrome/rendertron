@@ -22,7 +22,7 @@ const LOG_WAITING_FOR_FLAG = 'Rendertron: Waiting for rendering flag';
 const LOG_RENDER_COMPLETE = 'Rendertron: Rendering complete';
 
 class Renderer {
-  _loadPage(client, url, options, config) {
+  _loadPage(client, url, options, config, userAgent) {
     /**
      * Finds any meta tags setting the status code.
      * @return {?number} status code
@@ -63,6 +63,8 @@ class Renderer {
         Page.enable(),
         Runtime.enable(),
         Console.enable(),
+        Network.setUserAgentOverride({'userAgent': userAgent}),
+        Network.clearBrowserCache(),
         Network.enable(),
       ]);
 
@@ -207,7 +209,7 @@ class Renderer {
     }
   }
 
-  serialize(url, options, config) {
+  serialize(url, options, config, userAgent) {
     /**
      * Executed on the page after the page has loaded. Strips script and
      * import tags to prevent further loading of resources.
@@ -235,7 +237,7 @@ class Renderer {
       const {Runtime} = client;
 
       try {
-        let renderResult = await this._loadPage(client, url, options, config);
+        let renderResult = await this._loadPage(client, url, options, config, userAgent);
 
         await Runtime.evaluate({expression: `(${stripPage.toString()})()`});
         await Runtime.evaluate({expression: `(${injectBaseHref.toString()})('${url}')`});
@@ -252,7 +254,7 @@ class Renderer {
     });
   }
 
-  captureScreenshot(url, options, config) {
+  captureScreenshot(url, options, config, userAgent) {
     return new Promise(async(resolve, reject) => {
       const tab = await CDP.New({port: config.port});
       const client = await CDP({tab: tab, port: config.port});
@@ -269,7 +271,7 @@ class Renderer {
       await Emulation.setVisibleSize({width: width, height: height});
 
       try {
-        await this._loadPage(client, url, options, config);
+        await this._loadPage(client, url, options, config, userAgent);
         let {data} = await Page.captureScreenshot({format: 'jpeg', quality: 60});
 
         await this.closeConnection(client.target.id, config.port);

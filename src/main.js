@@ -114,7 +114,7 @@ app.get('/render/:url(*)', async(request, response) => {
 
   try {
     const start = now();
-    const result = await renderer.serialize(request.params.url, request.query, config);
+    const result = await renderer.serialize(request.params.url, request.query, config, request.headers['user-agent']);
     response.set('x-renderer', 'rendertron');
     response.status(result.status).send(result.body);
     track('render', now() - start);
@@ -133,7 +133,7 @@ app.get('/screenshot/:url(*)', async(request, response) => {
 
   try {
     const start = now();
-    const result = await renderer.captureScreenshot(request.params.url, request.query, config);
+    const result = await renderer.captureScreenshot(request.params.url, request.query, config, request.headers['user-agent']);
     const img = new Buffer(result, 'base64');
     response.set({
       'Content-Type': 'image/jpeg',
