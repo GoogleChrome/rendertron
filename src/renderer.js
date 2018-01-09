@@ -261,12 +261,18 @@ class Renderer {
 
       const width = Math.min(2000, parseInt(options['width']) || 1000);
       const height = Math.min(2000, parseInt(options['height']) || 1000);
+
+      let quality = parseInt(options['quality']) || 60;
+
+      quality = Math.min(100, quality);
+      quality = Math.max(60, quality);
+
       await Emulation.setDeviceMetricsOverride({width: width, height: height, mobile: true, deviceScaleFactor: 1, fitWindow: false, screenWidth: width, screenHeight: height});
       await Emulation.setVisibleSize({width: width, height: height});
 
       try {
         await this._loadPage(client, url, options, config);
-        let {data} = await Page.captureScreenshot({format: 'jpeg', quality: 60});
+        let {data} = await Page.captureScreenshot({format: 'jpeg', quality: quality});
 
         await this.closeConnection(client.target.id, config.port);
         resolve(data);
