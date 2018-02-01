@@ -157,7 +157,7 @@ app.stop = async() => {
 };
 
 const appPromise = chromeLauncher.launch({
-  chromeFlags: ['--headless', '--disable-gpu'],
+  chromeFlags: ['--headless'],
   port: 0
 }).then((chrome) => {
   console.log('Chrome launched with debugging on port', chrome.port);
