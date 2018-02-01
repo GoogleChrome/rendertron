@@ -1,7 +1,7 @@
 # Dockerfile extending the generic Node image with application files for a
 # single application.
 FROM gcr.io/google_appengine/nodejs
-LABEL name="bot-render" \ 
+LABEL name="bot-render" \
       version="0.1" \
       description="Renders a webpage for bot consumption (not production ready)"
 
