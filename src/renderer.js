@@ -22,7 +22,7 @@ const LOG_WAITING_FOR_FLAG = 'Rendertron: Waiting for rendering flag';
 const LOG_RENDER_COMPLETE = 'Rendertron: Rendering complete';
 
 class Renderer {
-  _loadPage(client, url, options, config, userAgent) {
+  _loadPage(client, url, options, config) {
     /**
      * Finds any meta tags setting the status code.
      * @return {?number} status code
@@ -59,14 +59,22 @@ class Renderer {
 
       const {Page, Runtime, Network, Emulation, Console} = client;
 
-      await Promise.all([
+      let tasks = [
         Page.enable(),
         Runtime.enable(),
         Console.enable(),
-        Network.setUserAgentOverride({'userAgent': userAgent}),
         Network.clearBrowserCache(),
-        Network.enable(),
-      ]);
+        Network.enable()
+      ]
+
+      const mobileFlag = options['mobile'];
+
+      if (mobileFlag == '' || mobileFlag) {
+        const userAgent = 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Mobile Safari/537.36';
+        tasks.push(Network.setUserAgentOverride({'userAgent': userAgent}));
+      }
+
+      await Promise.all(tasks);
 
       // Inject the Shady DOM polyfill if web components v1 is used, so we can
       // serialize the page.
@@ -205,7 +213,7 @@ class Renderer {
     }
   }
 
-  serialize(url, options, config, userAgent) {
+  serialize(url, options, config) {
     /**
      * Executed on the page after the page has loaded. Strips script and
      * import tags to prevent further loading of resources.
@@ -233,7 +241,7 @@ class Renderer {
       const {Runtime} = client;
 
       try {
-        let renderResult = await this._loadPage(client, url, options, config, userAgent);
+        let renderResult = await this._loadPage(client, url, options, config);
 
         await Runtime.evaluate({expression: `(${stripPage.toString()})()`});
         await Runtime.evaluate({expression: `(${injectBaseHref.toString()})('${url}')`});
@@ -250,7 +258,7 @@ class Renderer {
     });
   }
 
-  captureScreenshot(url, options, config, userAgent) {
+  captureScreenshot(url, options, config) {
     return new Promise(async(resolve, reject) => {
       const tab = await CDP.New({port: config.port});
       const client = await CDP({tab: tab, port: config.port});
@@ -267,7 +275,7 @@ class Renderer {
       await Emulation.setVisibleSize({width: width, height: height});
 
       try {
-        await this._loadPage(client, url, options, config, userAgent);
+        await this._loadPage(client, url, options, config);
         let {data} = await Page.captureScreenshot({format: 'jpeg', quality: 60});
 
         await this.closeConnection(client.target.id, config.port);
