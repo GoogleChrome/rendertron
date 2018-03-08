@@ -1,6 +1,6 @@
 {
   "name": "rendertron",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Renders webpages using headless Chrome for usage by bots",
   "license": "Apache-2.0",
   "repository": "https://github.com/GoogleChrome/rendertron",
@@ -19,22 +19,22 @@
     "test-cache": "npm run start-emulator && $(gcloud beta emulators datastore env-init) && export GCLOUD_PROJECT='emulator-project' && ava test/cache-test.js"
   },
   "dependencies": {
-    "@google-cloud/datastore": "^1.0.6",
-    "@webcomponents/webcomponentsjs": "^1.0.3",
-    "chrome-launcher": "^0.8.0",
+    "@google-cloud/datastore": "^1.3.3",
+    "@webcomponents/webcomponentsjs": "^1.1.0",
+    "chrome-launcher": "^0.10.2",
     "chrome-remote-interface": "^0.24.1",
     "compression": "^1.7.0",
     "express": "^4.15.2",
     "performance-now": "^2.1.0",
     "progress-bar-element": "^2.0.1",
-    "semver": "^5.4.1",
-    "uuid": "^3.1.0"
+    "semver": "^5.5.0",
+    "uuid": "^3.2.1"
   },
   "devDependencies": {
     "ava": "^0.20.0",
-    "eslint": "^4.1.1",
+    "eslint": "^4.16.0",
     "eslint-config-google": "^0.8.0",
-    "nodemon": "^1.11.0",
+    "nodemon": "^1.14.11",
     "supertest": "^3.0.0"
   },
   "eslintConfig": {
