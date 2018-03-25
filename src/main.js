@@ -28,12 +28,17 @@ const now = require('performance-now');
 const uuidv4 = require('uuid/v4');
 const cache = require('./cache');
 const renderer = require('./renderer');
+require('dotenv').config();
 
 const app = express();
 
 const CONFIG_PATH = path.resolve(__dirname, '../config.json');
 const PROGRESS_BAR_PATH = path.resolve(__dirname, '../node_modules/progress-bar-element/progress-bar.html');
 const PORT = process.env.PORT || '3000';
+
+// google-cloud => using google-cloud/datastore for caching
+// elastiCache => using AWS ElastiCache for caching
+const cacheMode = process.env.CACHE_MODE || 'google-cloud';
 
 let config = {};
 
@@ -45,10 +50,12 @@ if (fs.existsSync(CONFIG_PATH)) {
 
 // Only start a cache if configured and not in testing.
 if (!module.parent && !!config['cache']) {
-  app.get('/render/:url(*)', cache.middleware());
+  app.get('/render/:url(*)', cache.middleware(cacheMode));
   app.get('/screenshot/:url(*)', cache.middleware());
-  // Always clear the cache for now, while things are changing.
-  cache.clearCache();
+  if (cacheMode == 'google-cloud') {
+    // Always clear the cache for now, while things are changing.
+    cache.clearCache();
+  }
 }
 
 // Allows the config to be overriden

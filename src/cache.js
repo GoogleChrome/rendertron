@@ -17,6 +17,7 @@
 'use strict';
 
 const datastore = require('@google-cloud/datastore')();
+const elastiCache = require('./elastiCache');
 
 class Cache {
   async clearCache() {
@@ -47,9 +48,10 @@ class Cache {
 
   /**
    * Returns middleware function.
+   * @param {String} cacheMode
    * @return {function}
    */
-  middleware() {
+  middleware(cacheMode) {
     return async function(request, response, next) {
       function accumulateContent(content) {
         if (typeof(content) === 'string') {
@@ -61,22 +63,45 @@ class Cache {
         }
       }
 
-      // Cache based on full URL. This means requests with different params are
-      // cached separately.
-      const key = datastore.key(['Page', request.url]);
-      const results = await datastore.get(key);
+      /**
+       * Parse the headers and payload
+       * @param {String} resultHeaders
+       * @param {String} resultPayload
+       * @return {object}
+       */
+      function parsingContent(resultHeaders, resultPayload) {
+        let headers = JSON.parse(resultHeaders);
+        let payload = JSON.parse(resultPayload);
+        if (payload && typeof(payload) == 'object' && payload.type == 'Buffer')
+          payload = new Buffer(payload);
+        return {headers, payload};
+      }
 
-      if (results.length && results[0] != undefined) {
-        // Serve cached content if its not expired.
-        if (results[0].expires.getTime() >= new Date().getTime()) {
-          const headers = JSON.parse(results[0].headers);
+      if (cacheMode === 'elastiCache') {
+        const key = request.url;
+        const result = await elastiCache.getContent(key);
+
+        if (result) {
+          const {headers, payload} = parsingContent(result.headers, result.payload);
           response.set(headers);
-          response.set('x-rendertron-cached', results[0].saved.toUTCString());
-          let payload = JSON.parse(results[0].payload);
-          if (payload && typeof(payload) == 'object' && payload.type == 'Buffer')
-            payload = new Buffer(payload);
           response.send(payload);
           return;
+        }
+      } else if (cacheMode === 'google-cloud') {
+        const key = datastore.key(['Page', request.url]);
+        const results = await datastore.get(key);
+
+        // Cache based on full URL. This means requests with different params are
+        // cached separately.
+        if (results.length && results[0] != undefined) {
+          // Serve cached content if its not expired.
+          if (results[0].expires.getTime() >= new Date().getTime()) {
+            const {headers, payload} = parsingContent(results[0].headers, results[0].payload);
+            response.set(headers);
+            response.set('x-rendertron-cached', results[0].saved.toUTCString());
+            response.send(payload);
+            return;
+          }
         }
       }
 
@@ -95,7 +120,12 @@ class Cache {
       response.end = async function(content, ...args) {
         if (response.statusCode == 200) {
           accumulateContent(content);
-          await this.cacheContent(key, response.getHeaders(), body);
+          if (cacheMode === 'google-cloud') {
+            const key = datastore.key(['Page', request.url]);
+            await this.cacheContent(key, response.getHeaders(), body);
+          } else if (cacheMode === 'elastiCache') {
+            await elastiCache.cacheContent(request.url, response.getHeaders(), body);
+          }
         }
         return methods.end.apply(response, [content].concat(args));
       }.bind(this);
