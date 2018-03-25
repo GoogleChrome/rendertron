@@ -59,12 +59,22 @@ class Renderer {
 
       const {Page, Runtime, Network, Emulation, Console} = client;
 
-      await Promise.all([
+      let tasks = [
         Page.enable(),
         Runtime.enable(),
         Console.enable(),
-        Network.enable(),
-      ]);
+        Network.clearBrowserCache(),
+        Network.enable()
+      ]
+
+      const mobileFlag = options['mobile'];
+
+      if (mobileFlag == '' || mobileFlag) {
+        const userAgent = 'Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Mobile Safari/537.36';
+        tasks.push(Network.setUserAgentOverride({'userAgent': userAgent}));
+      }
+
+      await Promise.all(tasks);
 
       // Inject the Shady DOM polyfill if web components v1 is used, so we can
       // serialize the page.
