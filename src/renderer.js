@@ -219,13 +219,13 @@ class Renderer {
      * @param {string} url - Requested URL to set as the base.
      */
     function injectBaseHref(url) {
-      const actuallyLocationUrl = window.location.protocol + "//" + window.location.host + "/"
+      const actuallyLocationUrl = window.location.protocol + '//' + window.location.host + '/';
       const firstBase = document.getElementsByTagName('base').length && document.getElementsByTagName('base')[0].href;
       if (firstBase && firstBase.search(actuallyLocationUrl) == 0) {
-        //It's base relative, relocate uri
+        // It's base relative, relocate uri
         const originalHost = url.substring(0, url.indexOf('/', 8));
-        const pathBase = firstBase.substring(firstBase.indexOf('/', 8))
-        document.getElementsByTagName('base')[0].href = originalHost + pathBase
+        const pathBase = firstBase.substring(firstBase.indexOf('/', 8));
+        document.getElementsByTagName('base')[0].href = originalHost + pathBase;
       }
       const base = document.createElement('base');
       base.setAttribute('href', url);
