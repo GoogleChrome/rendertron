@@ -240,7 +240,7 @@ class Renderer {
 
       try {
         let renderResult = await this._loadPage(client, url, options, config);
-        console.log("Chingo!!!")
+        
         await Runtime.evaluate({expression: `(${stripPage.toString()})()`});
         await Runtime.evaluate({expression: `(${injectBaseHref.toString()})('${url}')`});
 
