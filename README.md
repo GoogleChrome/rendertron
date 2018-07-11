@@ -149,7 +149,7 @@ npm run start
 After installing docker, build and run the docker image
 ```bash
 docker build -t rendertron . --no-cache=true
-docker run -it -p 8080:8080 --name rendertron-container rendertron
+docker run -d -p 8080:8080 --name rendertron-container rendertron
 ```
 
 Load the homepage in any browser:
