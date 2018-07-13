@@ -1,6 +1,5 @@
-import * as express from 'express';
 import * as compression from 'compression';
-
+import * as express from 'express';
 import * as puppeteer from 'puppeteer';
 
 export class Rendertron {
@@ -11,9 +10,13 @@ export class Rendertron {
   constructor() {
     this.app.use(compression());
 
-    this.app.get('/_ah/health', (_request:express.Request, response: express.Response) => response.send('OK'));
+    this.app.get(
+        '/_ah/health',
+        (_request: express.Request, response: express.Response) =>
+            response.send('OK'));
     this.app.get('/render/:url(*)', this.handleRenderRequest.bind(this));
-    this.app.get('/screenshot/:url(*)', this.handleScreenshotRequest.bind(this));
+    this.app.get(
+        '/screenshot/:url(*)', this.handleScreenshotRequest.bind(this));
   }
 
   async initialize(startServer = true) {
@@ -27,7 +30,9 @@ export class Rendertron {
     }
   }
 
-  async handleRenderRequest(request: express.Request, response: express.Response) {
+  async handleRenderRequest(
+      request: express.Request,
+      response: express.Response) {
     if (!this.renderer) {
       console.error(`No renderer yet`);
       return;
@@ -39,24 +44,22 @@ export class Rendertron {
     response.status(serialized.status).send(serialized.content);
   }
 
-  async handleScreenshotRequest(request:express.Request, response: express.Response) {
+  async handleScreenshotRequest(
+      request: express.Request,
+      response: express.Response) {
     if (!this.renderer) {
       console.error(`No renderer yet`);
       return;
     }
 
     const img = await this.renderer.screenshot(request.params.url);
-    response.set({
-      'Content-Type': 'image/jpeg',
-      'Content-Length': img.length
-    });
+    response.set({'Content-Type': 'image/jpeg', 'Content-Length': img.length});
     response.end(img);
   }
 }
 
 type SerializedResponse = {
-  status: number;
-  content: string;
+  status: number; content: string;
 }
 
 class Renderer {
@@ -66,12 +69,13 @@ class Renderer {
     this.browser = browser;
   }
 
-  async serialize(url: string):Promise<SerializedResponse> {
+  async serialize(url: string): Promise<SerializedResponse> {
     const page = await this.browser.newPage();
 
     const response = await page.goto(url, {waitUntil: 'networkidle0'});
     if (!response) {
-      // This should only occur when the page is about:blank. See https://github.com/GoogleChrome/puppeteer/blob/v1.5.0/docs/api.md#pagegotourl-options.
+      // This should only occur when the page is about:blank. See
+      // https://github.com/GoogleChrome/puppeteer/blob/v1.5.0/docs/api.md#pagegotourl-options.
       return {status: 200, content: ''};
     }
 
@@ -88,7 +92,8 @@ class Renderer {
     await page.goto(url, {waitUntil: 'networkidle0'});
 
     // Typings are out of date.
-    const buffer = await page.screenshot({type: 'jpeg', encoding: 'base64'} as any);
+    const buffer =
+        await page.screenshot({type: 'jpeg', encoding: 'base64'} as any);
     return buffer;
   }
 }
@@ -98,7 +103,7 @@ if (!module.parent) {
   rendertron.initialize();
 }
 
-async function logUncaughtError(error:Error) {
+async function logUncaughtError(error: Error) {
   console.error('Uncaught exception');
   console.error(error);
   // exceptionCount++;
@@ -107,7 +112,7 @@ async function logUncaughtError(error:Error) {
   //   console.log(`Detected ${exceptionCount} errors, shutting instance down`);
   //   if (config && config.chrome)
   //     await app.stop();
-    process.exit(1);
+  process.exit(1);
   // }exceptionCount++;
   // // Restart instance due to several failures.
   // if (exceptionCount > 5) {
