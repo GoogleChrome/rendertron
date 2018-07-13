@@ -13,6 +13,7 @@ export class Rendertron {
 
     this.app.get('/_ah/health', (_request:express.Request, response: express.Response) => response.send('OK'));
     this.app.get('/render/:url(*)', this.handleRenderRequest.bind(this));
+    this.app.get('/screenshot/:url(*)', this.handleScreenshotRequest.bind(this));
   }
 
   async initialize(startServer = true) {
@@ -35,8 +36,27 @@ export class Rendertron {
     const serialized = await this.renderer.serialize(request.params.url);
     // Mark the response as coming from Rendertron.
     response.set('x-renderer', 'rendertron');
-    response.send(serialized);
+    response.status(serialized.status).send(serialized.content);
   }
+
+  async handleScreenshotRequest(request:express.Request, response: express.Response) {
+    if (!this.renderer) {
+      console.error(`No renderer yet`);
+      return;
+    }
+
+    const img = await this.renderer.screenshot(request.params.url);
+    response.set({
+      'Content-Type': 'image/jpeg',
+      'Content-Length': img.length
+    });
+    response.end(img);
+  }
+}
+
+type SerializedResponse = {
+  status: number;
+  content: string;
 }
 
 class Renderer {
@@ -46,16 +66,30 @@ class Renderer {
     this.browser = browser;
   }
 
-  async serialize(url: string) {
+  async serialize(url: string):Promise<SerializedResponse> {
+    const page = await this.browser.newPage();
+
+    const response = await page.goto(url, {waitUntil: 'networkidle0'});
+    if (!response) {
+      // This should only occur when the page is about:blank. See https://github.com/GoogleChrome/puppeteer/blob/v1.5.0/docs/api.md#pagegotourl-options.
+      return {status: 200, content: ''};
+    }
+
+    const result = await page.evaluate('document.firstElementChild.outerHTML');
+
+    await page.close();
+    console.log(`response status is ${response.status()}`);
+    return {status: response.status(), content: result};
+  }
+
+  async screenshot(url: string): Promise<Buffer> {
     const page = await this.browser.newPage();
 
     await page.goto(url, {waitUntil: 'networkidle0'});
 
-    const response = await page.evaluate('document.firstElementChild.outerHTML');
-
-    await page.close();
-
-    return response;
+    // Typings are out of date.
+    const buffer = await page.screenshot({type: 'jpeg', encoding: 'base64'} as any);
+    return buffer;
   }
 }
 
