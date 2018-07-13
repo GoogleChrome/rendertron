@@ -11,11 +11,11 @@
   "bin": "bin/rendertron",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "start": "node src/main.js",
+    "start": "node build/main.js",
     "lint": "eslint src/*.js test/*.js",
     "monitor": "nodemon src/main.js",
     "monitor-inspect": "nodemon --inspect src/main.js",
-    "test": "cd test/resources && npm install && ava ../app-test.js",
+    "test": "(cd test-resources && npm install) && npm run build && ava build/test",
     "start-emulator": "(gcloud beta emulators datastore start --project emulator-project &) 2>&1 | grep -m1 'now running'",
     "test-cache": "npm run start-emulator && $(gcloud beta emulators datastore env-init) && export GCLOUD_PROJECT='emulator-project' && ava test/cache-test.js"
   },
@@ -36,7 +36,8 @@
   },
   "devDependencies": {
     "@types/puppeteer": "^1.5.0",
-    "ava": "^0.20.0",
+    "@types/supertest": "^2.0.4",
+    "ava": "1.0.0-beta.6",
     "eslint": "^4.16.0",
     "eslint-config-google": "^0.8.0",
     "nodemon": "^1.14.11",
