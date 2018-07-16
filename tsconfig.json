@@ -10,7 +10,8 @@
     "sourceMap": true,
     "lib": [
       "es2017",
-      "esnext.asynciterable"
+      "esnext.asynciterable",
+      "dom"
     ],
     "rootDir": "./src",
     "outDir": "./build"
