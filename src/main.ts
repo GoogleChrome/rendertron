@@ -53,6 +53,7 @@ export class Rendertron {
       response.sendStatus(403);
       return;
     }
+
     const serialized = await this.renderer.serialize(request.params.url);
     // Mark the response as coming from Rendertron.
     response.set('x-renderer', 'rendertron');
@@ -174,19 +175,7 @@ if (!module.parent) {
 async function logUncaughtError(error: Error) {
   console.error('Uncaught exception');
   console.error(error);
-  // exceptionCount++;
-  // // Restart instance due to several failures.
-  // if (exceptionCount > 5) {
-  //   console.log(`Detected ${exceptionCount} errors, shutting instance down`);
-  //   if (config && config.chrome)
-  //     await app.stop();
   process.exit(1);
-  // }exceptionCount++;
-  // // Restart instance due to several failures.
-  // if (exceptionCount > 5) {
-  //   console.log(`Detected ${exceptionCount} errors, shutting instance down`);
-  //   if (config && config.chrome)
-  //     await app.stop();
 }
 
 if (!module.parent) {

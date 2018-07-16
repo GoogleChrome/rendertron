@@ -21,14 +21,13 @@ const fs = require('fs');
 const https = require('https');
 const path = require('path');
 const url = require('url');
-// const chromeLauncher = require('chrome-launcher');
+const chromeLauncher = require('chrome-launcher');
 const compression = require('compression');
 const express = require('express');
 const now = require('performance-now');
-const puppeteer = require('puppeteer');
 const uuidv4 = require('uuid/v4');
 const cache = require('./cache');
-// const renderer = require('./renderer');
+const renderer = require('./renderer');
 
 const app = express();
 
@@ -157,10 +156,13 @@ app.stop = async() => {
   await config.chrome.kill();
 };
 
-puppeteer.launch().then((browser) => {
-  console.log(`Chrome launched on with debugging on port ${browser.port}`);
-  config.browser = browser;
-
+const appPromise = chromeLauncher.launch({
+  chromeFlags: ['--headless', '--no-sandbox', '--remote-debugging-address=0.0.0.0'],
+  port: 0
+}).then((chrome) => {
+  console.log('Chrome launched with debugging on port', chrome.port);
+  config.chrome = chrome;
+  config.port = chrome.port;
   // Don't open a port when running from inside a module (eg. tests). Importing
   // module can control this.
   if (!module.parent) {
@@ -168,32 +170,12 @@ puppeteer.launch().then((browser) => {
       console.log('Listening on port', PORT);
     });
   }
+  return app;
 }).catch((error) => {
   console.error(error);
   // Critical failure, exit with error code.
   process.exit(1);
 });
-
-// const appPromise = chromeLauncher.launch({
-//   chromeFlags: ['--headless', '--no-sandbox', '--remote-debugging-address=0.0.0.0'],
-//   port: 0
-// }).then((chrome) => {
-//   console.log('Chrome launched with debugging on port', chrome.port);
-//   config.chrome = chrome;
-//   config.port = chrome.port;
-//   // Don't open a port when running from inside a module (eg. tests). Importing
-//   // module can control this.
-//   if (!module.parent) {
-//     app.listen(PORT, function() {
-//       console.log('Listening on port', PORT);
-//     });
-//   }
-//   return app;
-// }).catch((error) => {
-//   console.error(error);
-//   // Critical failure, exit with error code.
-//   process.exit(1);
-// });
 
 
 let exceptionCount = 0;
