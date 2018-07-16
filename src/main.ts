@@ -81,9 +81,21 @@ class Renderer {
 
     const result = await page.evaluate('document.firstElementChild.outerHTML');
 
+    let statusCode = response.status();
+    const newStatusCode =
+        await page
+            .$eval(
+                'meta[name="render:status_code"]',
+                (element) => parseInt(element.getAttribute('content')))
+            .catch(() => undefined);
+    // Original status codes which aren't 200 always return with that status
+    // code, regardless of meta tags.
+    if (statusCode === 200 && newStatusCode) {
+      statusCode = newStatusCode as any;
+    }
+
     await page.close();
-    console.log(`response status is ${response.status()}`);
-    return {status: response.status(), content: result};
+    return {status: statusCode, content: result};
   }
 
   async screenshot(url: string): Promise<Buffer> {
