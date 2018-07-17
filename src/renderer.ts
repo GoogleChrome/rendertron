@@ -4,6 +4,10 @@ type SerializedResponse = {
   status: number; content: string;
 }
 
+/**
+ * Wraps Puppeteer's interface to Headless Chrome to expose high level rendering
+ * APIs that are able to handle web components and PWAs.
+ */
 export class Renderer {
   private browser: puppeteer.Browser;
 
@@ -27,7 +31,6 @@ export class Renderer {
      * Injects a <base> tag which allows other resources to load. This
      * has no effect on serialised output, but allows it to verify render
      * quality.
-     * @param {string} url - Requested URL to set as the base.
      */
     function injectBaseHref(url: string) {
       const base = document.createElement('base');
@@ -41,9 +44,10 @@ export class Renderer {
     page.evaluateOnNewDocument('ShadyDOM = {force: true}');
     page.evaluateOnNewDocument('ShadyCSS = {shimcssproperties: true}');
 
-    // Navigate to page.
+    // Navigate to page. Wait until there are no oustanding network requests.
     const response =
         await page.goto(url, {waitUntil: 'networkidle0'}).catch(() => {
+          // Catch navigation errors like navigating to an invalid URL.
           return undefined;
         });
     if (!response) {
@@ -52,6 +56,9 @@ export class Renderer {
       return {status: 400, content: ''};
     }
 
+    // Set status to the initial server's response code. Check for a <meta
+    // name="render:status_code" content="4xx" /> tag which overrides the status
+    // code.
     let statusCode = response.status();
     const newStatusCode =
         await page
@@ -59,7 +66,8 @@ export class Renderer {
                 'meta[name="render:status_code"]',
                 (element) => parseInt(element.getAttribute('content') || ''))
             .catch(() => undefined);
-    // Treat 304 Not Modified as 200 OK.
+    // On a repeat visit to the same origin, browser cache is enabled, so we may
+    // encounter a 304 Not Modified. Instead we'll treat this as a 200 OK.
     if (statusCode === 304) {
       statusCode = 200;
     }

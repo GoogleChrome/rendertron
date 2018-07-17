@@ -24,7 +24,6 @@ import {Rendertron} from '../rendertron';
 const app = express();
 app.use(express.static(path.resolve(__dirname, '../../test-resources')));
 
-// const appInstances:express.Express[] = [];
 const testBase = 'http://localhost:1234/';
 
 const rendertron = new Rendertron();
@@ -34,13 +33,6 @@ test.before(async () => {
   await rendertron.initialize(false);
   await app.listen(1234);
 });
-// async function createServer() {
-// delete require.cache[require.resolve('../src/main.js')];
-
-// if (config)
-//   app.setConfig(config);
-// appInstances.push(app);
-// }
 
 test('health check responds correctly', async (t) => {
   const res = await server.get('/_ah/health');
@@ -147,6 +139,7 @@ test.failing('explicit render event ends early', async (t) => {
   t.true(res.text.indexOf('async loaded') != -1);
 });
 
+// TODO: support URL whitelisting.
 // test('whitelist ensures other urls do not get rendered', async(t) => {
 //   const server = await createServer({
 //     renderOnly: [testBase]

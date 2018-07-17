@@ -37,6 +37,10 @@ export class Rendertron {
     }
   }
 
+  /**
+   * Checks whether or not the URL is valid. For example, we don't want to allow
+   * the requester to read the file system via Chrome.
+   */
   restricted(href: string): boolean {
     const protocol = url.parse(href).protocol || '';
 
