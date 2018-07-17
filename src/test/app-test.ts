@@ -19,7 +19,7 @@ import * as express from 'express';
 import * as path from 'path';
 import * as request from 'supertest';
 
-import {Rendertron} from '../main';
+import {Rendertron} from '../rendertron';
 
 const app = express();
 app.use(express.static(path.resolve(__dirname, '../../test-resources')));
