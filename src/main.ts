@@ -21,7 +21,7 @@ export class Rendertron {
   }
 
   async initialize(startServer = true) {
-    const browser = await puppeteer.launch();
+    const browser = await puppeteer.launch({args: ['--no-sandbox']});
     this.renderer = new Renderer(browser);
 
     if (startServer) {
