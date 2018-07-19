@@ -46,10 +46,11 @@ export class Renderer {
 
     // Navigate to page. Wait until there are no oustanding network requests.
     const response =
-        await page.goto(url, {waitUntil: 'networkidle0'}).catch(() => {
-          // Catch navigation errors like navigating to an invalid URL.
-          return undefined;
-        });
+        await page.goto(url, {timeout: 10000, waitUntil: 'networkidle0'})
+            .catch(() => {
+              // Catch navigation errors like navigating to an invalid URL.
+              return undefined;
+            });
     if (!response) {
       // This should only occur when the page is about:blank. See
       // https://github.com/GoogleChrome/puppeteer/blob/v1.5.0/docs/api.md#pagegotourl-options.
@@ -89,14 +90,17 @@ export class Renderer {
     return {status: statusCode, content: result};
   }
 
-  async screenshot(url: string): Promise<Buffer> {
+  async screenshot(url: string, options?: object): Promise<Buffer> {
     const page = await this.browser.newPage();
 
-    await page.goto(url, {waitUntil: 'networkidle0'});
+    page.setViewport({width: 1000, height: 1000});
 
-    // Typings are out of date.
-    const buffer =
-        await page.screenshot({type: 'jpeg', encoding: 'base64'} as any);
+    await page.goto(url, {timeout: 10000, waitUntil: 'networkidle0'});
+
+    const screenshotOptions =
+        Object.assign({type: 'jpeg', encoding: 'base64'}, options);
+
+    const buffer = await page.screenshot(screenshotOptions);
     return buffer;
   }
 }

@@ -22,7 +22,7 @@ export class Rendertron {
         (_request: express.Request, response: express.Response) =>
             response.send('OK'));
     this.app.get('/render/:url(*)', this.handleRenderRequest.bind(this));
-    this.app.get(
+    this.app.post(
         '/screenshot/:url(*)', this.handleScreenshotRequest.bind(this));
   }
 
