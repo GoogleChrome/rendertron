@@ -60,7 +60,7 @@ POST /screenshot/<url>
 The `screenshot` endpoint can be used to verify that your page is rendering
 correctly. Options are available as a JSON string in the `POST` body (options for `GET` are unsupported). See
 [Puppeteer documentation](https://github.com/GoogleChrome/puppeteer/blob/v1.6.0/docs/api.md#pagescreenshotoptions)
-for available options. You cannot specify the `type` (defaults to `jpeg`) and `encoding` (defaults to `base64`) parameters.
+for available options. You cannot specify the `type` (defaults to `jpeg`) and `encoding` (defaults to `binary`) parameters.
 
 ## FAQ
 
