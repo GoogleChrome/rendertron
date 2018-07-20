@@ -53,11 +53,12 @@ The `render` endpoint will render your page and serialize your page.
 
 ### Screenshot
 ```
+GET /screenshot/<url>
 POST /screenshot/<url>
 ```
 
 The `screenshot` endpoint can be used to verify that your page is rendering
-correctly. Options are passed as a JSON string in the `POST` body. See
+correctly. Options are available as a JSON string in the `POST` body (options for `GET` are unsupported). See
 [Puppeteer documentation](https://github.com/GoogleChrome/puppeteer/blob/v1.6.0/docs/api.md#pagescreenshotoptions)
 for available options.
 

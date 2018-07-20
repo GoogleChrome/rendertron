@@ -118,6 +118,17 @@ test('screenshot is an image', async (t) => {
   t.is(res.body.length, parseInt(res.header['content-length']));
 });
 
+test('screenshot accepts options', async (t) => {
+  const res =
+      await server.post(`/screenshot/${testBase}basic-script.html`).send({
+        clip: {x: 100, y: 100, width: 100, height: 100},
+        path: 'test.jpeg'
+      });
+  t.is(res.status, 200);
+  t.is(res.header['content-type'], 'image/jpeg');
+  t.is(res.body.length, parseInt(res.header['content-length']));
+});
+
 test('invalid url fails', async (t) => {
   const res = await server.get(`/render/abc`);
   t.is(res.status, 403);

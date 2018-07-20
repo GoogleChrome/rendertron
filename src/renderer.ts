@@ -97,9 +97,9 @@ export class Renderer {
 
     await page.goto(url, {timeout: 10000, waitUntil: 'networkidle0'});
 
+    // Must be jpeg & binary format.
     const screenshotOptions =
-        Object.assign({type: 'jpeg', encoding: 'base64'}, options);
-
+        Object.assign({}, options, {type: 'jpeg', encoding: 'binary'});
     const buffer = await page.screenshot(screenshotOptions);
     return buffer;
   }
