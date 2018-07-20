@@ -112,9 +112,22 @@ test('http status codes need to be respected from top to bottom', async (t) => {
 });
 
 test('screenshot is an image', async (t) => {
-  const res = await server.get(`/screenshot/${testBase}basic-script.html`);
+  const res = await server.post(`/screenshot/${testBase}basic-script.html`);
   t.is(res.status, 200);
   t.is(res.header['content-type'], 'image/jpeg');
+  t.true(res.body.length > 300);
+  t.is(res.body.length, parseInt(res.header['content-length']));
+});
+
+test('screenshot accepts options', async (t) => {
+  const res =
+      await server.post(`/screenshot/${testBase}basic-script.html`).send({
+        clip: {x: 100, y: 100, width: 100, height: 100},
+        path: 'test.jpeg'
+      });
+  t.is(res.status, 200);
+  t.is(res.header['content-type'], 'image/jpeg');
+  t.true(res.body.length > 300);
   t.is(res.body.length, parseInt(res.header['content-length']));
 });
 

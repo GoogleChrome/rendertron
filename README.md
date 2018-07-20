@@ -46,22 +46,21 @@ Note: the user agent lists differ there.
 
 ### Render
 ```
-/render/<url>
+GET /render/<url>
 ```
 
-The `render` endpoint will render your page and serialize your page. Available options:
- * `wc-inject-shadydom` default `false` - used to correctly render Web Components v1. See
- [Using with web components](#web-components) for more information.
+The `render` endpoint will render your page and serialize your page.
 
 ### Screenshot
 ```
-/screenshot/<url>
+GET /screenshot/<url>
+POST /screenshot/<url>
 ```
 
-The `screenshot` endpoint can be used to verify that your page is rendering correctly.
-Available options:
- * `width` default `1000` - used to set the viewport width (max 2000)
- * `height` default `1000` - used to set the viewport height (max 2000)
+The `screenshot` endpoint can be used to verify that your page is rendering
+correctly. Options are available as a JSON string in the `POST` body (options for `GET` are unsupported). See
+[Puppeteer documentation](https://github.com/GoogleChrome/puppeteer/blob/v1.6.0/docs/api.md#pagescreenshotoptions)
+for available options. You cannot specify the `type` (defaults to `jpeg`) and `encoding` (defaults to `binary`) parameters.
 
 ## FAQ
 
@@ -79,19 +78,6 @@ are no outstanding network requests and that the page has had ample time to rend
 ### Rendering budget timeout
 There is a hard limit of 10 seconds for rendering. Ensure you don't hit this budget by ensuring
 your application is rendered well before the budget expires.
-
-### Explicit rendering flag
-In some cases, the auto loading function may be insufficient, for example if there is content
-being streamed on the page. To explicitly signal when the page is visually complete, set the `window.renderComplete` flag. Add this script in your initial response:
-```html
-<script>
-  window.renderComplete = false;
-</script>
-```
-When rendering is complete, set the flag to `true`:
-```js
-  window.renderComplete = true;
-```
 
 ### Web components
 Headless Chrome supports web components but shadow DOM is difficult to serialize effectively.

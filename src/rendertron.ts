@@ -1,3 +1,4 @@
+import * as bodyParser from 'body-parser';
 import * as compression from 'compression';
 import * as express from 'express';
 import * as puppeteer from 'puppeteer';
@@ -16,6 +17,7 @@ export class Rendertron {
 
   constructor() {
     this.app.use(compression());
+    this.app.use(bodyParser.json());
 
     this.app.get(
         '/_ah/health',
@@ -23,6 +25,8 @@ export class Rendertron {
             response.send('OK'));
     this.app.get('/render/:url(*)', this.handleRenderRequest.bind(this));
     this.app.get(
+        '/screenshot/:url(*)', this.handleScreenshotRequest.bind(this));
+    this.app.post(
         '/screenshot/:url(*)', this.handleScreenshotRequest.bind(this));
   }
 
@@ -55,8 +59,7 @@ export class Rendertron {
       request: express.Request,
       response: express.Response) {
     if (!this.renderer) {
-      console.error(`No renderer yet`);
-      return;
+      throw (new Error('No renderer initalized yet.'));
     }
 
     if (this.restricted(request.params.url)) {
@@ -74,11 +77,15 @@ export class Rendertron {
       request: express.Request,
       response: express.Response) {
     if (!this.renderer) {
-      console.error(`No renderer yet`);
-      return;
+      throw (new Error('No renderer initalized yet.'));
     }
 
-    const img = await this.renderer.screenshot(request.params.url);
+    let options = undefined;
+    if (request.method === 'POST' && request.body) {
+      options = request.body;
+    }
+
+    const img = await this.renderer.screenshot(request.params.url, options);
     response.set({'Content-Type': 'image/jpeg', 'Content-Length': img.length});
     response.end(img);
   }
