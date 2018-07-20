@@ -5,6 +5,7 @@ import * as route from 'koa-route';
 import * as puppeteer from 'puppeteer';
 import * as url from 'url';
 
+import {DatastoreCache} from './cache';
 import {Renderer} from './renderer';
 
 /**
@@ -20,6 +21,8 @@ export class Rendertron {
     this.app.use(koaCompress());
 
     this.app.use(bodyParser());
+
+    this.app.use(new DatastoreCache().middleware());
 
     this.app.use(
         route.get('/_ah/health', (ctx: Koa.Context) => ctx.body = 'OK'));
