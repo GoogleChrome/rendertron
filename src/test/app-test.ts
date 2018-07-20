@@ -15,22 +15,23 @@
  */
 
 import {test} from 'ava';
-import * as express from 'express';
+import * as Koa from 'koa';
+import * as koaStatic from 'koa-static';
 import * as path from 'path';
 import * as request from 'supertest';
 
 import {Rendertron} from '../rendertron';
 
-const app = express();
-app.use(express.static(path.resolve(__dirname, '../../test-resources')));
+const app = new Koa();
+app.use(koaStatic(path.resolve(__dirname, '../../test-resources')));
 
 const testBase = 'http://localhost:1234/';
 
 const rendertron = new Rendertron();
-const server = request(rendertron.app);
+let server: request.SuperTest<request.Test>;
 
 test.before(async () => {
-  await rendertron.initialize(false);
+  server = request(await rendertron.initialize());
   await app.listen(1234);
 });
 

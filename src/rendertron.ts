@@ -1,6 +1,7 @@
-import * as bodyParser from 'body-parser';
-import * as compression from 'compression';
-import * as express from 'express';
+import * as Koa from 'koa';
+import * as bodyParser from 'koa-bodyparser';
+import * as koaCompress from 'koa-compress';
+import * as route from 'koa-route';
 import * as puppeteer from 'puppeteer';
 import * as url from 'url';
 
@@ -11,34 +12,32 @@ import {Renderer} from './renderer';
  * requests through to the renderer.
  */
 export class Rendertron {
-  app = express();
+  app: Koa = new Koa();
   private renderer: Renderer|undefined;
   private port = process.env.PORT || '3000';
 
   constructor() {
-    this.app.use(compression());
-    this.app.use(bodyParser.json());
+    this.app.use(koaCompress());
 
-    this.app.get(
-        '/_ah/health',
-        (_request: express.Request, response: express.Response) =>
-            response.send('OK'));
-    this.app.get('/render/:url(*)', this.handleRenderRequest.bind(this));
-    this.app.get(
-        '/screenshot/:url(*)', this.handleScreenshotRequest.bind(this));
-    this.app.post(
-        '/screenshot/:url(*)', this.handleScreenshotRequest.bind(this));
+    this.app.use(bodyParser());
+
+    this.app.use(
+        route.get('/_ah/health', (ctx: Koa.Context) => ctx.body = 'OK'));
+    this.app.use(
+        route.get('/render/:url(.*)', this.handleRenderRequest.bind(this)));
+    this.app.use(route.get(
+        '/screenshot/:url(.*)', this.handleScreenshotRequest.bind(this)));
+    this.app.use(route.post(
+        '/screenshot/:url(.*)', this.handleScreenshotRequest.bind(this)));
   }
 
-  async initialize(startServer = true) {
+  async initialize() {
     const browser = await puppeteer.launch({args: ['--no-sandbox']});
     this.renderer = new Renderer(browser);
 
-    if (startServer) {
-      this.app.listen(this.port, () => {
-        console.log(`Listening on port ${this.port}`);
-      });
-    }
+    return this.app.listen(this.port, () => {
+      console.log(`Listening on port ${this.port}`);
+    });
   }
 
   /**
@@ -55,39 +54,37 @@ export class Rendertron {
     return false;
   }
 
-  async handleRenderRequest(
-      request: express.Request,
-      response: express.Response) {
+  async handleRenderRequest(ctx: Koa.Context, url: string) {
     if (!this.renderer) {
       throw (new Error('No renderer initalized yet.'));
     }
 
-    if (this.restricted(request.params.url)) {
-      response.sendStatus(403);
+    if (this.restricted(url)) {
+      ctx.status = 403;
       return;
     }
 
-    const serialized = await this.renderer.serialize(request.params.url);
+    const serialized = await this.renderer.serialize(url);
     // Mark the response as coming from Rendertron.
-    response.set('x-renderer', 'rendertron');
-    response.status(serialized.status).send(serialized.content);
+    ctx.set('x-renderer', 'rendertron');
+    ctx.status = serialized.status;
+    ctx.body = serialized.content;
   }
 
-  async handleScreenshotRequest(
-      request: express.Request,
-      response: express.Response) {
+  async handleScreenshotRequest(ctx: Koa.Context, url: string) {
     if (!this.renderer) {
       throw (new Error('No renderer initalized yet.'));
     }
 
     let options = undefined;
-    if (request.method === 'POST' && request.body) {
-      options = request.body;
+    if (ctx.method === 'POST' && ctx.request.body) {
+      options = ctx.request.body;
     }
 
-    const img = await this.renderer.screenshot(request.params.url, options);
-    response.set({'Content-Type': 'image/jpeg', 'Content-Length': img.length});
-    response.end(img);
+    const img = await this.renderer.screenshot(url, options);
+    ctx.set('Content-Type', 'image/jpeg');
+    ctx.set('Content-Length', img.length.toString());
+    ctx.body = img;
   }
 }
 
