@@ -59,9 +59,7 @@ export class Rendertron {
       request: express.Request,
       response: express.Response) {
     if (!this.renderer) {
-      console.error(`No renderer yet`);
-      response.status(500).send('Renderer not yet available.')
-      return;
+      throw (new Error('No renderer initalized yet.'));
     }
 
     if (this.restricted(request.params.url)) {
@@ -79,9 +77,7 @@ export class Rendertron {
       request: express.Request,
       response: express.Response) {
     if (!this.renderer) {
-      console.error(`No renderer yet`);
-      response.status(500).send('Renderer not yet available.')
-      return;
+      throw (new Error('No renderer initalized yet.'));
     }
 
     let options = undefined;

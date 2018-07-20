@@ -115,6 +115,7 @@ test('screenshot is an image', async (t) => {
   const res = await server.post(`/screenshot/${testBase}basic-script.html`);
   t.is(res.status, 200);
   t.is(res.header['content-type'], 'image/jpeg');
+  t.true(res.body.length > 300);
   t.is(res.body.length, parseInt(res.header['content-length']));
 });
 
@@ -126,6 +127,7 @@ test('screenshot accepts options', async (t) => {
       });
   t.is(res.status, 200);
   t.is(res.header['content-type'], 'image/jpeg');
+  t.true(res.body.length > 300);
   t.is(res.body.length, parseInt(res.header['content-length']));
 });
 
