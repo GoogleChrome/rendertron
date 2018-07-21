@@ -23,7 +23,7 @@ import * as Datastore from '@google-cloud/datastore';
 import {DatastoreKey} from '@google-cloud/datastore/entity';
 import * as Koa from 'koa';
 
-const datastore = new Datastore({});
+const datastore: Datastore = new (Datastore as any)();
 
 type CacheContent = {
   saved: Date,
@@ -94,8 +94,7 @@ export class DatastoreCache {
         // Serve cached content if its not expired.
         if (content.expires.getTime() >= new Date().getTime()) {
           const headers = JSON.parse(content.headers);
-          // TODO: check this works
-          ctx.response.headers = headers;
+          ctx.set(headers);
           ctx.set('x-rendertron-cached', content.saved.toUTCString());
           let payload = JSON.parse(content.payload);
           if (payload && typeof (payload) == 'object' &&

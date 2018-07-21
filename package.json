@@ -16,9 +16,9 @@
     "lint": "eslint src/*.js test/*.js",
     "monitor": "nodemon src/main.js",
     "monitor-inspect": "nodemon --inspect src/main.js",
-    "test": "(cd test-resources && npm install) && npm run build && ava build/test --timeout 5s",
+    "test": "(cd test-resources && npm install) && npm run build && ava build/test/app-test.js --timeout 5s",
     "start-emulator": "(gcloud beta emulators datastore start --project emulator-project &) 2>&1 | grep -m1 'now running'",
-    "test-cache": "npm run start-emulator && $(gcloud beta emulators datastore env-init) && export GCLOUD_PROJECT='emulator-project' && ava test/cache-test.js"
+    "test-cache": "npm run start-emulator && $(gcloud beta emulators datastore env-init) && export GCLOUD_PROJECT='emulator-project' && ava build/test/cache-test.js"
   },
   "dependencies": {
     "@google-cloud/datastore": "^1.4.1",
