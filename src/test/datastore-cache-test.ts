@@ -41,7 +41,7 @@ app.use(route.get('/', (ctx: Koa.Context) => {
   ctx.body = `Called ${handlerCalledCount} times`;
 }));
 
-test.only('caches content and serves same content on cache hit', async (t) => {
+test('caches content and serves same content on cache hit', async (t) => {
   let res = await server.get('/?basictest');
   const previousCount = handlerCalledCount;
   t.is(res.status, 200);
