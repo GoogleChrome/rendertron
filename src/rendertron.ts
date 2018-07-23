@@ -1,12 +1,19 @@
+import * as fse from 'fs-extra';
 import * as Koa from 'koa';
 import * as bodyParser from 'koa-bodyparser';
 import * as koaCompress from 'koa-compress';
 import * as route from 'koa-route';
+import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import * as url from 'url';
 
-import {DatastoreCache} from './cache';
 import {Renderer} from './renderer';
+
+const CONFIG_PATH = path.resolve(__dirname, '../config.json');
+
+type Config = {
+  datastoreCache: boolean;
+};
 
 /**
  * Rendertron rendering service. This runs the server which routes rendering
@@ -14,15 +21,27 @@ import {Renderer} from './renderer';
  */
 export class Rendertron {
   app: Koa = new Koa();
+  config: Config = {datastoreCache: false};
   private renderer: Renderer|undefined;
   private port = process.env.PORT || '3000';
 
-  constructor() {
+  async initialize() {
+    // Load config.json if it exists.
+    if (fse.pathExistsSync(CONFIG_PATH)) {
+      this.config = Object.assign(this.config, await fse.readJson(CONFIG_PATH));
+    }
+
+    const browser = await puppeteer.launch({args: ['--no-sandbox']});
+    this.renderer = new Renderer(browser);
+
     this.app.use(koaCompress());
 
     this.app.use(bodyParser());
 
-    this.app.use(new DatastoreCache().middleware());
+    if (this.config.datastoreCache) {
+      const {DatastoreCache} = await import('./datastore-cache');
+      this.app.use(new DatastoreCache().middleware());
+    }
 
     this.app.use(
         route.get('/_ah/health', (ctx: Koa.Context) => ctx.body = 'OK'));
@@ -32,11 +51,6 @@ export class Rendertron {
         '/screenshot/:url(.*)', this.handleScreenshotRequest.bind(this)));
     this.app.use(route.post(
         '/screenshot/:url(.*)', this.handleScreenshotRequest.bind(this)));
-  }
-
-  async initialize() {
-    const browser = await puppeteer.launch({args: ['--no-sandbox']});
-    this.renderer = new Renderer(browser);
 
     return this.app.listen(this.port, () => {
       console.log(`Listening on port ${this.port}`);
