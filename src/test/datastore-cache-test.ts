@@ -106,16 +106,16 @@ app.use(route.get('/status/:status', (ctx: Koa.Context, status: string) => {
   if (statusCallCount % 2 == 0) {
     ctx.status = Number(status);
   } else {
-    ctx.status = 456;
+    ctx.status = 401;
   }
   statusCallCount++;
 }));
 
 test('original status is preserved', async (t) => {
-  let res = await server.get('/status/123');
-  t.is(res.status, 123);
+  let res = await server.get('/status/400');
+  t.is(res.status, 400);
 
   // Non 200 status code should not be cached.
-  res = await server.get('/status/123');
-  t.is(res.status, 456);
+  res = await server.get('/status/400');
+  t.is(res.status, 401);
 });
