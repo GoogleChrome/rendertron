@@ -179,13 +179,9 @@ the License.
       <i class="material-icons">photo_camera</i>
       <span>Take screenshot</span>
     </button>
-    <button onclick="render(this, false)">
+    <button onclick="render(this)">
       <i class="material-icons">cloud_upload</i>
       <span>Render &amp; serialize</span>
-    </button>
-    <button onclick="render(this, true)">
-      <i class="material-icons">code</i>
-      <span>Render &amp; serialize with web components v1</span>
     </button>
     <a href="https://github.com/GoogleChrome/rendertron" target="_blank">
       <button tabindex="-1">
@@ -196,7 +192,7 @@ the License.
   </div>
 
   <script>
-    function render(element, webcomponents) {
+    function render(element) {
       if (!url.value) {
         onEmptyUrl();
         return;
@@ -204,8 +200,7 @@ the License.
 
       element.classList.add('loading');
       document.querySelector('progress-bar').removeAttribute('hidden');
-      var queryParams = webcomponents ? '?wc-inject-shadydom=true' : '';
-      window.location.href += `render/${url.value.replace('?', '%3F')}${queryParams}`;
+      window.location.href += `render/${url.value.replace('?', '%3F')}`;
     }
 
     function takeScreenshot(element) {
