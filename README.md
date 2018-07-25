@@ -57,7 +57,10 @@ Note: the user agent lists differ there.
 GET /render/<url>
 ```
 
-The `render` endpoint will render your page and serialize your page.
+The `render` endpoint will render your page and serialize your page. Options are
+specified as query parameters:
+ * `mobile` defaults to `false`. Enable by passing `?mobile` to request the
+  mobile version of your site.
 
 ### Screenshot
 ```
@@ -71,6 +74,8 @@ correctly.
 Both endpoints support the following query parameters:
  * `width` defaults to `1000` - specifies viewport width.
  * `height` defaults to `1000` - specifies viewport height.
+ * `mobile` defaults to `false`. Enable by passing `?mobile` to request the
+  mobile version of your site.
 
 Additional options are available as a JSON string in the `POST` body. See
 [Puppeteer documentation](https://github.com/GoogleChrome/puppeteer/blob/v1.6.0/docs/api.md#pagescreenshotoptions)

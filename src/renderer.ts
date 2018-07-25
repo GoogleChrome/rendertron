@@ -9,6 +9,9 @@ type ViewportDimensions = {
   width: number; height: number;
 };
 
+const MOBILE_USERAGENT =
+    'Mozilla/5.0 (Linux; Android 8.0.0; Pixel 2 XL Build/OPD1.170816.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.75 Mobile Safari/537.36';
+
 /**
  * Wraps Puppeteer's interface to Headless Chrome to expose high level rendering
  * APIs that are able to handle web components and PWAs.
@@ -20,7 +23,8 @@ export class Renderer {
     this.browser = browser;
   }
 
-  async serialize(requestUrl: string): Promise<SerializedResponse> {
+  async serialize(requestUrl: string, isMobile: boolean):
+      Promise<SerializedResponse> {
     /**
      * Executed on the page after the page has loaded. Strips script and
      * import tags to prevent further loading of resources.
@@ -56,7 +60,11 @@ export class Renderer {
 
     const page = await this.browser.newPage();
 
-    page.setViewport({width: 1000, height: 1000});
+    page.setViewport({width: 1000, height: 1000, isMobile});
+
+    if (isMobile) {
+      page.setUserAgent(MOBILE_USERAGENT);
+    }
 
     page.evaluateOnNewDocument('customElements.forcePolyfill = true');
     page.evaluateOnNewDocument('ShadyDOM = {force: true}');
@@ -112,11 +120,17 @@ export class Renderer {
 
   async screenshot(
       url: string,
+      isMobile: boolean,
       dimensions: ViewportDimensions,
       options?: object): Promise<Buffer> {
     const page = await this.browser.newPage();
 
-    page.setViewport({width: dimensions.width, height: dimensions.height});
+    page.setViewport(
+        {width: dimensions.width, height: dimensions.height, isMobile});
+
+    if (isMobile) {
+      page.setUserAgent(MOBILE_USERAGENT);
+    }
 
     await page.goto(url, {timeout: 10000, waitUntil: 'networkidle0'});
 
