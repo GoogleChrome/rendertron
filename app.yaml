@@ -1,7 +1,4 @@
-runtime: custom
-env: flex
-resources:
-  cpu: 1
-  memory_gb: 3
+runtime: nodejs8
+instance_class: F4_1G
 automatic_scaling:
-  min_num_instances: 1
+  min_instances: 1
