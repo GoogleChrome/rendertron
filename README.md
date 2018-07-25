@@ -58,7 +58,13 @@ POST /screenshot/<url>
 ```
 
 The `screenshot` endpoint can be used to verify that your page is rendering
-correctly. Options are available as a JSON string in the `POST` body (options for `GET` are unsupported). See
+correctly.
+
+Both endpoints support the following parameters:
+ * `width` defaults to `1000` - specifies viewport width.
+ * `height` defaults to `1000` - specifies viewport height.
+
+Additional options are available as a JSON string in the `POST` body (options for `GET` are unsupported). See
 [Puppeteer documentation](https://github.com/GoogleChrome/puppeteer/blob/v1.6.0/docs/api.md#pagescreenshotoptions)
 for available options. You cannot specify the `type` (defaults to `jpeg`) and `encoding` (defaults to `binary`) parameters.
 
