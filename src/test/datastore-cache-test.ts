@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Google Inc. All rights reserved.
+ * Copyright 2018 Google Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,33 +16,47 @@
 
 'use strict';
 
-const test = require('ava');
-const request = require('supertest');
-const express = require('express');
-const compression = require('compression');
-const cache = require('../src/cache.js');
+import {test} from 'ava';
+import * as Koa from 'koa';
+import * as koaCompress from 'koa-compress';
+import * as request from 'supertest';
+import * as route from 'koa-route';
 
-const app = express();
-const server = request(app);
+import {DatastoreCache} from '../datastore-cache';
+
+const app = new Koa();
+const server = request(app.listen());
+const cache = new DatastoreCache();
+
+app.use(route.get('/compressed', koaCompress()));
 
 app.use(cache.middleware());
 
 let handlerCalledCount = 0;
 
-test.before(async(t) => {
+test.before(async () => {
   await cache.clearCache();
 });
 
-app.get('/', (request, response) => {
+app.use(route.get('/', (ctx: Koa.Context) => {
   handlerCalledCount++;
-  response.end('Called ' + handlerCalledCount + ' times');
-});
+  ctx.body = `Called ${handlerCalledCount} times`;
+}));
 
-test('caches content and serves same content on cache hit', async(t) => {
+const promiseTimeout = function(timeout: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, timeout);
+  });
+};
+
+test('caches content and serves same content on cache hit', async (t) => {
   let res = await server.get('/?basictest');
   const previousCount = handlerCalledCount;
   t.is(res.status, 200);
   t.is(res.text, 'Called ' + previousCount + ' times');
+
+  // Workaround for race condition with writing to datastore.
+  await promiseTimeout(500);
 
   res = await server.get('/?basictest');
   t.is(res.status, 200);
@@ -59,16 +73,19 @@ test('caches content and serves same content on cache hit', async(t) => {
   t.is(res.text, 'Called ' + (previousCount + 1) + ' times');
 });
 
-app.get('/set-header', (request, response) => {
-  response.set('my-header', 'header-value');
-  response.end('set-header-payload');
-});
+app.use(route.get('/set-header', (ctx: Koa.Context) => {
+  ctx.set('my-header', 'header-value');
+  ctx.body = 'set-header-payload';
+}));
 
-test('caches headers', async(t) => {
+test('caches headers', async (t) => {
   let res = await server.get('/set-header');
   t.is(res.status, 200);
   t.is(res.header['my-header'], 'header-value');
   t.is(res.text, 'set-header-payload');
+
+  // Workaround for race condition with writing to datastore.
+  await promiseTimeout(500);
 
   res = await server.get('/set-header');
   t.is(res.status, 200);
@@ -76,41 +93,45 @@ test('caches headers', async(t) => {
   t.is(res.text, 'set-header-payload');
 });
 
-app.use('/compressed', compression());
-app.get('/compressed', (request, response) => {
-  response.set('Content-Type', 'text/html');
-  response.send(new Array(1025).join('x'));
-});
+app.use(route.get('/compressed', (ctx: Koa.Context) => {
+  ctx.set('Content-Type', 'text/html');
+  ctx.body = new Array(1025).join('x');
+}));
 
-test('compression preserved', async(t) => {
+test('compression preserved', async (t) => {
   const expectedBody = new Array(1025).join('x');
-  let res = await server.get('/compressed').set('Accept-Encoding', 'gzip, deflate, br');
+  let res = await server.get('/compressed')
+                .set('Accept-Encoding', 'gzip, deflate, br');
   t.is(res.status, 200);
   t.is(res.header['content-encoding'], 'gzip');
   t.is(res.text, expectedBody);
 
-  res = await server.get('/compressed').set('Accept-Encoding', 'gzip, deflate, br');
+  // Workaround for race condition with writing to datastore.
+  await promiseTimeout(500);
+
+  res = await server.get('/compressed')
+            .set('Accept-Encoding', 'gzip, deflate, br');
   t.is(res.status, 200);
   t.is(res.header['content-encoding'], 'gzip');
   t.is(res.text, expectedBody);
 });
 
 let statusCallCount = 0;
-app.get('/status/:status', (request, response) => {
+app.use(route.get('/status/:status', (ctx: Koa.Context, status: string) => {
   // Every second call sends a different status.
   if (statusCallCount % 2 == 0) {
-    response.sendStatus(request.params.status);
+    ctx.status = Number(status);
   } else {
-    response.sendStatus(456);
+    ctx.status = 401;
   }
   statusCallCount++;
-});
+}));
 
-test('original status is preserved', async(t) => {
-  let res = await server.get('/status/123');
-  t.is(res.status, 123);
+test('original status is preserved', async (t) => {
+  let res = await server.get('/status/400');
+  t.is(res.status, 400);
 
   // Non 200 status code should not be cached.
-  res = await server.get('/status/123');
-  t.is(res.status, 456);
+  res = await server.get('/status/400');
+  t.is(res.status, 401);
 });

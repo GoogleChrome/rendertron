@@ -189,12 +189,4 @@ gcloud app deploy app.yaml --project <your-project-id>
 ### Config
 When deploying the service, set configuration variables by including a `config.json` in the
 root. Available configuration options:
- * `analyticsTrackingId` default `""` - set to a Google Analytics property
- [tracking id](https://support.google.com/analytics/answer/1008080?hl=en#trackingID) to
- send Rendertron rendering events to analytics.
  * `cache` default `false` - set to `true` to enable caching on Google Cloud using datastore
- * `debug` default `false` - set to `true` to log requested renders & pipe console messages
- from within the rendered pages.
- * `renderOnly` - restrict the endpoint to only service requests for certain domains. Specified
- as an array of strings. eg. `['http://render.only.this.domain']`. This is a strict prefix
- match, so ensure you specify the exact protocols that will be used (eg. http, https).
