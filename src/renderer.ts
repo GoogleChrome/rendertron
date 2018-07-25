@@ -70,14 +70,27 @@ export class Renderer {
     page.evaluateOnNewDocument('ShadyDOM = {force: true}');
     page.evaluateOnNewDocument('ShadyCSS = {shimcssproperties: true}');
 
-    // Navigate to page. Wait until there are no oustanding network requests.
-    const response =
-        await page.goto(requestUrl, {timeout: 10000, waitUntil: 'networkidle0'})
-            .catch(() => {
-              // Catch navigation errors like navigating to an invalid URL.
-              return undefined;
-            });
+    let response: puppeteer.Response|null = null;
+    // Capture main frame response. This is used in the case that rendering
+    // times out, which results in puppeteer throwing an error. This allows us
+    // to return a partial response for what was able to be rendered in that
+    // time frame.
+    page.addListener('response', (r: puppeteer.Response) => {
+      if (!response) {
+        response = r;
+      }
+    });
+
+    try {
+      // Navigate to page. Wait until there are no oustanding network requests.
+      response = await page.goto(
+          requestUrl, {timeout: 10000, waitUntil: 'networkidle0'});
+    } catch (e) {
+      console.error(e);
+    }
+
     if (!response) {
+      console.error('response does not exist');
       // This should only occur when the page is about:blank. See
       // https://github.com/GoogleChrome/puppeteer/blob/v1.5.0/docs/api.md#pagegotourl-options.
       return {status: 400, content: ''};
