@@ -28,6 +28,8 @@ const app = new Koa();
 const server = request(app.listen());
 const cache = new DatastoreCache();
 
+app.use(route.get('/compressed', koaCompress()));
+
 app.use(cache.middleware());
 
 let handlerCalledCount = 0;
@@ -41,11 +43,20 @@ app.use(route.get('/', (ctx: Koa.Context) => {
   ctx.body = `Called ${handlerCalledCount} times`;
 }));
 
+const promiseTimeout = function(timeout: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, timeout);
+  });
+};
+
 test('caches content and serves same content on cache hit', async (t) => {
   let res = await server.get('/?basictest');
   const previousCount = handlerCalledCount;
   t.is(res.status, 200);
   t.is(res.text, 'Called ' + previousCount + ' times');
+
+  // Workaround for race condition with writing to datastore.
+  await promiseTimeout(500);
 
   res = await server.get('/?basictest');
   t.is(res.status, 200);
@@ -73,13 +84,15 @@ test('caches headers', async (t) => {
   t.is(res.header['my-header'], 'header-value');
   t.is(res.text, 'set-header-payload');
 
+  // Workaround for race condition with writing to datastore.
+  await promiseTimeout(500);
+
   res = await server.get('/set-header');
   t.is(res.status, 200);
   t.is(res.header['my-header'], 'header-value');
   t.is(res.text, 'set-header-payload');
 });
 
-app.use(route.get('/compressed', koaCompress()));
 app.use(route.get('/compressed', (ctx: Koa.Context) => {
   ctx.set('Content-Type', 'text/html');
   ctx.body = new Array(1025).join('x');
@@ -92,6 +105,9 @@ test('compression preserved', async (t) => {
   t.is(res.status, 200);
   t.is(res.header['content-encoding'], 'gzip');
   t.is(res.text, expectedBody);
+
+  // Workaround for race condition with writing to datastore.
+  await promiseTimeout(500);
 
   res = await server.get('/compressed')
             .set('Accept-Encoding', 'gzip, deflate, br');
