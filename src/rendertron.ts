@@ -3,6 +3,7 @@ import * as Koa from 'koa';
 import * as bodyParser from 'koa-bodyparser';
 import * as koaCompress from 'koa-compress';
 import * as route from 'koa-route';
+import * as koaSend from 'koa-send';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import * as url from 'url';
@@ -43,6 +44,10 @@ export class Rendertron {
       this.app.use(new DatastoreCache().middleware());
     }
 
+    this.app.use(route.get('/', async (ctx: Koa.Context) => {
+      await koaSend(
+          ctx, 'index.html', {root: path.resolve(__dirname, '../src')});
+    }));
     this.app.use(
         route.get('/_ah/health', (ctx: Koa.Context) => ctx.body = 'OK'));
     this.app.use(
@@ -98,7 +103,12 @@ export class Rendertron {
       options = ctx.request.body;
     }
 
-    const img = await this.renderer.screenshot(url, options);
+    const dimensions = {
+      width: Number(ctx.query['width']) || 1000,
+      height: Number(ctx.query['height']) || 1000
+    };
+
+    const img = await this.renderer.screenshot(url, dimensions, options);
     ctx.set('Content-Type', 'image/jpeg');
     ctx.set('Content-Length', img.length.toString());
     ctx.body = img;
