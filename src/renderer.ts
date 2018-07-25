@@ -1,8 +1,13 @@
 import * as puppeteer from 'puppeteer';
+import * as url from 'url';
 
 type SerializedResponse = {
   status: number; content: string;
 }
+
+type ViewportDimensions = {
+  width: number; height: number;
+};
 
 /**
  * Wraps Puppeteer's interface to Headless Chrome to expose high level rendering
@@ -15,7 +20,7 @@ export class Renderer {
     this.browser = browser;
   }
 
-  async serialize(url: string): Promise<SerializedResponse> {
+  async serialize(requestUrl: string): Promise<SerializedResponse> {
     /**
      * Executed on the page after the page has loaded. Strips script and
      * import tags to prevent further loading of resources.
@@ -32,13 +37,26 @@ export class Renderer {
      * has no effect on serialised output, but allows it to verify render
      * quality.
      */
-    function injectBaseHref(url: string) {
+    function injectBaseHref(origin: string) {
       const base = document.createElement('base');
-      base.setAttribute('href', url);
-      document.head.appendChild(base);
+      base.setAttribute('href', origin);
+
+      const bases = document.head.querySelectorAll('base');
+      if (bases.length) {
+        // Patch existing <base> if it is relative.
+        const existingBase = bases[0].getAttribute('href') || '';
+        if (existingBase.startsWith('/')) {
+          bases[0].setAttribute('href', origin + existingBase);
+        }
+      } else {
+        // Only inject <base> if it doesn't already exist.
+        document.head.insertAdjacentElement('afterbegin', base);
+      }
     }
 
     const page = await this.browser.newPage();
+
+    page.setViewport({width: 1000, height: 1000});
 
     page.evaluateOnNewDocument('customElements.forcePolyfill = true');
     page.evaluateOnNewDocument('ShadyDOM = {force: true}');
@@ -46,7 +64,7 @@ export class Renderer {
 
     // Navigate to page. Wait until there are no oustanding network requests.
     const response =
-        await page.goto(url, {timeout: 10000, waitUntil: 'networkidle0'})
+        await page.goto(requestUrl, {timeout: 10000, waitUntil: 'networkidle0'})
             .catch(() => {
               // Catch navigation errors like navigating to an invalid URL.
               return undefined;
@@ -80,8 +98,10 @@ export class Renderer {
 
     // Remove script & import tags.
     await page.evaluate(stripPage);
-    // Inject <base> tag.
-    await page.evaluate(injectBaseHref);
+    // Inject <base> tag with the origin of the request (ie. no path).
+    const parsedUrl = url.parse(requestUrl);
+    await page.evaluate(
+        injectBaseHref, `${parsedUrl.protocol}//${parsedUrl.host}`);
 
     // Serialize page.
     const result = await page.evaluate('document.firstElementChild.outerHTML');
@@ -90,10 +110,13 @@ export class Renderer {
     return {status: statusCode, content: result};
   }
 
-  async screenshot(url: string, options?: object): Promise<Buffer> {
+  async screenshot(
+      url: string,
+      dimensions: ViewportDimensions,
+      options?: object): Promise<Buffer> {
     const page = await this.browser.newPage();
 
-    page.setViewport({width: 1000, height: 1000});
+    page.setViewport({width: dimensions.width, height: dimensions.height});
 
     await page.goto(url, {timeout: 10000, waitUntil: 'networkidle0'});
 
