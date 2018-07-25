@@ -2,6 +2,10 @@
 
 > Rendertron is a headless Chrome rendering solution designed to render & serialise web pages on the fly.
 
+#### :hammer: Built with [Puppeteer](https://github.com/GoogleChrome/puppeteer)
+#### :cloud: Easy deployment to Google Cloud
+#### :mag: Improves SEO
+
 Rendertron is designed to enable your Progressive Web App (PWA) to serve the correct
 content to any bot that doesn't render or execute JavaScript. Rendertron runs as a
 standalone HTTP server. Rendertron renders requested pages using Headless Chrome,
