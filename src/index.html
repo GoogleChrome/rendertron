@@ -196,6 +196,11 @@ the License.
   </div>
 
   <script>
+    function encodeUrl(fullUrl) {
+      var url = new URL(fullUrl);
+      return url.origin + url.pathname + encodeURIComponent(url.search) + encodeURIComponent(url.hash);
+    }
+
     function render(element, isMobile) {
       if (!url.value) {
         onEmptyUrl();
@@ -204,7 +209,7 @@ the License.
 
       element.classList.add('loading');
       document.querySelector('progress-bar').removeAttribute('hidden');
-      window.location.href += `render/${url.value.replace('?', '%3F')}${isMobile ? '?mobile' : ''}`;
+      window.location.href += `render/${encodeUrl(url.value)}${isMobile ? '?mobile' : ''}`;
     }
 
     function takeScreenshot(element) {
@@ -221,7 +226,7 @@ the License.
 
       element.classList.add('loading');
       document.querySelector('progress-bar').removeAttribute('hidden');
-      window.location.href += `screenshot/${url.value.replace('?', '%3F')}?width=${window.innerWidth}&height=${window.innerHeight}`;
+      window.location.href += `screenshot/${encodeUrl(url.value)}?width=${window.innerWidth}&height=${window.innerHeight}`;
     }
 
     function onEmptyUrl() {
