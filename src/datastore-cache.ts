@@ -19,10 +19,10 @@
 
 'use strict';
 
-import * as Datastore from '@google-cloud/datastore';
 import {DatastoreKey} from '@google-cloud/datastore/entity';
 import * as Koa from 'koa';
 
+import Datastore = require('@google-cloud/datastore');
 
 type CacheContent = {
   saved: Date,
