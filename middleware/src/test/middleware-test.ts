@@ -14,23 +14,21 @@
  * the License.
  */
 
-'use strict';
+import {test} from 'ava';
+import * as express from 'express';
+import * as net from 'net';
+import * as supertest from 'supertest';
 
-const express = require('express');
-const supertest = require('supertest');
-const test = require('ava');
-
-const rendertron = require('../build/middleware');
+import * as rendertron from '../middleware';
 
 /**
  * Start the given Express app on localhost with a random port.
  * @param {!Object} app The app.
- * @return {Promise<string>}Promise of the URL.
  */
-async function listen(app) {
-  return new Promise((resolve) => {
+async function listen(app: express.Application): Promise<string> {
+  return new Promise<string>((resolve: (url: string) => void) => {
     const server = app.listen(/* random */ 0, 'localhost', () => {
-      resolve(`http://localhost:${server.address().port}`);
+      resolve(`http://localhost:${(server.address() as net.AddressInfo).port}`);
     });
   });
 }
@@ -41,10 +39,10 @@ async function listen(app) {
  * @param {Object} options Rendertron middleware options.
  * @return {!Object} The app.
  */
-function makeApp(options) {
+function makeApp(options: rendertron.Options) {
   return express()
       .use(rendertron.makeMiddleware(options))
-      .use((req, res) => res.end('fallthrough'));
+      .use((_req, res) => res.end('fallthrough'));
 }
 
 /**
@@ -63,12 +61,12 @@ const human = 'Chrome';
 
 /**
  * GET a URL with the given user agent.
- * @param {string} userAgent The user agent string.
- * @param {string} host The host part of the URL.
- * @param {string} path The path part of the URL.
+ * @param userAgent The user agent string.
+ * @param host The host part of the URL.
+ * @param path The path part of the URL.
  * @return {Promise<!Object>} Promise of the GET response.
  */
-async function get(userAgent, host, path) {
+async function get(userAgent: string, host: string, path: string) {
   return await supertest(host).get(path).set('User-Agent', userAgent);
 }
 
@@ -78,9 +76,11 @@ test('makes a middleware function', async (t) => {
 });
 
 test('throws if no proxyUrl given', async (t) => {
-  t.throws(() => rendertron.makeMiddleware());
-  t.throws(() => rendertron.makeMiddleware({}));
-  t.throws(() => rendertron.makeMiddleware({proxyUrl: ''}));
+  const makeMiddlewareUntyped =
+      rendertron.makeMiddleware as (options?: unknown) => express.Application;
+  t.throws(() => makeMiddlewareUntyped());
+  t.throws(() => makeMiddlewareUntyped({}));
+  t.throws(() => makeMiddlewareUntyped({proxyUrl: ''}));
 });
 
 test('proxies through given url', async (t) => {
@@ -165,7 +165,7 @@ test('respects custom exclude url pattern', async (t) => {
 test('forwards proxy error status and body', async (t) => {
   // This proxy always returns an error.
   const proxyUrl = await listen(
-      express().use((req, res) => res.status(500).end('proxy error')));
+      express().use((_req, res) => res.status(500).end('proxy error')));
   const appUrl = await listen(makeApp({proxyUrl}));
 
   const res = await get(bot, appUrl, '/bar');
@@ -175,7 +175,7 @@ test('forwards proxy error status and body', async (t) => {
 
 test('falls through after timeout', async (t) => {
   // This proxy returns after 20ms, but our timeout is 10ms.
-  const proxyUrl = await listen(express().use((req, res) => {
+  const proxyUrl = await listen(express().use((_req, res) => {
     setTimeout(() => res.end('too slow'), 20);
   }));
   const appUrl = await listen(makeApp({proxyUrl, timeout: 10}));
