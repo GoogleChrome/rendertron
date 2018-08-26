@@ -21,6 +21,7 @@
   },
   "devDependencies": {
     "@types/request": "^2.47.1",
+    "@types/supertest": "^2.0.5",
     "ava": "^0.25.0",
     "clang-format": "^1.2.4",
     "express": "^4.16.3",

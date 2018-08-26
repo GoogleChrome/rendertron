@@ -36,8 +36,6 @@ async function listen(app: express.Application): Promise<string> {
 /**
  * Make an Express app that uses the Rendertron middleware and returns
  * "fallthrough" if the middleware skipped the request (i.e. called `next`).
- * @param {Object} options Rendertron middleware options.
- * @return {!Object} The app.
  */
 function makeApp(options: rendertron.Options) {
   return express()
@@ -48,7 +46,6 @@ function makeApp(options: rendertron.Options) {
 /**
  * Make an Express app that takes the place of a Rendertron server instance and
  * always responds with "proxy <decoded url>".
- * @return {!Object} The app.
  */
 function makeProxy() {
   return express().use((req, res) => {
@@ -64,7 +61,7 @@ const human = 'Chrome';
  * @param userAgent The user agent string.
  * @param host The host part of the URL.
  * @param path The path part of the URL.
- * @return {Promise<!Object>} Promise of the GET response.
+ * @return Promise of the GET response.
  */
 async function get(userAgent: string, host: string, path: string) {
   return await supertest(host).get(path).set('User-Agent', userAgent);
