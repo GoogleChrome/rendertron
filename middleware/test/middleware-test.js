@@ -20,7 +20,7 @@ const express = require('express');
 const supertest = require('supertest');
 const test = require('ava');
 
-const rendertron = require('../src/middleware');
+const rendertron = require('../build/middleware');
 
 /**
  * Start the given Express app on localhost with a random port.

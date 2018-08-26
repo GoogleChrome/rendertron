@@ -14,15 +14,14 @@
  * the License.
  */
 
-'use strict';
-
-const request = require('request');
+import * as express from 'express';
+import * as request from 'request';
 
 /**
  * A default set of user agent patterns for bots/crawlers that do not perform
  * well with pages that require JavaScript.
  */
-const botUserAgents = module.exports.botUserAgents = [
+export const botUserAgents = [
   'W3C_Validator',
   'baiduspider',
   'bingbot',
@@ -39,8 +38,6 @@ const botUserAgents = module.exports.botUserAgents = [
   'vkShare',
 ];
 
-/* eslint-disable no-multi-spaces */
-
 /**
  * A default set of file extensions for static assets that do not need to be
  * proxied.
@@ -53,23 +50,43 @@ const staticFileExtensions = [
   'wmv', 'woff', 'xls', 'xml',  'zip',
 ];
 
-/* eslint-enable no-multi-spaces */
+/**
+ * Options for makeMiddleware.
+ */
+export interface Options {
+  /**
+   * Base URL of the Rendertron proxy service. Required.
+   */
+  proxyUrl: string;
+
+  /**
+   * Regular expression to match user agent to proxy. Defaults to a set of bots
+   * that do not perform well with pages that require JavaScript.
+   */
+  userAgentPattern?: RegExp;
+
+  /**
+   * Regular expression used to exclude request URL paths. Defaults to a set of
+   * typical static asset file extensions.
+   */
+  excludeUrlPattern?: RegExp;
+
+  /**
+   * Force web components polyfills to be loaded and enabled. Defaults to false.
+   */
+  injectShadyDom?: boolean;
+
+  /**
+   * Millisecond timeout for proxy requests. Defaults to 11000 milliseconds.
+   */
+  timeout?: number;
+}
 
 /**
- * @return {!Object} A new Express middleware function that proxies requests to
- * a Rendertron bot rendering service. Options:
- *
- * @param {!Object} options Configuration object with the following properties:
- * - proxyUrl: Base URL of the Rendertron proxy service. Required.
- * - userAgentPattern: Regular expression to match user agent to proxy.
- *   Defaults to a set of bots that do not perform well with pages that require
- *   JavaScript.
- * - excludeUrlPattern: Regular expression used to exclude request URL paths.
- *   Defaults to a set of typical static asset file extensions.
- * - injectShadyDom: Force web components polyfills to be loaded and enabled.
- * - timeout: Millisecond timeout for proxy requests.
+ * Create a new Express middleware function that proxies requests to a
+ * Rendertron bot rendering service.
  */
-module.exports.makeMiddleware = function(options) {
+export function makeMiddleware(options: Options): express.Handler {
   if (!options || !options.proxyUrl) {
     throw new Error('Must set options.proxyUrl.');
   }
@@ -84,10 +101,14 @@ module.exports.makeMiddleware = function(options) {
   const injectShadyDom = !!options.injectShadyDom;
   // The Rendertron service itself has a hard limit of 10 seconds to render, so
   // let's give a little more time than that by default.
-  const timeout = options.timeout || 11000; // Milliseconds.
+  const timeout = options.timeout || 11000;  // Milliseconds.
 
   return function rendertronMiddleware(req, res, next) {
-    if (!userAgentPattern.test(req.headers['user-agent']) ||
+    let ua = req.headers['user-agent'];
+    if (ua instanceof Array) {
+      ua = ua[0];
+    }
+    if (ua === undefined || !userAgentPattern.test(ua) ||
         excludeUrlPattern.test(req.path)) {
       next();
       return;
@@ -106,4 +127,4 @@ module.exports.makeMiddleware = function(options) {
       }
     }).pipe(res);
   };
-};
+}
