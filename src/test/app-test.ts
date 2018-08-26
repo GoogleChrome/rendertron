@@ -43,14 +43,14 @@ test('health check responds correctly', async (t) => {
 test('renders basic script', async (t) => {
   const res = await server.get(`/render/${testBase}basic-script.html`);
   t.is(res.status, 200);
-  t.true(res.text.indexOf('document-title') != -1);
+  t.true(res.text.indexOf('document-title') !== -1);
   t.is(res.header['x-renderer'], 'rendertron');
 });
 
 test('renders script after page load event', async (t) => {
   const res = await server.get(`/render/${testBase}script-after-load.html`);
   t.is(res.status, 200);
-  t.true(res.text.indexOf('injectedElement') != -1);
+  t.true(res.text.indexOf('injectedElement') !== -1);
 });
 
 // This test is failing as the polyfills (shady polyfill & scoping shim) are not
@@ -59,43 +59,43 @@ test.failing('renders shadow DOM - no polyfill', async (t) => {
   const res = await server.get(
       `/render/${testBase}shadow-dom-no-polyfill.html?wc-inject-shadydom=true`);
   t.is(res.status, 200);
-  t.true(res.text.indexOf('shadow-root-text') != -1);
+  t.true(res.text.indexOf('shadow-root-text') !== -1);
 });
 
 test('renders shadow DOM - polyfill loader', async (t) => {
   const res = await server.get(`/render/${
       testBase}shadow-dom-polyfill-loader.html?wc-inject-shadydom=true`);
   t.is(res.status, 200);
-  t.true(res.text.indexOf('shadow-root-text') != -1);
+  t.true(res.text.indexOf('shadow-root-text') !== -1);
 });
 
 test('renders shadow DOM - polyfill loader - different flag', async (t) => {
   const res = await server.get(
       `/render/${testBase}shadow-dom-polyfill-loader.html?wc-inject-shadydom`);
   t.is(res.status, 200);
-  t.true(res.text.indexOf('shadow-root-text') != -1);
+  t.true(res.text.indexOf('shadow-root-text') !== -1);
 });
 
 test('renders shadow DOM - webcomponents-lite.js polyfill', async (t) => {
   const res = await server.get(`/render/${
       testBase}shadow-dom-polyfill-all.html?wc-inject-shadydom=true`);
   t.is(res.status, 200);
-  t.true(res.text.indexOf('shadow-root-text') != -1);
+  t.true(res.text.indexOf('shadow-root-text') !== -1);
 });
 
 test('script tags and link[rel=import] tags are stripped', async (t) => {
   const res = await server.get(`/render/${testBase}include-script.html`);
   t.is(res.status, 200);
-  t.false(res.text.indexOf('script src') != -1);
-  t.true(res.text.indexOf('injectedElement') != -1);
-  t.false(res.text.indexOf('link rel') != -1);
-  t.true(res.text.indexOf('element-text') != -1);
+  t.false(res.text.indexOf('script src') !== -1);
+  t.true(res.text.indexOf('injectedElement') !== -1);
+  t.false(res.text.indexOf('link rel') !== -1);
+  t.true(res.text.indexOf('element-text') !== -1);
 });
 
 test('server status code should be forwarded', async (t) => {
   const res = await server.get('/render/http://httpstat.us/404');
   t.is(res.status, 404);
-  t.true(res.text.indexOf('404 Not Found') != -1);
+  t.true(res.text.indexOf('404 Not Found') !== -1);
 });
 
 test('http status code should be able to be set via a meta tag', async (t) => {
@@ -150,7 +150,7 @@ test('file url fails', async (t) => {
 test.failing('explicit render event ends early', async (t) => {
   const res = await server.get(`/render/${testBase}explicit-render-event.html`);
   t.is(res.status, 200);
-  t.true(res.text.indexOf('async loaded') != -1);
+  t.true(res.text.indexOf('async loaded') !== -1);
 });
 
 // TODO: support URL whitelisting.

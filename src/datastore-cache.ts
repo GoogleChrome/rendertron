@@ -36,7 +36,7 @@ type DatastoreObject = {
 };
 
 export class DatastoreCache {
-  datastore: Datastore = new(Datastore as any)();
+  datastore: Datastore = new Datastore();
 
   async clearCache() {
     const query = this.datastore.createQuery('Page');
@@ -85,13 +85,13 @@ export class DatastoreCache {
     return async function(
                this: DatastoreCache,
                ctx: Koa.Context,
-               next: () => Promise<any>) {
+               next: () => Promise<unknown>) {
       // Cache based on full URL. This means requests with different params are
       // cached separately.
       const key = this.datastore.key(['Page', ctx.url]);
       const results = await this.datastore.get(key);
 
-      if (results.length && results[0] != undefined) {
+      if (results.length && results[0] !== undefined) {
         const content = results[0] as CacheContent;
         // Serve cached content if its not expired.
         if (content.expires.getTime() >= new Date().getTime()) {
@@ -100,8 +100,8 @@ export class DatastoreCache {
           ctx.set('x-rendertron-cached', content.saved.toUTCString());
           try {
             let payload = JSON.parse(content.payload);
-            if (payload && typeof (payload) == 'object' &&
-                payload.type == 'Buffer') {
+            if (payload && typeof (payload) === 'object' &&
+                payload.type === 'Buffer') {
               payload = new Buffer(payload);
             }
             ctx.body = payload;
