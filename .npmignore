@@ -1,0 +1,17 @@
+src/
+middleware/
+build/test/
+test-resources/
+thirdfonts/
+.clang-format
+.gcloudignore
+.github
+.travis.yml
+.vscode
+app.yaml
+config.json
+get-docker.sh
+test.jpeg
+tsconfig.json
+tslint.json
+*.tgz

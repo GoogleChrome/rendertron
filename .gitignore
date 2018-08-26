@@ -2,3 +2,4 @@ node_modules/
 yarn.lock
 build/
 test.jpeg
+*.tgz
