@@ -8,9 +8,11 @@
     "node": ">=7"
   },
   "main": "src/main.js",
+  "types": "src/main.d.ts",
   "bin": "bin/rendertron",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc",
+    "prepack": "npm run build",
     "start": "node build/rendertron.js",
     "format": "find src -name '*.ts' | xargs clang-format --style=file -i",
     "lint": "eslint src/*.js test/*.js",
@@ -54,7 +56,7 @@
     "eslint-config-google": "^0.8.0",
     "nodemon": "^1.18.3",
     "supertest": "^3.0.0",
-    "typescript": "^2.9.2"
+    "typescript": "^3.0.1"
   },
   "eslintConfig": {
     "extends": "google",
