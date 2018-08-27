@@ -1,7 +1,4 @@
-[![Build status](https://img.shields.io/travis/GoogleChrome/rendertron.svg?style=flat-square)](https://travis-ci.org/GoogleChrome/rendertron)
-[![NPM version](http://img.shields.io/npm/v/rendertron-middleware.svg)](https://www.npmjs.com/package/rendertron-middleware)
-
-# rendertron-middleware
+# rendertron-middleware [![Build status](https://img.shields.io/travis/GoogleChrome/rendertron.svg?style=flat-square)](https://travis-ci.org/GoogleChrome/rendertron) [![NPM version](http://img.shields.io/npm/v/rendertron-middleware.svg)](https://www.npmjs.com/package/rendertron-middleware)
 
 [Koa](https://koajs.com/) and [Express](https://expressjs.com/) middleware for
 [Rendertron](https://github.com/GoogleChrome/rendertron).
