@@ -11,7 +11,8 @@
   "types": "build/rendertron.d.ts",
   "bin": "bin/rendertron",
   "scripts": {
-    "build": "tsc",
+    "clean": "rm -rf build/",
+    "build": "npm run clean && tsc",
     "prepack": "npm run build",
     "start": "node build/rendertron.js",
     "format": "find src -name '*.ts' | xargs clang-format --style=file -i",
