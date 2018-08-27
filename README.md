@@ -43,7 +43,7 @@ Once you have the service up and running, you'll need to implement the different
 layer. This checks the user agent to determine whether prerendering is required.
 
 This is a list of middleware available to use with the Rendertron service:
- * [Express.js middleware](/middleware)
+ * [Koa and Express middleware](/middleware)
  * [Firebase functions](https://github.com/justinribeiro/pwa-firebase-functions-botrender) (Community maintained)
  * [ASP.net core middleware](https://github.com/galamai/AspNetCore.Rendertron) (Community maintained)
 
