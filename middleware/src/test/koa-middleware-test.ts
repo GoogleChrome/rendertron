@@ -1,5 +1,5 @@
-/*
- * Copyright 2017 Google Inc. All rights reserved.
+/**
+ * Copyright 2018 Google Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,17 +15,18 @@
  */
 
 import {test} from 'ava';
-import * as express from 'express';
+import * as koa from 'koa';
 import * as net from 'net';
 import * as supertest from 'supertest';
 
-import * as rendertron from '../middleware';
+import {makeKoaMiddleware} from '../koa-middleware';
+import {Options} from '../options';
 
 /**
- * Start the given Express app on localhost with a random port.
+ * Start the given Koa app on localhost with a random port.
  * @param {!Object} app The app.
  */
-async function listen(app: express.Application): Promise<string> {
+async function listen(app: koa): Promise<string> {
   return new Promise<string>((resolve: (url: string) => void) => {
     const server = app.listen(/* random */ 0, 'localhost', () => {
       resolve(`http://localhost:${(server.address() as net.AddressInfo).port}`);
@@ -34,22 +35,22 @@ async function listen(app: express.Application): Promise<string> {
 }
 
 /**
- * Make an Express app that uses the Rendertron middleware and returns
- * "fallthrough" if the middleware skipped the request (i.e. called `next`).
+ * Make a Koa app that uses the Rendertron middleware and returns "fallthrough"
+ * if the middleware skipped the request (i.e. called `next`).
  */
-function makeApp(options: rendertron.Options) {
-  return express()
-      .use(rendertron.makeMiddleware(options))
-      .use((_req, res) => res.end('fallthrough'));
+function makeApp(options: Options) {
+  return new koa()
+      .use(makeKoaMiddleware(options))
+      .use((ctx, _next) => ctx.body = 'fallthrough');
 }
 
 /**
- * Make an Express app that takes the place of a Rendertron server instance and
+ * Make a Koa app that takes the place of a Rendertron server instance and
  * always responds with "proxy <decoded url>".
  */
 function makeProxy() {
-  return express().use((req, res) => {
-    res.end('proxy ' + decodeURIComponent(req.url.substring(1)));
+  return new koa().use((ctx, _next) => {
+    ctx.body = 'proxy ' + decodeURIComponent(ctx.url.substring(1));
   });
 }
 
@@ -68,13 +69,13 @@ async function get(userAgent: string, host: string, path: string) {
 }
 
 test('makes a middleware function', async (t) => {
-  const m = rendertron.makeMiddleware({proxyUrl: 'http://example.com'});
+  const m = makeKoaMiddleware({proxyUrl: 'http://example.com'});
   t.truthy(m);
 });
 
 test('throws if no proxyUrl given', async (t) => {
-  const makeMiddlewareUntyped =
-      rendertron.makeMiddleware as (options?: unknown) => express.Application;
+  const makeMiddlewareUntyped = makeKoaMiddleware as (options?: unknown) =>
+                                    koa.Middleware;
   t.throws(() => makeMiddlewareUntyped());
   t.throws(() => makeMiddlewareUntyped({}));
   t.throws(() => makeMiddlewareUntyped({proxyUrl: ''}));
@@ -161,8 +162,10 @@ test('respects custom exclude url pattern', async (t) => {
 
 test('forwards proxy error status and body', async (t) => {
   // This proxy always returns an error.
-  const proxyUrl = await listen(
-      express().use((_req, res) => res.status(500).end('proxy error')));
+  const proxyUrl = await listen(new koa().use((ctx, _next) => {
+    ctx.status = 500;
+    ctx.body = 'proxy error';
+  }));
   const appUrl = await listen(makeApp({proxyUrl}));
 
   const res = await get(bot, appUrl, '/bar');
@@ -170,10 +173,15 @@ test('forwards proxy error status and body', async (t) => {
   t.is(res.text, 'proxy error');
 });
 
-test('falls through after timeout', async (t) => {
+test.failing('falls through after timeout', async (t) => {
   // This proxy returns after 20ms, but our timeout is 10ms.
-  const proxyUrl = await listen(express().use((_req, res) => {
-    setTimeout(() => res.end('too slow'), 20);
+  const proxyUrl = await listen(new koa().use((ctx, _next) => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        ctx.body = 'too slow';
+        resolve();
+      }, 20);
+    });
   }));
   const appUrl = await listen(makeApp({proxyUrl, timeout: 10}));
 

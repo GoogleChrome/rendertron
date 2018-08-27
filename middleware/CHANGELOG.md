@@ -1,6 +1,9 @@
 # Change Log
 
 ## Unreleased
+* [***BREAKING***] Added middleware for [Koa](https://koajs.com/). Users should
+  now import either `makeKoaMiddleware` or `makeExpressMiddleware` (previously
+  known as `makeMiddleware`).
 * Converted to TypeScript.
 
 ## [0.1.2] 2017-08-29
