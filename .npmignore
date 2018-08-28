@@ -2,7 +2,6 @@ src/
 middleware/
 build/test/
 test-resources/
-thirdfonts/
 .clang-format
 .gcloudignore
 .github
