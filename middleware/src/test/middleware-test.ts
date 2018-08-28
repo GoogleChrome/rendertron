@@ -23,7 +23,6 @@ import * as rendertron from '../middleware';
 
 /**
  * Start the given Express app on localhost with a random port.
- * @param {!Object} app The app.
  */
 async function listen(app: express.Application): Promise<string> {
   return new Promise<string>((resolve: (url: string) => void) => {
@@ -58,10 +57,6 @@ const human = 'Chrome';
 
 /**
  * GET a URL with the given user agent.
- * @param userAgent The user agent string.
- * @param host The host part of the URL.
- * @param path The path part of the URL.
- * @return Promise of the GET response.
  */
 async function get(userAgent: string, host: string, path: string) {
   return await supertest(host).get(path).set('User-Agent', userAgent);
