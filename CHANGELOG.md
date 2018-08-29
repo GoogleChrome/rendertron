@@ -1,5 +1,9 @@
 # Change Log
 
+## Unreleased
+ * Remove testing and other files from NPM package.
+ * Fix NPM main config.
+
 ## [2.0.0] 2018-07-26
  * Rebuilt with Puppeteer under the hood
  * Rebuilt as Koa server instead of an Express server

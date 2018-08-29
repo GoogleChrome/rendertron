@@ -119,7 +119,7 @@ test('compression preserved', async (t) => {
 let statusCallCount = 0;
 app.use(route.get('/status/:status', (ctx: Koa.Context, status: string) => {
   // Every second call sends a different status.
-  if (statusCallCount % 2 == 0) {
+  if (statusCallCount % 2 === 0) {
     ctx.status = Number(status);
   } else {
     ctx.status = 401;

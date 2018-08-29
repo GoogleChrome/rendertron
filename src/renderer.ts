@@ -3,7 +3,7 @@ import * as url from 'url';
 
 type SerializedResponse = {
   status: number; content: string;
-}
+};
 
 type ViewportDimensions = {
   width: number; height: number;

@@ -5,41 +5,28 @@
   "engines": {
     "node": ">=6"
   },
-  "main": "src/middleware.js",
+  "main": "build/middleware.js",
+  "types": "build/middleware.d.ts",
   "scripts": {
-    "lint": "eslint src/*.js test/*.js",
-    "test": "ava"
+    "build": "tsc",
+    "prepack": "npm run build",
+    "lint": "tslint --project . --format stylish",
+    "format": "find src -name '*.ts' | xargs clang-format --style=file -i",
+    "test": "npm run build && ava 'build/**/*-test.js'"
   },
   "license": "Apache-2.0",
   "dependencies": {
+    "@types/express": "^4.16.0",
     "request": "^2.87.0"
   },
   "devDependencies": {
+    "@types/request": "^2.47.1",
+    "@types/supertest": "^2.0.5",
     "ava": "^0.25.0",
-    "eslint": "^5.1.0",
-    "eslint-config-google": "^0.8.0",
+    "clang-format": "^1.2.4",
     "express": "^4.16.3",
-    "supertest": "^3.0.0"
-  },
-  "eslintConfig": {
-    "extends": "google",
-    "env": {
-      "node": true
-    },
-    "rules": {
-      "new-cap": 0,
-      "max-len": 0,
-      "no-warning-comments": 0,
-      "curly": 0,
-      "comma-dangle": 0,
-      "eqeqeq": 0,
-      "no-eq-null": 0,
-      "require-jsdoc": 0,
-      "space-before-function-paren": 0
-    },
-    "parserOptions": {
-      "ecmaVersion": 8,
-      "sourceType": "module"
-    }
+    "supertest": "^3.0.0",
+    "tslint": "^5.11.0",
+    "typescript": "^3.0.1"
   }
 }
