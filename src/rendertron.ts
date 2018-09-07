@@ -69,9 +69,16 @@ export class Rendertron {
    * the requester to read the file system via Chrome.
    */
   restricted(href: string): boolean {
-    const protocol = url.parse(href).protocol || '';
+    const parsedUrl = url.parse(href);
+    const protocol = parsedUrl.protocol || '';
 
     if (!protocol.match(/^https?/)) {
+      return true;
+    }
+
+    // Disable access to compute metadata. See
+    // https://cloud.google.com/compute/docs/storing-retrieving-metadata.
+    if (parsedUrl.hostname === 'metadata.google.internal') {
       return true;
     }
 
