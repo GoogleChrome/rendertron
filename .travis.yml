@@ -14,9 +14,9 @@ install:
   - source $HOME/gcloud/google-cloud-sdk/path.bash.inc
   - (cd middleware && yarn)
 script:
-  - yarn lint
-  - yarn test
-  - yarn test-cache
-  - (cd middleware && yarn lint && yarn test)
+  - npm run lint
+  - npm run test
+  - npm run test-cache
+  - (cd middleware && npm run lint && npm run test)
 addons:
   chrome: stable

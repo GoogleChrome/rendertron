@@ -147,8 +147,19 @@ test('file url fails', async (t) => {
   t.is(res.status, 403);
 });
 
+test('metadata url fails', async (t) => {
+  const res = await server.get(`/render/http://metadata.google.internal/blah`);
+  t.is(res.status, 403);
+});
+
 test('file url fails for screenshot', async (t) => {
   const res = await server.get(`/screenshot/file:///dev/fd/0`);
+  t.is(res.status, 403);
+});
+
+test('metadata url fails for screenshot', async (t) => {
+  const res =
+      await server.get(`/screenshot/http://metadata.google.internal/blah`);
   t.is(res.status, 403);
 });
 
