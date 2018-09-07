@@ -147,6 +147,11 @@ test('file url fails', async (t) => {
   t.is(res.status, 403);
 });
 
+test('file url fails for screenshot', async (t) => {
+  const res = await server.get(`/screenshot/file:///dev/fd/0`);
+  t.is(res.status, 403);
+});
+
 test.failing('explicit render event ends early', async (t) => {
   const res = await server.get(`/render/${testBase}explicit-render-event.html`);
   t.is(res.status, 200);
