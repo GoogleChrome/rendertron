@@ -95,9 +95,9 @@ test('script tags and link[rel=import] tags are stripped', async (t) => {
 test('script tags for JSON-LD are not stripped', async (t) => {
   const res = await server.get(`/render/${testBase}include-json-ld.html`);
   t.is(res.status, 200);
-  t.false(res.text.indexOf('script src') != -1);
-  t.true(res.text.indexOf('application/ld+json') != -1);
-  t.false(res.text.indexOf('javascript') != -1)
+  t.false(res.text.indexOf('script src') !== -1);
+  t.true(res.text.indexOf('application/ld+json') !== -1);
+  t.false(res.text.indexOf('javascript') !== -1);
 });
 
 test('server status code should be forwarded', async (t) => {
