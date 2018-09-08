@@ -1,6 +1,8 @@
 # Change Log
 
-## Unreleased
+<!-- ## Unreleased -->
+
+## [0.1.3] 2018-09-07
 * Converted to TypeScript.
 
 ## [0.1.2] 2017-08-29

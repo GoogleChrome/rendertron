@@ -1,6 +1,8 @@
 # Change Log
 
-## Unreleased
+<!-- ## Unreleased -->
+
+## [2.0.1] 2018-09-07
  * Remove testing and other files from NPM package.
  * Fix NPM main config.
  * Improved restrictions for endpoints.
