@@ -96,6 +96,12 @@ export class Renderer {
       return {status: 400, content: ''};
     }
 
+    // Disable access to compute metadata. See
+    // https://cloud.google.com/compute/docs/storing-retrieving-metadata.
+    if (response.headers()['metadata-flavor'] === 'Google') {
+      return {status: 403, content: ''};
+    }
+
     // Set status to the initial server's response code. Check for a <meta
     // name="render:status_code" content="4xx" /> tag which overrides the status
     // code.
@@ -145,7 +151,25 @@ export class Renderer {
       page.setUserAgent(MOBILE_USERAGENT);
     }
 
-    await page.goto(url, {timeout: 10000, waitUntil: 'networkidle0'});
+    let response: puppeteer.Response|null = null;
+
+    try {
+      // Navigate to page. Wait until there are no oustanding network requests.
+      response =
+          await page.goto(url, {timeout: 10000, waitUntil: 'networkidle0'});
+    } catch (e) {
+      console.error(e);
+    }
+
+    if (!response) {
+      throw new ScreenshotError('NoResponse');
+    }
+
+    // Disable access to compute metadata. See
+    // https://cloud.google.com/compute/docs/storing-retrieving-metadata.
+    if (response!.headers()['metadata-flavor'] === 'Google') {
+      throw new ScreenshotError('Forbidden');
+    }
 
     // Must be jpeg & binary format.
     const screenshotOptions =
@@ -154,5 +178,19 @@ export class Renderer {
     // https://github.com/GoogleChrome/puppeteer/blob/v1.8.0/docs/api.md#pagescreenshotoptions
     const buffer = await page.screenshot(screenshotOptions) as Buffer;
     return buffer;
+  }
+}
+
+type ErrorType = 'Forbidden'|'NoResponse';
+
+export class ScreenshotError extends Error {
+  type: ErrorType;
+
+  constructor(type: ErrorType) {
+    super(type);
+
+    this.name = this.constructor.name;
+
+    this.type = type;
   }
 }
