@@ -8,7 +8,7 @@ import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import * as url from 'url';
 
-import {Renderer} from './renderer';
+import {Renderer, ScreenshotError} from './renderer';
 
 const CONFIG_PATH = path.resolve(__dirname, '../config.json');
 
@@ -76,12 +76,6 @@ export class Rendertron {
       return true;
     }
 
-    // Disable access to compute metadata. See
-    // https://cloud.google.com/compute/docs/storing-retrieving-metadata.
-    if (parsedUrl.hostname === 'metadata.google.internal') {
-      return true;
-    }
-
     return false;
   }
 
@@ -126,11 +120,16 @@ export class Rendertron {
 
     const mobileVersion = 'mobile' in ctx.query ? true : false;
 
-    const img =
-        await this.renderer.screenshot(url, mobileVersion, dimensions, options);
-    ctx.set('Content-Type', 'image/jpeg');
-    ctx.set('Content-Length', img.length.toString());
-    ctx.body = img;
+    try {
+      const img = await this.renderer.screenshot(
+          url, mobileVersion, dimensions, options);
+      ctx.set('Content-Type', 'image/jpeg');
+      ctx.set('Content-Length', img.length.toString());
+      ctx.body = img;
+    } catch (error) {
+      const err = error as ScreenshotError;
+      ctx.status = err.type === 'Forbidden' ? 403 : 500;
+    }
   }
 }
 
