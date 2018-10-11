@@ -45,23 +45,26 @@ export class Rendertron {
 
     this.app.use(route.get('/', async (ctx: Koa.Context) => {
       await koaSend(
-          ctx, 'index.html', {root: path.resolve(__dirname, '../src')});
+        ctx, 'index.html', {root: path.resolve(__dirname, '../src')});
     }));
     this.app.use(
-        route.get('/_ah/health', (ctx: Koa.Context) => ctx.body = 'OK'));
+      route.get('/_ah/health', (ctx: Koa.Context) => ctx.body = 'OK'));
 
     // Optionally enable cache for rendering requests.
     if (this.config.datastoreCache) {
       const {DatastoreCache} = await import('./datastore-cache');
       this.app.use(new DatastoreCache().middleware());
+    } else if (this.config.memoryCache) {
+      const {MemoryCache} = await import('./memory-cache');
+      this.app.use(new MemoryCache().middleware());
     }
 
     this.app.use(
-        route.get('/render/:url(.*)', this.handleRenderRequest.bind(this)));
+      route.get('/render/:url(.*)', this.handleRenderRequest.bind(this)));
     this.app.use(route.get(
-        '/screenshot/:url(.*)', this.handleScreenshotRequest.bind(this)));
+      '/screenshot/:url(.*)', this.handleScreenshotRequest.bind(this)));
     this.app.use(route.post(
-        '/screenshot/:url(.*)', this.handleScreenshotRequest.bind(this)));
+      '/screenshot/:url(.*)', this.handleScreenshotRequest.bind(this)));
 
     return this.app.listen(this.port, () => {
       console.log(`Listening on port ${this.port}`);
