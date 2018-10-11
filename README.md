@@ -162,6 +162,7 @@ on how to deploy run headless Chrome in Docker.
 When deploying the service, set configuration variables by including a `config.json` in the
 root. Available configuration options:
  * `datastoreCache` default `false` - set to `true` to enable caching on Google Cloud using datastore
+ * `memoryCache` default `false` - set to `true` to enable in-memory caching
 
 ### Troubleshooting
 If you're having troubles with getting Headless Chrome to run in your
