@@ -31,13 +31,13 @@ type CacheEntry = {
 export const CACHE_DURATION_MINUTES = 60 * 24;
 
 export class MemoryCache {
-  private store: any = {};
+  private store: {[id: string]: CacheEntry} = {};
 
   async clearCache() {
     this.store = {};
   }
 
-  cacheContent(key: symbol, headers: {}, payload: Buffer) {
+  cacheContent(key: string, headers: {}, payload: Buffer) {
     const now = new Date();
 
     this.store[key] = {
@@ -48,11 +48,11 @@ export class MemoryCache {
     } as CacheEntry;
   }
 
-  getCachedContent(key: symbol) {
+  getCachedContent(key: string) {
     return this.store[key];
   }
 
-  middleware() { 
+  middleware() {
     const addToCache = this.cacheContent.bind(this);
     const getFromCache = this.getCachedContent.bind(this);
 
@@ -81,7 +81,7 @@ export class MemoryCache {
                 'Erroring parsing cache contents, falling back to normal render');
           }
         }
-      
+
         await next();
 
         if (ctx.status === 200) {
