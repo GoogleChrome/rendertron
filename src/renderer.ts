@@ -61,7 +61,9 @@ export class Renderer {
 
     const page = await this.browser.newPage();
 
-    page.setViewport({width: 1000, height: 1000, isMobile});
+    // Page may reload when setting isMobile
+    // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
+    await page.setViewport({width: 1000, height: 1000, isMobile});
 
     if (isMobile) {
       page.setUserAgent(MOBILE_USERAGENT);
@@ -145,7 +147,9 @@ export class Renderer {
       options?: object): Promise<Buffer> {
     const page = await this.browser.newPage();
 
-    page.setViewport(
+    // Page may reload when setting isMobile
+    // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
+    await page.setViewport(
         {width: dimensions.width, height: dimensions.height, isMobile});
 
     if (isMobile) {
