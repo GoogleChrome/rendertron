@@ -4,6 +4,7 @@ import * as bodyParser from 'koa-bodyparser';
 import * as koaCompress from 'koa-compress';
 import * as route from 'koa-route';
 import * as koaSend from 'koa-send';
+import * as koaLogger from 'koa-logger';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import * as url from 'url';
@@ -34,6 +35,8 @@ export class Rendertron {
 
     const browser = await puppeteer.launch({args: ['--no-sandbox']});
     this.renderer = new Renderer(browser);
+
+    this.app.use(koaLogger());
 
     this.app.use(koaCompress());
 
