@@ -22,7 +22,6 @@ import * as request from 'request';
  * well with pages that require JavaScript.
  */
 export const botUserAgents = [
-  'W3C_Validator',
   'baiduspider',
   'bingbot',
   'embedly',
@@ -36,6 +35,8 @@ export const botUserAgents = [
   'slackbot',
   'twitterbot',
   'vkShare',
+  'W3C_Validator',
+  'whatsapp',
 ];
 
 /**
