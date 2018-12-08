@@ -1,6 +1,8 @@
 # Change Log
 
-## Unreleased
+<!-- ## Unreleased -->
+
+## [0.1.4] 2018-12-08
 * Add Whatsapp as bot.
 
 ## [0.1.3] 2018-09-18
