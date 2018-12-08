@@ -1,6 +1,7 @@
 # Change Log
 
-<!-- ## Unreleased -->
+## Unreleased
+* Add Whatsapp as bot.
 
 ## [0.1.3] 2018-09-18
 * Converted to TypeScript.
