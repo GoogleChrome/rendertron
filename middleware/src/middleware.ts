@@ -106,9 +106,6 @@ export function makeMiddleware(options: Options): express.Handler {
 
   return function rendertronMiddleware(req, res, next) {
     let ua = req.headers['user-agent'];
-    if (ua instanceof Array) {
-      ua = ua[0];
-    }
     if (ua === undefined || !userAgentPattern.test(ua) ||
         excludeUrlPattern.test(req.path)) {
       next();
