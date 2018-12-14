@@ -33,6 +33,7 @@ export const botUserAgents = [
   'rogerbot',
   'showyoubot',
   'slackbot',
+  'TelegramBot',
   'twitterbot',
   'vkShare',
   'W3C_Validator',
