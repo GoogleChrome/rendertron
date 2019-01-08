@@ -26,6 +26,7 @@ export const botUserAgents = [
   'bingbot',
   'embedly',
   'facebookexternalhit',
+  'Googlebot',
   'linkedinbot',
   'outbrain',
   'pinterest',
