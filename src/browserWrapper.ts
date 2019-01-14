@@ -24,6 +24,8 @@ export default class BrowserWrapper {
     }
     constructor(browser: Browser) {
         this.browser = browser;
-        this.browser.once('disconnected', this.setDisconnectStatus);
+        this.browser.once('disconnected', () => {
+            this.setDisconnectStatus();
+        });
     }
 }
