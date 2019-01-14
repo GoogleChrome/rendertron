@@ -67,7 +67,7 @@ export class Renderer {
 
       // Page may reload when setting isMobile
       // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
-      await page.setViewport({width: 1000, height: isMobile ? 5000 : 1000, isMobile});
+      await page.setViewport({width: 1000, height: 5000, isMobile});
 
       if (isMobile) {
         page.setUserAgent(MOBILE_USERAGENT);
@@ -91,7 +91,7 @@ export class Renderer {
       try {
         // Navigate to page. Wait until there are no oustanding network requests.
         response = await page.goto(
-            requestUrl, {timeout: 15000, waitUntil: 'networkidle0'});
+            requestUrl, {timeout: 10000, waitUntil: 'networkidle2'});
       } catch (e) {
         console.error(e);
       }
@@ -169,7 +169,7 @@ export class Renderer {
       try {
         // Navigate to page. Wait until there are no oustanding network requests.
         response =
-            await page.goto(url, {timeout: 15000, waitUntil: 'networkidle0'});
+            await page.goto(url, {timeout: 10000, waitUntil: 'networkidle2'});
       } catch (e) {
         console.error(e);
       }
