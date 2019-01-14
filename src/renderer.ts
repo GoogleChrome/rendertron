@@ -61,7 +61,7 @@ export class Renderer {
       }
     }
 
-    return await this.browserPool.aquire(async (browser: Browser) => {
+    return await this.browserPool.acquire(async (browser: Browser) => {
       const newIncognitoBrowserContext = await browser.createIncognitoBrowserContext();
       const page = await newIncognitoBrowserContext.newPage();
 
@@ -151,7 +151,7 @@ export class Renderer {
       isMobile: boolean,
       dimensions: ViewportDimensions,
       options?: object): Promise<Buffer> {
-    return await this.browserPool.aquire(async (browser: Browser) => {
+    return await this.browserPool.acquire(async (browser: Browser) => {
 
       const page = await browser.newPage();
 

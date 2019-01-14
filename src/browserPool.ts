@@ -20,7 +20,7 @@ export class BrowserPool {
         const factory = new BrowserPoolFactory(this.maxUses, browserArgs);
         this.pool = createPool(factory, this.options);
     }
-    async aquire(fn: Function) {
+    async acquire(fn: Function) {
         const browserWrapper: BrowserWrapper = await this.pool.acquire();
         browserWrapper.incrementUseCount();
         const result = await fn(browserWrapper.getBrowser());
