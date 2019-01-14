@@ -5,7 +5,7 @@ import BrowserWrapper from './browserWrapper';
 
 export class BrowserPool {
     private options: Options = {
-        idleTimeoutMillis: 30000,
+        idleTimeoutMillis: 300000,
         max: 10,
         min: 2,
         testOnBorrow: true,

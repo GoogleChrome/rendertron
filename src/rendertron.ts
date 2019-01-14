@@ -5,7 +5,6 @@ import * as koaCompress from 'koa-compress';
 import * as route from 'koa-route';
 import * as koaSend from 'koa-send';
 import * as path from 'path';
-import * as puppeteer from 'puppeteer';
 import * as url from 'url';
 
 import {Renderer, ScreenshotError} from './renderer';
