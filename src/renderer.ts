@@ -1,5 +1,7 @@
 import * as puppeteer from 'puppeteer';
 import * as url from 'url';
+import {BrowserPool} from './browserPool';
+import {Browser} from 'puppeteer';
 
 type SerializedResponse = {
   status: number; content: string;
@@ -17,10 +19,10 @@ const MOBILE_USERAGENT =
  * APIs that are able to handle web components and PWAs.
  */
 export class Renderer {
-  private browser: puppeteer.Browser;
+  private readonly browserPool: BrowserPool;
 
-  constructor(browser: puppeteer.Browser) {
-    this.browser = browser;
+  constructor() {
+    this.browserPool = new BrowserPool({args: ['--no-sandbox']});
   }
 
   async serialize(requestUrl: string, isMobile: boolean):
@@ -59,87 +61,89 @@ export class Renderer {
       }
     }
 
-    const newIncognitoBrowserContext = await this.browser.createIncognitoBrowserContext();
-    const page = await newIncognitoBrowserContext.newPage();
+    return await this.browserPool.aquire(async (browser: Browser) => {
+      const newIncognitoBrowserContext = await browser.createIncognitoBrowserContext();
+      const page = await newIncognitoBrowserContext.newPage();
 
-    // Page may reload when setting isMobile
-    // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
-    await page.setViewport({width: 1000, height: 1000, isMobile});
+      // Page may reload when setting isMobile
+      // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
+      await page.setViewport({width: 1000, height: 1000, isMobile});
 
-    if (isMobile) {
-      page.setUserAgent(MOBILE_USERAGENT);
-    }
-
-    page.evaluateOnNewDocument('customElements.forcePolyfill = true');
-    page.evaluateOnNewDocument('ShadyDOM = {force: true}');
-    page.evaluateOnNewDocument('ShadyCSS = {shimcssproperties: true}');
-
-    let response: puppeteer.Response|null = null;
-    // Capture main frame response. This is used in the case that rendering
-    // times out, which results in puppeteer throwing an error. This allows us
-    // to return a partial response for what was able to be rendered in that
-    // time frame.
-    page.addListener('response', (r: puppeteer.Response) => {
-      if (!response) {
-        response = r;
+      if (isMobile) {
+        page.setUserAgent(MOBILE_USERAGENT);
       }
+
+      page.evaluateOnNewDocument('customElements.forcePolyfill = true');
+      page.evaluateOnNewDocument('ShadyDOM = {force: true}');
+      page.evaluateOnNewDocument('ShadyCSS = {shimcssproperties: true}');
+
+      let response: puppeteer.Response | null = null;
+      // Capture main frame response. This is used in the case that rendering
+      // times out, which results in puppeteer throwing an error. This allows us
+      // to return a partial response for what was able to be rendered in that
+      // time frame.
+      page.addListener('response', (r: puppeteer.Response) => {
+        if (!response) {
+          response = r;
+        }
+      });
+
+      try {
+        // Navigate to page. Wait until there are no oustanding network requests.
+        response = await page.goto(
+            requestUrl, {timeout: 10000, waitUntil: 'networkidle0'});
+      } catch (e) {
+        console.error(e);
+      }
+
+      if (!response) {
+        console.error('response does not exist');
+        // This should only occur when the page is about:blank. See
+        // https://github.com/GoogleChrome/puppeteer/blob/v1.5.0/docs/api.md#pagegotourl-options.
+        return {status: 400, content: ''};
+      }
+
+      // Disable access to compute metadata. See
+      // https://cloud.google.com/compute/docs/storing-retrieving-metadata.
+      if (response.headers()['metadata-flavor'] === 'Google') {
+        return {status: 403, content: ''};
+      }
+
+      // Set status to the initial server's response code. Check for a <meta
+      // name="render:status_code" content="4xx" /> tag which overrides the status
+      // code.
+      let statusCode = response.status();
+      const newStatusCode =
+          await page
+              .$eval(
+                  'meta[name="render:status_code"]',
+                  (element) => parseInt(element.getAttribute('content') || ''))
+              .catch(() => undefined);
+      // On a repeat visit to the same origin, browser cache is enabled, so we may
+      // encounter a 304 Not Modified. Instead we'll treat this as a 200 OK.
+      if (statusCode === 304) {
+        statusCode = 200;
+      }
+      // Original status codes which aren't 200 always return with that status
+      // code, regardless of meta tags.
+      if (statusCode === 200 && newStatusCode) {
+        statusCode = newStatusCode;
+      }
+
+      // Remove script & import tags.
+      await page.evaluate(stripPage);
+      // Inject <base> tag with the origin of the request (ie. no path).
+      const parsedUrl = url.parse(requestUrl);
+      await page.evaluate(
+          injectBaseHref, `${parsedUrl.protocol}//${parsedUrl.host}`);
+
+      // Serialize page.
+      const result = await page.evaluate('document.firstElementChild.outerHTML');
+
+      await page.close();
+      await newIncognitoBrowserContext.close();
+      return {status: statusCode, content: result};
     });
-
-    try {
-      // Navigate to page. Wait until there are no oustanding network requests.
-      response = await page.goto(
-          requestUrl, {timeout: 10000, waitUntil: 'networkidle0'});
-    } catch (e) {
-      console.error(e);
-    }
-
-    if (!response) {
-      console.error('response does not exist');
-      // This should only occur when the page is about:blank. See
-      // https://github.com/GoogleChrome/puppeteer/blob/v1.5.0/docs/api.md#pagegotourl-options.
-      return {status: 400, content: ''};
-    }
-
-    // Disable access to compute metadata. See
-    // https://cloud.google.com/compute/docs/storing-retrieving-metadata.
-    if (response.headers()['metadata-flavor'] === 'Google') {
-      return {status: 403, content: ''};
-    }
-
-    // Set status to the initial server's response code. Check for a <meta
-    // name="render:status_code" content="4xx" /> tag which overrides the status
-    // code.
-    let statusCode = response.status();
-    const newStatusCode =
-        await page
-            .$eval(
-                'meta[name="render:status_code"]',
-                (element) => parseInt(element.getAttribute('content') || ''))
-            .catch(() => undefined);
-    // On a repeat visit to the same origin, browser cache is enabled, so we may
-    // encounter a 304 Not Modified. Instead we'll treat this as a 200 OK.
-    if (statusCode === 304) {
-      statusCode = 200;
-    }
-    // Original status codes which aren't 200 always return with that status
-    // code, regardless of meta tags.
-    if (statusCode === 200 && newStatusCode) {
-      statusCode = newStatusCode;
-    }
-
-    // Remove script & import tags.
-    await page.evaluate(stripPage);
-    // Inject <base> tag with the origin of the request (ie. no path).
-    const parsedUrl = url.parse(requestUrl);
-    await page.evaluate(
-        injectBaseHref, `${parsedUrl.protocol}//${parsedUrl.host}`);
-
-    // Serialize page.
-    const result = await page.evaluate('document.firstElementChild.outerHTML');
-
-    await page.close();
-    await newIncognitoBrowserContext.close();
-    return {status: statusCode, content: result};
   }
 
   async screenshot(
@@ -147,44 +151,47 @@ export class Renderer {
       isMobile: boolean,
       dimensions: ViewportDimensions,
       options?: object): Promise<Buffer> {
-    const page = await this.browser.newPage();
+    return await this.browserPool.aquire(async (browser: Browser) => {
 
-    // Page may reload when setting isMobile
-    // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
-    await page.setViewport(
-        {width: dimensions.width, height: dimensions.height, isMobile});
+      const page = await browser.newPage();
 
-    if (isMobile) {
-      page.setUserAgent(MOBILE_USERAGENT);
-    }
+      // Page may reload when setting isMobile
+      // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
+      await page.setViewport(
+          {width: dimensions.width, height: dimensions.height, isMobile});
 
-    let response: puppeteer.Response|null = null;
+      if (isMobile) {
+        page.setUserAgent(MOBILE_USERAGENT);
+      }
 
-    try {
-      // Navigate to page. Wait until there are no oustanding network requests.
-      response =
-          await page.goto(url, {timeout: 10000, waitUntil: 'networkidle0'});
-    } catch (e) {
-      console.error(e);
-    }
+      let response: puppeteer.Response | null = null;
 
-    if (!response) {
-      throw new ScreenshotError('NoResponse');
-    }
+      try {
+        // Navigate to page. Wait until there are no oustanding network requests.
+        response =
+            await page.goto(url, {timeout: 10000, waitUntil: 'networkidle0'});
+      } catch (e) {
+        console.error(e);
+      }
 
-    // Disable access to compute metadata. See
-    // https://cloud.google.com/compute/docs/storing-retrieving-metadata.
-    if (response!.headers()['metadata-flavor'] === 'Google') {
-      throw new ScreenshotError('Forbidden');
-    }
+      if (!response) {
+        throw new ScreenshotError('NoResponse');
+      }
 
-    // Must be jpeg & binary format.
-    const screenshotOptions =
-        Object.assign({}, options, {type: 'jpeg', encoding: 'binary'});
-    // Screenshot returns a buffer based on specified encoding above.
-    // https://github.com/GoogleChrome/puppeteer/blob/v1.8.0/docs/api.md#pagescreenshotoptions
-    const buffer = await page.screenshot(screenshotOptions) as Buffer;
-    return buffer;
+      // Disable access to compute metadata. See
+      // https://cloud.google.com/compute/docs/storing-retrieving-metadata.
+      if (response!.headers()['metadata-flavor'] === 'Google') {
+        throw new ScreenshotError('Forbidden');
+      }
+
+      // Must be jpeg & binary format.
+      const screenshotOptions =
+          Object.assign({}, options, {type: 'jpeg', encoding: 'binary'});
+      // Screenshot returns a buffer based on specified encoding above.
+      // https://github.com/GoogleChrome/puppeteer/blob/v1.8.0/docs/api.md#pagescreenshotoptions
+      const buffer = await page.screenshot(screenshotOptions) as Buffer;
+      return buffer;
+    });
   }
 }
 
