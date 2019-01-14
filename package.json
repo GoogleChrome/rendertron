@@ -30,7 +30,7 @@
     "chrome-launcher": "^0.10.2",
     "chrome-remote-interface": "^0.26.1",
     "fs-extra": "^7.0.0",
-    "generic-pool": "^3.4.2",
+    "generic-pool": "^3.1.7",
     "koa": "^2.5.2",
     "koa-bodyparser": "^4.2.1",
     "koa-compress": "^3.0.0",
