@@ -67,7 +67,7 @@ export class Renderer {
 
     page.on('request', (interceptedRequest) => {
       const interceptedUrl = interceptedRequest.url();
-      const allowedUrlsRegex = /^https:\/\/(.*?).?gozefo.com.*/;
+      const allowedUrlsRegex = /^https?:\/\/(.*?).?gozefo.com.*/;
       // console.log('interceptedUrl: ', interceptedUrl, 'allowed: ', interceptedUrl.match(allowedUrlsRegex) ? 'true' : false);
       if (!interceptedUrl.match(allowedUrlsRegex))
         interceptedRequest.abort();
