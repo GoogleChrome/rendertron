@@ -9,7 +9,7 @@ type SerializedResponse = {
 
 type ViewportDimensions = {
   width: number; height: number;
-}
+};
 const MOBILE_USERAGENT =
     'Mozilla/5.0 (Linux; Android 8.0.0; Pixel 2 XL Build/OPD1.170816.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.75 Mobile Safari/537.36';
 
@@ -68,8 +68,8 @@ export class Renderer {
     page.on('request', (interceptedRequest) => {
       const interceptedUrl = interceptedRequest.url();
       const allowedUrlsRegex = /^https:\/\/(.*?).?gozefo.com.*/;
-      // console.log('interceptedUrl: ', interceptedUrl, 'matched: ', interceptedUrl.match(allowedUrlsRegex));
-      if (interceptedUrl.endsWith('.png') || interceptedUrl.endsWith('.jpg') || !interceptedUrl.match(allowedUrlsRegex))
+      console.log('interceptedUrl: ', interceptedUrl, 'allowed: ', interceptedUrl.match(allowedUrlsRegex) ? 'true' : false);
+      if (!interceptedUrl.match(allowedUrlsRegex))
         interceptedRequest.abort();
       else
         interceptedRequest.continue();
