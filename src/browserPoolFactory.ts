@@ -5,7 +5,9 @@ import {Factory} from 'generic-pool';
 
 
 export default class BrowserPoolFactory implements Factory<BrowserWrapper> {
-    private readonly puppeteerArgs: LaunchOptions = {args: ['--no-sandbox']};
+    private readonly puppeteerArgs: LaunchOptions = {
+        args: ['--no-sandbox']
+    };
     private readonly maxCount: number;
 
     constructor(maxCount: number, puppeteerArgs?: LaunchOptions, ) {

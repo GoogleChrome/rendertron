@@ -9,8 +9,7 @@ type SerializedResponse = {
 
 type ViewportDimensions = {
   width: number; height: number;
-};
-
+}
 const MOBILE_USERAGENT =
     'Mozilla/5.0 (Linux; Android 8.0.0; Pixel 2 XL Build/OPD1.170816.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.75 Mobile Safari/537.36';
 
@@ -64,10 +63,21 @@ export class Renderer {
     return await this.browserPool.acquire(async (browser: Browser) => {
       const newIncognitoBrowserContext = await browser.createIncognitoBrowserContext();
       const page = await newIncognitoBrowserContext.newPage();
+      await page.setRequestInterception(true);
 
-      // Page may reload when setting isMobile
-      // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
-      await page.setViewport({width: 1000, height: 5000, isMobile});
+    page.on('request', (interceptedRequest) => {
+      const interceptedUrl = interceptedRequest.url();
+      const allowedUrlsRegex = /^https:\/\/(.*?).?gozefo.com.*/;
+      // console.log('interceptedUrl: ', interceptedUrl, 'matched: ', interceptedUrl.match(allowedUrlsRegex));
+      if (interceptedUrl.endsWith('.png') || interceptedUrl.endsWith('.jpg') || !interceptedUrl.match(allowedUrlsRegex))
+        interceptedRequest.abort();
+      else
+        interceptedRequest.continue();
+    });
+
+    // Page may reload when setting isMobile
+    // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
+    await page.setViewport({width: 1000, height: 5000, isMobile});
 
       if (isMobile) {
         page.setUserAgent(MOBILE_USERAGENT);

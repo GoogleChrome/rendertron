@@ -4,3 +4,4 @@ build/
 test.jpeg
 *.tgz
 .idea/
+.DS_Store
