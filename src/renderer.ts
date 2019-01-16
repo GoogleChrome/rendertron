@@ -64,6 +64,11 @@ export class Renderer {
     return await this.browserPool.acquire(async (browser: Browser) => {
       const newIncognitoBrowserContext = await browser.createIncognitoBrowserContext();
       const page = await newIncognitoBrowserContext.newPage();
+      page.on('error', (pageError) => {
+        console.log(url, pageError);
+      });
+      const filename = `${__dirname}/tmp/trace-${(new Date()).getTime()}.json`;
+      await page.tracing.start({path: filename, screenshots: true});
 
       // Page may reload when setting isMobile
       // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
@@ -139,7 +144,7 @@ export class Renderer {
 
       // Serialize page.
       const result = await page.evaluate('document.firstElementChild.outerHTML');
-
+      await  page.tracing.stop();
       await page.close();
       await newIncognitoBrowserContext.close();
       return {status: statusCode, content: result};
