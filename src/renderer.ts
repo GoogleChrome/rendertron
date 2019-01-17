@@ -1,7 +1,7 @@
 import * as puppeteer from 'puppeteer';
 import * as url from 'url';
 import {BrowserPool} from './browserPool';
-import {Browser} from 'puppeteer';
+import {Browser, Request} from 'puppeteer';
 
 type SerializedResponse = {
   status: number; content: string;
@@ -19,6 +19,9 @@ const MOBILE_USERAGENT =
  */
 export class Renderer {
   private readonly browserPool: BrowserPool;
+  private responseCache = {};
+  private static readonly CACHE_EXPIRY = 60 * 60 * 1000;
+  private responseCacheStartTimeStamp = (new Date()).getTime();
 
   constructor() {
     this.browserPool = new BrowserPool();
@@ -65,19 +68,48 @@ export class Renderer {
       const page = await newIncognitoBrowserContext.newPage();
       await page.setRequestInterception(true);
 
-    page.on('request', (interceptedRequest) => {
-      const interceptedUrl = interceptedRequest.url();
-      const allowedUrlsRegex = /^https?:\/\/(.*?).?gozefo.com.*/;
-      // console.log('interceptedUrl: ', interceptedUrl, 'allowed: ', interceptedUrl.match(allowedUrlsRegex) ? 'true' : false);
-      if (!interceptedUrl.match(allowedUrlsRegex))
-        interceptedRequest.abort();
-      else
-        interceptedRequest.continue();
-    });
+      page.on('request', (interceptedRequest: Request) => {
+        const interceptedUrl = interceptedRequest.url();
+        const allowedUrlsRegex = /^https?:\/\/(.*?).?gozefo.com.*/;
+        // console.log('interceptedUrl: ', interceptedUrl, 'allowed: ', interceptedUrl.match(allowedUrlsRegex) ? 'true' : false);
+        if (!interceptedUrl.match(allowedUrlsRegex))
+          interceptedRequest.abort();
+        else {
+          if (((new Date()).getTime() - this.responseCacheStartTimeStamp) > Renderer.CACHE_EXPIRY) {
+            this.responseCache = {};
+            this.responseCacheStartTimeStamp = (new Date()).getTime();
+          }
+          // @ts-ignore
+          if (this.responseCache[interceptedUrl]) {
+            // @ts-ignore
+            interceptedRequest.respond(this.responseCache[interceptedUrl]);
+          } else {
+            interceptedRequest.continue().then(() => {
+              const response = interceptedRequest.response();
+              if (response) {
+                // @ts-ignore
+                const headers = response.headers();
+                response.buffer().then((buffer: Buffer) => {
 
-    // Page may reload when setting isMobile
-    // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
-    await page.setViewport({width: 1000, height: 5000, isMobile});
+                  // @ts-ignore
+                  this.responseCache[response.url()] = {
+                    headers: headers,
+                    contentType: headers && headers['content-type'] ? headers['content-type'] : 'text/html',
+                    // @ts-ignore
+                    status: response.status(),
+                    // @ts-ignore
+                    body: buffer,
+                  };
+                });
+              }
+            });
+          }
+        }
+      });
+
+      // Page may reload when setting isMobile
+      // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
+      await page.setViewport({width: 1000, height: 5000, isMobile});
 
       if (isMobile) {
         page.setUserAgent(MOBILE_USERAGENT);
