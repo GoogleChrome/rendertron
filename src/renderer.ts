@@ -1,7 +1,7 @@
 import * as puppeteer from 'puppeteer';
 import * as url from 'url';
 import {BrowserPool} from './browserPool';
-import {Browser, Request} from 'puppeteer';
+import {Browser, Request, RespondOptions} from 'puppeteer';
 
 type SerializedResponse = {
   status: number; content: string;
@@ -19,8 +19,10 @@ const MOBILE_USERAGENT =
  */
 export class Renderer {
   private readonly browserPool: BrowserPool;
-  private responseCache = {};
-  private static readonly CACHE_EXPIRY = 60 * 60 * 1000;
+  private responseCache: Record<string, RespondOptions> = {};
+  private static readonly CACHE_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 day cache
+  private static readonly ALLOWED_URL_PATTERN = /^https?:\/\/(.*?).?gozefo.com.*/;
+  private static readonly CACHE_URL_PATTERN = /^https?:\/\/(img[0-9]?).?gozefo.com.*/;
   private responseCacheStartTimeStamp = (new Date()).getTime();
 
   constructor() {
@@ -70,9 +72,9 @@ export class Renderer {
 
       page.on('request', (interceptedRequest: Request) => {
         const interceptedUrl = interceptedRequest.url();
-        const allowedUrlsRegex = /^https?:\/\/(.*?).?gozefo.com.*/;
+        // const allowedUrlsRegex = /^https?:\/\/(.*?).?gozefo.com.*/;
         // console.log('interceptedUrl: ', interceptedUrl, 'allowed: ', interceptedUrl.match(allowedUrlsRegex) ? 'true' : false);
-        if (!interceptedUrl.match(allowedUrlsRegex))
+        if (!interceptedUrl.match(Renderer.ALLOWED_URL_PATTERN))
           interceptedRequest.abort();
         else {
           if (((new Date()).getTime() - this.responseCacheStartTimeStamp) > Renderer.CACHE_EXPIRY) {
@@ -80,10 +82,10 @@ export class Renderer {
             this.responseCacheStartTimeStamp = (new Date()).getTime();
           }
           // @ts-ignore
-          if (this.responseCache[interceptedUrl]) {
+          if (interceptedUrl.match(Renderer.CACHE_URL_PATTERN) && this.responseCache[interceptedUrl]) {
             // @ts-ignore
             interceptedRequest.respond(this.responseCache[interceptedUrl]);
-          } else {
+          } else if (interceptedUrl.match(Renderer.CACHE_URL_PATTERN)) {
             interceptedRequest.continue().then(() => {
               const response = interceptedRequest.response();
               if (response) {
@@ -103,6 +105,8 @@ export class Renderer {
                 });
               }
             });
+          } else {
+            interceptedRequest.continue();
           }
         }
       });
