@@ -20,7 +20,8 @@ const MOBILE_USERAGENT =
 export class Renderer {
   private readonly browserPool: BrowserPool;
   private responseCache: Record<string, RespondOptions> = {};
-  private static readonly CACHE_EXPIRY = 7 * 24 * 60 * 60 * 1000; // 7 day cache
+  private responseCacheSize: number = 0;
+  private static readonly CACHE_EXPIRY = 24 * 60 * 60 * 1000; // 1 day cache
   private static readonly ALLOWED_URL_PATTERN = /^https?:\/\/(.*?).?gozefo.com.*/;
   private static readonly CACHE_URL_PATTERN = /^https?:\/\/(img[0-9]{0,2}).?gozefo.com.*/;
   private responseCacheStartTimeStamp = (new Date()).getTime();
@@ -72,18 +73,18 @@ export class Renderer {
 
       page.on('request', (interceptedRequest: Request) => {
         const interceptedUrl = interceptedRequest.url();
-        // const allowedUrlsRegex = /^https?:\/\/(.*?).?gozefo.com.*/;
         // console.log('interceptedUrl: ', interceptedUrl, 'allowed: ', interceptedUrl.match(allowedUrlsRegex) ? 'true' : false);
         if (!interceptedUrl.match(Renderer.ALLOWED_URL_PATTERN))
           interceptedRequest.abort();
-        else if(interceptedUrl.match(Renderer.CACHE_URL_PATTERN)) {
-          if (((new Date()).getTime() - this.responseCacheStartTimeStamp) > Renderer.CACHE_EXPIRY) {
+        else if (interceptedUrl.match(Renderer.CACHE_URL_PATTERN)) {
+          if (this.responseCacheSize > 2000 || ((new Date()).getTime() - this.responseCacheStartTimeStamp) > Renderer.CACHE_EXPIRY) {
             this.responseCache = {};
+            this.responseCacheSize = 0;
             this.responseCacheStartTimeStamp = (new Date()).getTime();
           }
           // @ts-ignore
           if (this.responseCache[interceptedUrl]) {
-            console.log('from cached: ', interceptedUrl);
+            // console.log('from cached: ', interceptedUrl);
             // @ts-ignore
             interceptedRequest.respond(this.responseCache[interceptedUrl]);
           } else {
@@ -93,7 +94,7 @@ export class Renderer {
                 // @ts-ignore
                 const headers = response.headers();
                 response.buffer().then((buffer: Buffer) => {
-                  console.log('caching: ', response.url());
+                  // console.log('caching: ', response.url());
                   // @ts-ignore
                   this.responseCache[response.url()] = {
                     headers: headers,
@@ -103,6 +104,7 @@ export class Renderer {
                     // @ts-ignore
                     body: buffer,
                   };
+                  this.responseCacheSize++;
                 });
               }
             });
