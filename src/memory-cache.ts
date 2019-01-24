@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Google Inc. All rights reserved.
+ * Copyright 2019 Google Inc. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  not
@@ -37,7 +37,7 @@ export class MemoryCache {
     this.store = {};
   }
 
-  cacheContent(key: string, headers: {}, payload: Buffer) {
+  cacheContent(key: string, headers: {[key: string]: string}, payload: Buffer) {
     const now = new Date();
 
     this.store[key] = {
@@ -45,7 +45,7 @@ export class MemoryCache {
       expires: new Date(now.getTime() + CACHE_DURATION_MINUTES * 60 * 1000),
       headers: JSON.stringify(headers),
       payload: JSON.stringify(payload)
-    } as CacheEntry;
+    };
   }
 
   getCachedContent(key: string) {
