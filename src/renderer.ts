@@ -185,6 +185,17 @@ export class Renderer {
       const parsedUrl = url.parse(requestUrl);
       await page.evaluate(
           injectBaseHref, `${parsedUrl.protocol}//${parsedUrl.host}`);
+      await page.evaluate(() => {
+        Array.from(document.querySelectorAll('style')).forEach((style) => {
+          if (style.innerHTML === '') {
+            // @ts-ignore
+            style.innerHTML = Array.from(style.sheet.rules)
+            // @ts-ignore
+                .map((rule) => rule.cssText)
+                .join('');
+          }
+        });
+      });
 
       // Serialize page.
       const result = await page.evaluate('document.firstElementChild.outerHTML');
