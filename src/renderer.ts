@@ -1,4 +1,5 @@
 import * as puppeteer from 'puppeteer';
+import * as fse from'fs-extra';
 import * as url from 'url';
 import {BrowserPool} from './browserPool';
 import {Browser, Request, RespondOptions} from 'puppeteer';
@@ -25,9 +26,19 @@ export class Renderer {
   private static readonly ALLOWED_URL_PATTERN = /^https?:\/\/(.*?).?gozefo.com.*/;
   private static readonly CACHE_URL_PATTERN = /^https?:\/\/(img[0-9]{0,2}).?gozefo.com.*/;
   private responseCacheStartTimeStamp = (new Date()).getTime();
+  private blankJPG!: Buffer;
+  private blankPNG!: Buffer;
+  private blankGIF!: Buffer;
+  private blankSVG!: Buffer;
 
   constructor() {
     this.browserPool = new BrowserPool();
+  }
+  async initialize() {
+    this.blankGIF = await fse.readFile(`${__dirname}/../resources/blank.gif`);
+    this.blankPNG = await fse.readFile(`${__dirname}/../resources/blank.png`);
+    this.blankJPG = await fse.readFile(`${__dirname}/../resources/blank.jpg`);
+    this.blankSVG = await fse.readFile(`${__dirname}/../resources/blank.svg`);
   }
 
   async serialize(requestUrl: string, isMobile: boolean):
@@ -72,9 +83,30 @@ export class Renderer {
       await page.setRequestInterception(true);
 
       page.on('request', (interceptedRequest: Request) => {
-        const interceptedUrl = interceptedRequest.url();
+        const interceptedUrl = interceptedRequest.url().split('?')[0];
         // console.log('interceptedUrl: ', interceptedUrl, 'allowed: ', interceptedUrl.match(allowedUrlsRegex) ? 'true' : false);
-        if (!interceptedUrl.match(Renderer.ALLOWED_URL_PATTERN))
+        // if (!interceptedUrl.match(/.*\.(jpg|png|gif|jpeg)$/)){
+        if (interceptedUrl.endsWith('.jpg') || interceptedUrl.endsWith('.jpeg')) {
+          interceptedRequest.respond({
+            contentType: 'image/jpeg',
+            body: this.blankJPG,
+          });
+        } else if (interceptedUrl.endsWith('.gif')) {
+          interceptedRequest.respond({
+            contentType: 'image/gif',
+            body: this.blankGIF,
+          });
+        }  else if (interceptedUrl.endsWith('.png')) {
+          interceptedRequest.respond({
+            contentType: 'image/png',
+            body: this.blankPNG,
+          });
+        } else if (interceptedUrl.endsWith('.svg')) {
+          interceptedRequest.respond({
+            contentType: 'image/png',
+            body: this.blankSVG,
+          });
+        } else if (!interceptedUrl.match(Renderer.ALLOWED_URL_PATTERN))
           interceptedRequest.abort();
         else if (interceptedUrl.match(Renderer.CACHE_URL_PATTERN)) {
           if (this.responseCacheSize > 2000 || ((new Date()).getTime() - this.responseCacheStartTimeStamp) > Renderer.CACHE_EXPIRY) {

@@ -15,6 +15,7 @@ type Config = {
   datastoreCache: boolean;
 };
 
+
 /**
  * Rendertron rendering service. This runs the server which routes rendering
  * requests through to the renderer.
@@ -27,12 +28,14 @@ export class Rendertron {
 
   async initialize() {
     // Load config.json if it exists.
+
     if (fse.pathExistsSync(CONFIG_PATH)) {
       this.config = Object.assign(this.config, await fse.readJson(CONFIG_PATH));
     }
 
     // const browser = await puppeteer.launch({args: ['--no-sandbox']});
     this.renderer = new Renderer();
+    await this.renderer.initialize();
 
     this.app.use(koaCompress());
 
