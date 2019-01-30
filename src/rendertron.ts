@@ -8,6 +8,7 @@ import * as koaLogger from 'koa-logger';
 import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import * as url from 'url';
+import { isArray, union } from 'lodash';
 
 import {Renderer, ScreenshotError} from './renderer';
 
@@ -15,6 +16,7 @@ const CONFIG_PATH = path.resolve(__dirname, '../config.json');
 
 type Config = {
   datastoreCache: boolean;
+  args: string[];
 };
 
 /**
@@ -23,17 +25,24 @@ type Config = {
  */
 export class Rendertron {
   app: Koa = new Koa();
-  config: Config = {datastoreCache: false};
+  config: Config = {
+    datastoreCache: false,
+    args: ['--no-sandbox'],
+  };
   private renderer: Renderer|undefined;
   private port = process.env.PORT || '3000';
 
   async initialize() {
     // Load config.json if it exists.
     if (fse.pathExistsSync(CONFIG_PATH)) {
-      this.config = Object.assign(this.config, await fse.readJson(CONFIG_PATH));
+      const config = await fse.readJson(CONFIG_PATH);
+      if (isArray(config.args)) {
+        config.args = union(this.config.args, config.args);
+      }
+      this.config = Object.assign(this.config, config);
     }
 
-    const browser = await puppeteer.launch({args: ['--no-sandbox']});
+    const browser = await puppeteer.launch({args: this.config.args});
     this.renderer = new Renderer(browser);
 
     this.app.use(koaLogger());
