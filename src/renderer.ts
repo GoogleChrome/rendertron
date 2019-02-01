@@ -157,7 +157,10 @@ export class Renderer {
           }
         });
       });
-
+      await page.evaluate( () => {
+        // @ts-ignore
+        document.querySelector('html').removeAttribute('class');
+      });
       // Serialize page.
       const result = await page.evaluate('document.firstElementChild.outerHTML');
 
