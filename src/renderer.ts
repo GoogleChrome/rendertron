@@ -228,7 +228,12 @@ export class Renderer {
           }
         });
       });
-
+      await page.evaluate( () => {
+        // @ts-ignore
+        const classOnHTMLTag = document.querySelector('html').getAttribute('class').replace('async-hide', '');
+        // @ts-ignore
+        document.querySelector('html').setAttribute('class', classOnHTMLTag);
+      });
       // Serialize page.
       const result = await page.evaluate('document.firstElementChild.outerHTML');
 
