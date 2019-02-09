@@ -1,6 +1,8 @@
 import * as puppeteer from 'puppeteer';
 import * as url from 'url';
 
+import {Config} from './config';
+
 type SerializedResponse = {
   status: number; content: string;
 };
@@ -18,9 +20,11 @@ const MOBILE_USERAGENT =
  */
 export class Renderer {
   private browser: puppeteer.Browser;
+  private config: Config;
 
-  constructor(browser: puppeteer.Browser) {
+  constructor(browser: puppeteer.Browser, config: Config) {
     this.browser = browser;
+    this.config = config;
   }
 
   async serialize(requestUrl: string, isMobile: boolean):
@@ -63,7 +67,7 @@ export class Renderer {
 
     // Page may reload when setting isMobile
     // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
-    await page.setViewport({width: 1000, height: 1000, isMobile});
+    await page.setViewport({width: this.config.width, height: this.config.height, isMobile});
 
     if (isMobile) {
       page.setUserAgent(MOBILE_USERAGENT);
@@ -87,7 +91,7 @@ export class Renderer {
     try {
       // Navigate to page. Wait until there are no oustanding network requests.
       response = await page.goto(
-          requestUrl, {timeout: 10000, waitUntil: 'networkidle0'});
+          requestUrl, {timeout: this.config.timeout, waitUntil: 'networkidle0'});
     } catch (e) {
       console.error(e);
     }
