@@ -8,8 +8,8 @@ import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import * as url from 'url';
 
-import {Renderer, ScreenshotError} from './renderer';
-import {Config, ConfigManager} from './config';
+import { Renderer, ScreenshotError } from './renderer';
+import { Config, ConfigManager } from './config';
 
 /**
  * Rendertron rendering service. This runs the server which routes rendering
@@ -18,19 +18,19 @@ import {Config, ConfigManager} from './config';
 export class Rendertron {
   app: Koa = new Koa();
   private config: Config = ConfigManager.config;
-  private renderer: Renderer|undefined;
+  private renderer: Renderer | undefined;
   private port = process.env.PORT;
 
   async initialize() {
-    // Load config 
+    // Load config
     this.config = await ConfigManager.getConfiguration();
-    
+
     this.port = this.port || this.config.port;
 
 
-    const browser = await puppeteer.launch({args: ['--no-sandbox']});
+    const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
     this.renderer = new Renderer(browser, this.config);
-    
+
     this.app.use(koaLogger());
 
     this.app.use(koaCompress());
@@ -39,23 +39,23 @@ export class Rendertron {
 
     this.app.use(route.get('/', async (ctx: Koa.Context) => {
       await koaSend(
-          ctx, 'index.html', {root: path.resolve(__dirname, '../src')});
+        ctx, 'index.html', { root: path.resolve(__dirname, '../src') });
     }));
     this.app.use(
-        route.get('/_ah/health', (ctx: Koa.Context) => ctx.body = 'OK'));
+      route.get('/_ah/health', (ctx: Koa.Context) => ctx.body = 'OK'));
 
     // Optionally enable cache for rendering requests.
     if (this.config.datastoreCache) {
-      const {DatastoreCache} = await import('./datastore-cache');
+      const { DatastoreCache } = await import('./datastore-cache');
       this.app.use(new DatastoreCache().middleware());
     }
 
     this.app.use(
-        route.get('/render/:url(.*)', this.handleRenderRequest.bind(this)));
+      route.get('/render/:url(.*)', this.handleRenderRequest.bind(this)));
     this.app.use(route.get(
-        '/screenshot/:url(.*)', this.handleScreenshotRequest.bind(this)));
+      '/screenshot/:url(.*)', this.handleScreenshotRequest.bind(this)));
     this.app.use(route.post(
-        '/screenshot/:url(.*)', this.handleScreenshotRequest.bind(this)));
+      '/screenshot/:url(.*)', this.handleScreenshotRequest.bind(this)));
 
     return this.app.listen(this.port, () => {
       console.log(`Listening on port ${this.port}`);
@@ -120,7 +120,7 @@ export class Rendertron {
 
     try {
       const img = await this.renderer.screenshot(
-          url, mobileVersion, dimensions, options);
+        url, mobileVersion, dimensions, options);
       ctx.set('Content-Type', 'image/jpeg');
       ctx.set('Content-Length', img.length.toString());
       ctx.body = img;
