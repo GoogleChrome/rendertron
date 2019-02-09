@@ -51,7 +51,5 @@ export class ConfigManager {
         }
         return ConfigManager.config;
     }
-
-
 }
 

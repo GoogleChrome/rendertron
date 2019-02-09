@@ -8,8 +8,8 @@ import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import * as url from 'url';
 
-import {Renderer, ScreenshotError} from './renderer';
-import {Config, ConfigManager} from './config';
+import { Renderer, ScreenshotError } from './renderer';
+import { Config, ConfigManager } from './config';
 
 /**
  * Rendertron rendering service. This runs the server which routes rendering
@@ -18,19 +18,19 @@ import {Config, ConfigManager} from './config';
 export class Rendertron {
   app: Koa = new Koa();
   private config: Config = ConfigManager.config;
-  private renderer: Renderer|undefined;
+  private renderer: Renderer | undefined;
   private port = process.env.PORT;
 
   async initialize() {
-    // Load config 
+    // Load config
     this.config = await ConfigManager.getConfiguration();
-    
+
     this.port = this.port || this.config.port;
 
 
-    const browser = await puppeteer.launch({args: ['--no-sandbox']});
+    const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
     this.renderer = new Renderer(browser, this.config);
-    
+
     this.app.use(koaLogger());
 
     this.app.use(koaCompress());
@@ -46,7 +46,7 @@ export class Rendertron {
 
     // Optionally enable cache for rendering requests.
     if (this.config.datastoreCache) {
-      const {DatastoreCache} = await import('./datastore-cache');
+      const { DatastoreCache } = await import('./datastore-cache');
       this.app.use(new DatastoreCache().middleware());
     } else if (this.config.memoryCache) {
       const {MemoryCache} = await import('./memory-cache');
