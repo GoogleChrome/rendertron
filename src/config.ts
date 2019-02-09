@@ -31,6 +31,7 @@ export type Config = {
     port: string;
     width: number;
     height: number;
+    headers: { [key: string]: string };
 };
 
 export class ConfigManager {
@@ -40,6 +41,7 @@ export class ConfigManager {
         port: '3000',
         width: 1000,
         height: 1000,
+        headers: {}
     };
 
     static async getConfiguration(): Promise<Config> {
