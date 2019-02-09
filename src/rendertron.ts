@@ -1,4 +1,3 @@
-import * as fse from 'fs-extra';
 import * as Koa from 'koa';
 import * as bodyParser from 'koa-bodyparser';
 import * as koaCompress from 'koa-compress';
@@ -10,12 +9,7 @@ import * as puppeteer from 'puppeteer';
 import * as url from 'url';
 
 import {Renderer, ScreenshotError} from './renderer';
-
-const CONFIG_PATH = path.resolve(__dirname, '../config.json');
-
-type Config = {
-  datastoreCache: boolean;
-};
+import {Config, ConfigManager} from './config';
 
 /**
  * Rendertron rendering service. This runs the server which routes rendering
@@ -23,19 +17,20 @@ type Config = {
  */
 export class Rendertron {
   app: Koa = new Koa();
-  config: Config = {datastoreCache: false};
+  private config: Config = ConfigManager.config;
   private renderer: Renderer|undefined;
-  private port = process.env.PORT || '3000';
+  private port = process.env.PORT;
 
   async initialize() {
-    // Load config.json if it exists.
-    if (fse.pathExistsSync(CONFIG_PATH)) {
-      this.config = Object.assign(this.config, await fse.readJson(CONFIG_PATH));
-    }
+    // Load config 
+    this.config = await ConfigManager.getConfiguration();
+    
+    this.port = this.port || this.config.port;
+
 
     const browser = await puppeteer.launch({args: ['--no-sandbox']});
-    this.renderer = new Renderer(browser);
-
+    this.renderer = new Renderer(browser, this.config);
+    
     this.app.use(koaLogger());
 
     this.app.use(koaCompress());
@@ -117,8 +112,8 @@ export class Rendertron {
     }
 
     const dimensions = {
-      width: Number(ctx.query['width']) || 1000,
-      height: Number(ctx.query['height']) || 1000
+      width: Number(ctx.query['width']) || this.config.width,
+      height: Number(ctx.query['height']) || this.config.height
     };
 
     const mobileVersion = 'mobile' in ctx.query ? true : false;
