@@ -7,13 +7,11 @@ import {Factory} from 'generic-pool';
  * Factory for each resource in pool. This Factory provides method to create, destroy and validate each resource in pool
  */
 export default class BrowserPoolFactory implements Factory<BrowserWrapper> {
-    private readonly puppeteerArgs: LaunchOptions = {args: ['--no-sandbox']};
+    private readonly puppeteerArgs: LaunchOptions;
     private readonly maxCount: number;
 
-    constructor(maxCount: number, puppeteerArgs?: LaunchOptions, ) {
-        if (puppeteerArgs) {
-            this.puppeteerArgs = puppeteerArgs;
-        }
+    constructor(maxCount: number, puppeteerArgs: LaunchOptions) {
+        this.puppeteerArgs = puppeteerArgs;
         this.maxCount = maxCount;
     }
 

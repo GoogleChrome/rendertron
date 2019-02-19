@@ -6,14 +6,16 @@ import * as route from 'koa-route';
 import * as koaSend from 'koa-send';
 import * as path from 'path';
 import * as url from 'url';
+import {merge} from 'lodash';
 
-import {Renderer, ScreenshotError} from './renderer';
+import {Renderer, RendererConfig, ScreenshotError} from './renderer';
 
 const CONFIG_PATH = path.resolve(__dirname, '../config.json');
 
-type Config = {
+export interface RendertronConfig {
   datastoreCache: boolean;
-};
+  rendererConfig: RendererConfig;
+}
 
 /**
  * Rendertron rendering service. This runs the server which routes rendering
@@ -21,17 +23,34 @@ type Config = {
  */
 export class Rendertron {
   app: Koa = new Koa();
-  config: Config = {datastoreCache: false};
+
+  config: RendertronConfig = {
+      datastoreCache: false,
+      rendererConfig: {
+        useIncognito: true,
+        browserPoolConfig: {
+          browserMaxUse: 50,
+          poolSettings: { // options for generic pool
+            idleTimeoutMillis: 300000,
+            max: 10,
+            min: 2,
+            testOnBorrow: true,
+          },
+          browserArgs: {args: ['--no-sandbox']}
+        }
+      }
+  };
+
   private renderer: Renderer|undefined;
   private port = process.env.PORT || '3000';
 
   async initialize() {
     // Load config.json if it exists.
     if (fse.pathExistsSync(CONFIG_PATH)) {
-      this.config = Object.assign(this.config, await fse.readJson(CONFIG_PATH));
+      this.config = merge(this.config, await fse.readJson(CONFIG_PATH));
     }
 
-    this.renderer = new Renderer();
+    this.renderer = new Renderer(this.config.rendererConfig);
 
     this.app.use(koaCompress());
 
@@ -86,10 +105,13 @@ export class Rendertron {
       ctx.status = 403;
       return;
     }
-
+    const dimensions = {
+      width: Number(ctx.query['width']) || 1000,
+      height: Number(ctx.query['height']) || 1000
+    };
     const mobileVersion = 'mobile' in ctx.query ? true : false;
 
-    const serialized = await this.renderer.serialize(url, mobileVersion);
+    const serialized = await this.renderer.serialize(url, mobileVersion, dimensions);
     // Mark the response as coming from Rendertron.
     ctx.set('x-renderer', 'rendertron');
     ctx.status = serialized.status;

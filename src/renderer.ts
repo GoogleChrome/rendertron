@@ -1,6 +1,6 @@
 import * as puppeteer from 'puppeteer';
 import * as url from 'url';
-import {BrowserPool} from './browserPool';
+import {BrowserPool, BrowserPoolConfig} from './browserPool';
 import {Browser} from 'puppeteer';
 
 type SerializedResponse = {
@@ -11,6 +11,13 @@ type ViewportDimensions = {
     width: number; height: number;
 };
 
+
+export interface RendererConfig {
+    useIncognito: boolean;
+    browserPoolConfig: BrowserPoolConfig;
+}
+
+
 const MOBILE_USERAGENT =
     'Mozilla/5.0 (Linux; Android 8.0.0; Pixel 2 XL Build/OPD1.170816.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.75 Mobile Safari/537.36';
 
@@ -20,52 +27,59 @@ const MOBILE_USERAGENT =
  */
 export class Renderer {
     private readonly browserPool: BrowserPool;
+    private readonly config: RendererConfig;
 
-    constructor() {
-        this.browserPool = new BrowserPool();
+    constructor(config: RendererConfig) {
+        this.config = config;
+        this.browserPool = new BrowserPool(this.config.browserPoolConfig);
     }
 
-    /**
-     * Executed on the page after the page has loaded. Strips script and
-     * import tags to prevent further loading of resources.
-     */
-    private stripPage() {
-        // Strip only script tags that contain JavaScript (either no type attribute or one that contains "javascript")
-        const elements = document.querySelectorAll('script:not([type]), script[type*="javascript"], link[rel=import]');
-        for (const e of Array.from(elements)) {
-            e.remove();
-        }
-    }
-
-    /**
-     * Injects a <base> tag which allows other resources to load. This
-     * has no effect on serialised output, but allows it to verify render
-     * quality.
-     */
-    private injectBaseHref(origin: string) {
-        const base = document.createElement('base');
-        base.setAttribute('href', origin);
-
-        const bases = document.head.querySelectorAll('base');
-        if (bases.length) {
-            // Patch existing <base> if it is relative.
-            const existingBase = bases[0].getAttribute('href') || '';
-            if (existingBase.startsWith('/')) {
-                bases[0].setAttribute('href', origin + existingBase);
+    private async render(browser: Browser, requestUrl: string, isMobile: boolean, dimensions: ViewportDimensions) {
+        /**
+         * Executed on the page after the page has loaded. Strips script and
+         * import tags to prevent further loading of resources.
+         */
+        async function stripPage() {
+            // Strip only script tags that contain JavaScript (either no type attribute or one that contains "javascript")
+            const elements = document.querySelectorAll('script:not([type]), script[type*="javascript"], link[rel=import]');
+            for (const e of Array.from(elements)) {
+                e.remove();
             }
-        } else {
-            // Only inject <base> if it doesn't already exist.
-            document.head.insertAdjacentElement('afterbegin', base);
         }
-    }
 
-    private async renderPage(browser: Browser, requestUrl: string, isMobile: boolean) {
-        const newIncognitoBrowserContext = await browser.createIncognitoBrowserContext();
-        const page = await newIncognitoBrowserContext.newPage();
+        /**
+         * Injects a <base> tag which allows other resources to load. This
+         * has no effect on serialised output, but allows it to verify render
+         * quality.
+         */
+        async function injectBaseHref(origin: string) {
+            const base = document.createElement('base');
+            base.setAttribute('href', origin);
 
+            const bases = document.head.querySelectorAll('base');
+            if (bases.length) {
+                // Patch existing <base> if it is relative.
+                const existingBase = bases[0].getAttribute('href') || '';
+                if (existingBase.startsWith('/')) {
+                    bases[0].setAttribute('href', origin + existingBase);
+                }
+            } else {
+                // Only inject <base> if it doesn't already exist.
+                document.head.insertAdjacentElement('afterbegin', base);
+            }
+        }
+
+        let newIncognitoBrowserContext;
+        let page;
+        if (this.config.useIncognito) {
+            newIncognitoBrowserContext = await browser.createIncognitoBrowserContext();
+            page = await newIncognitoBrowserContext.newPage();
+        } else {
+            page = await browser.newPage();
+        }
         // Page may reload when setting isMobile
         // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
-        await page.setViewport({width: 1000, height: 5000, isMobile});
+        await page.setViewport({width: dimensions.width, height: dimensions.height, isMobile});
 
         if (isMobile) {
             page.setUserAgent(MOBILE_USERAGENT);
@@ -129,72 +143,86 @@ export class Renderer {
         }
 
         // Remove script & import tags.
-        await page.evaluate(this.stripPage);
+        await page.evaluate(stripPage);
         // Inject <base> tag with the origin of the request (ie. no path).
         const parsedUrl = url.parse(requestUrl);
         await page.evaluate(
-            this.injectBaseHref, `${parsedUrl.protocol}//${parsedUrl.host}`);
+            injectBaseHref, `${parsedUrl.protocol}//${parsedUrl.host}`);
 
         // Serialize page.
         const result = await page.evaluate('document.firstElementChild.outerHTML');
 
         await page.close();
-        await newIncognitoBrowserContext.close();
+        if (newIncognitoBrowserContext) {
+            await newIncognitoBrowserContext.close();
+        }
         return {status: statusCode, content: result};
     }
 
-    public async serialize(requestUrl: string, isMobile: boolean): Promise<SerializedResponse> {
-        return await this.browserPool.acquire((browser: Browser) => {
-            browser.once('disconnected', () => {
-
-            });
-            this.renderPage(browser, requestUrl, isMobile);
+    public async serialize(requestUrl: string, isMobile: boolean, dimensions: ViewportDimensions): Promise<SerializedResponse> {
+        return await this.browserPool.acquire(async (browser: Browser) => {
+            // browser.once('disconnected', () => { });
+            return await this.render(browser, requestUrl, isMobile, dimensions);
         });
-    };
+    }
+
+    private async takeScreenShot(browser: Browser, url: string, isMobile: boolean, dimensions: ViewportDimensions, options ?: object): Promise<Buffer> {
+        let newIncognitoBrowserContext;
+        let page;
+        if (this.config.useIncognito) {
+            newIncognitoBrowserContext = await browser.createIncognitoBrowserContext();
+            page = await newIncognitoBrowserContext.newPage();
+        } else {
+            page = await browser.newPage();
+        }
+
+        // Page may reload when setting isMobile
+        // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
+        await page.setViewport(
+            {width: dimensions.width, height: dimensions.height, isMobile});
+
+        if (isMobile) {
+            page.setUserAgent(MOBILE_USERAGENT);
+        }
+
+        let response: puppeteer.Response | null = null;
+
+        try {
+            // Navigate to page. Wait until there are no oustanding network requests.
+            response =
+                await page.goto(url, {timeout: 10000, waitUntil: 'networkidle2'});
+        } catch (e) {
+            console.error(e);
+        }
+
+        if (!response) {
+            throw new ScreenshotError('NoResponse');
+        }
+
+        // Disable access to compute metadata. See
+        // https://cloud.google.com/compute/docs/storing-retrieving-metadata.
+        if (response!.headers()['metadata-flavor'] === 'Google') {
+            throw new ScreenshotError('Forbidden');
+        }
+
+        // Must be jpeg & binary format.
+        const screenshotOptions =
+            Object.assign({}, options, {type: 'jpeg', encoding: 'binary'});
+        // Screenshot returns a buffer based on specified encoding above.
+        // https://github.com/GoogleChrome/puppeteer/blob/v1.8.0/docs/api.md#pagescreenshotoptions
+        const buffer = await page.screenshot(screenshotOptions) as Buffer;
+        await page.close();
+        if (newIncognitoBrowserContext){
+            await newIncognitoBrowserContext.close();
+        }
+        return buffer;
+    }
 
     async screenshot(url: string, isMobile: boolean, dimensions: ViewportDimensions, options ?: object): Promise<Buffer> {
         return await this.browserPool.acquire(async (browser: Browser) => {
-
-            const page = await browser.newPage();
-
-            // Page may reload when setting isMobile
-            // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
-            await page.setViewport(
-                {width: dimensions.width, height: dimensions.height, isMobile});
-
-            if (isMobile) {
-                page.setUserAgent(MOBILE_USERAGENT);
-            }
-
-            let response: puppeteer.Response | null = null;
-
-            try {
-                // Navigate to page. Wait until there are no oustanding network requests.
-                response =
-                    await page.goto(url, {timeout: 10000, waitUntil: 'networkidle2'});
-            } catch (e) {
-                console.error(e);
-            }
-
-            if (!response) {
-                throw new ScreenshotError('NoResponse');
-            }
-
-            // Disable access to compute metadata. See
-            // https://cloud.google.com/compute/docs/storing-retrieving-metadata.
-            if (response!.headers()['metadata-flavor'] === 'Google') {
-                throw new ScreenshotError('Forbidden');
-            }
-
-            // Must be jpeg & binary format.
-            const screenshotOptions =
-                Object.assign({}, options, {type: 'jpeg', encoding: 'binary'});
-            // Screenshot returns a buffer based on specified encoding above.
-            // https://github.com/GoogleChrome/puppeteer/blob/v1.8.0/docs/api.md#pagescreenshotoptions
-            const buffer = await page.screenshot(screenshotOptions) as Buffer;
-            return buffer;
+            return await this.takeScreenShot(browser, url, isMobile, dimensions, options);
         });
-    };
+    }
 }
 
 type ErrorType = 'Forbidden' | 'NoResponse';

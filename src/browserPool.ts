@@ -3,25 +3,23 @@ import {LaunchOptions} from 'puppeteer';
 import BrowserPoolFactory from './browserPoolFactory';
 import BrowserWrapper from './browserWrapper';
 
+export interface BrowserPoolConfig {
+    browserMaxUse: number;
+    poolSettings: Options;
+    browserArgs: LaunchOptions;
+}
+
 /**
  * Class to maintain pool of browser objects of particular configuration
   */
 export class BrowserPool {
-    private options: Options = { // options for generic pool
-        idleTimeoutMillis: 300000,
-        max: 10,
-        min: 2,
-        testOnBorrow: true,
-    };
-    private maxUses = 50; // number of times a browser object can be used before being discarded
+    private readonly config: BrowserPoolConfig;
     private pool: Pool<BrowserWrapper>;
 
-    constructor(browserArgs?: LaunchOptions, poolOptions?: Options) {
-        if (poolOptions) {
-            Object.assign(this.options, poolOptions);
-        }
-        const factory = new BrowserPoolFactory(this.maxUses, browserArgs);
-        this.pool = createPool(factory, this.options);
+    constructor(browserPoolConfig: BrowserPoolConfig) {
+        this.config = browserPoolConfig;
+        const factory = new BrowserPoolFactory(this.config.browserMaxUse, this.config.browserArgs);
+        this.pool = createPool(factory, this.config.poolSettings);
     }
 
     /**
