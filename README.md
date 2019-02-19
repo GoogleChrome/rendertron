@@ -59,6 +59,8 @@ GET /render/<url>
 
 The `render` endpoint will render your page and serialize your page. Options are
 specified as query parameters:
+ * `width` defaults to `1000` - specifies viewport width.
+ * `height` defaults to `1000` - specifies viewport height.
  * `mobile` defaults to `false`. Enable by passing `?mobile` to request the
   mobile version of your site.
 
@@ -160,8 +162,50 @@ on how to deploy run headless Chrome in Docker.
 
 ### Config
 When deploying the service, set configuration variables by including a `config.json` in the
-root. Available configuration options:
- * `cache` default `false` - set to `true` to enable caching on Google Cloud using datastore
+root.
+Default configuration is:
+```
+ {
+     datastoreCache: false;
+     rendererConfig: {
+        useIncognito: true,
+         browserConfig: {
+           browserMaxUse: 50,
+           poolSettings: {
+             idleTimeoutMillis: 300000,
+             max: 10,
+             min: 2,
+             testOnBorrow: true,
+           },
+           browserArgs: {args: ['--no-sandbox']}
+         }
+      }
+  }
+ ```
+Available configuration options:
+ * `datastoreCache` default `false` - set to `true` to enable caching on Google Cloud using datastore
+ * `rendererConfig`
+    * `useIncognito` use incognito context instead of default one 
+    * `browserConfig`
+        * `browserMaxUse` number of times a browser object can be used
+        * `browserArgs` arguments object to pass to puppeteer while creating browser instance
+        * `poolSettings` browser pool settings [generic pool options](https://www.npmjs.com/package/generic-pool)
+            - `max`: maximum number of resources to create at any given time. (default=1)
+            - `min`: minimum number of resources to keep in pool at any given time. If this is set >= max, the pool will silently set the min to equal `max`. (default=0)
+            - `maxWaitingClients`: maximum number of queued requests allowed, additional `acquire` calls will be callback with an `err` in a future cycle of the event loop.
+            - `testOnBorrow`: `boolean`: should the pool validate resources before giving them to clients. Requires that `factory.validate` is specified.
+            - `acquireTimeoutMillis`: max milliseconds an `acquire` call will wait for a resource before timing out. (default no limit), if supplied should non-zero positive integer.
+            - `fifo` : if true the oldest resources will be first to be allocated. If false the most recently released resources will be the first to be allocated. This in effect turns the pool's behaviour from a queue into a stack. `boolean`, (default true)
+            - `priorityRange`: int between 1 and x - if set, borrowers can specify their relative priority in the queue if no resources are available.
+                                     see example.  (default 1)
+            - `autostart`: boolean, should the pool start creating resources, initialize the evictor, etc once the constructor is called. If false, the pool can be started by calling `pool.start`, otherwise the first call to `acquire` will start the pool. (default true)
+            - `evictionRunIntervalMillis`: How often to run eviction checks. Default: 0 (does not run).
+            - `numTestsPerEvictionRun`: Number of resources to check each eviction run.  Default: 3.
+            - `softIdleTimeoutMillis`: amount of time an object may sit idle in the pool before it is eligible for eviction by the idle object evictor (if any), with the extra condition that at least "min idle" object instances remain in the pool. Default -1 (nothing can get evicted)
+            - `idleTimeoutMillis`: the minimum amount of time that an object may sit idle in the pool before it is eligible for eviction due to idle time. Supercedes `softIdleTimeoutMillis` Default: 30000
+        
+ 
+
 
 ### Troubleshooting
 If you're having troubles with getting Headless Chrome to run in your

@@ -34,7 +34,7 @@ export class Renderer {
         this.browserPool = new BrowserPool(this.config.browserPoolConfig);
     }
 
-    private async render(browser: Browser, requestUrl: string, isMobile: boolean, dimensions: ViewportDimensions) {
+    private async _serialize(browser: Browser, requestUrl: string, isMobile: boolean, dimensions: ViewportDimensions) {
         /**
          * Executed on the page after the page has loaded. Strips script and
          * import tags to prevent further loading of resources.
@@ -161,12 +161,11 @@ export class Renderer {
 
     public async serialize(requestUrl: string, isMobile: boolean, dimensions: ViewportDimensions): Promise<SerializedResponse> {
         return await this.browserPool.acquire(async (browser: Browser) => {
-            // browser.once('disconnected', () => { });
-            return await this.render(browser, requestUrl, isMobile, dimensions);
+            return await this._serialize(browser, requestUrl, isMobile, dimensions);
         });
     }
 
-    private async takeScreenShot(browser: Browser, url: string, isMobile: boolean, dimensions: ViewportDimensions, options ?: object): Promise<Buffer> {
+    private async _screenshot(browser: Browser, url: string, isMobile: boolean, dimensions: ViewportDimensions, options ?: object): Promise<Buffer> {
         let newIncognitoBrowserContext;
         let page;
         if (this.config.useIncognito) {
@@ -220,7 +219,7 @@ export class Renderer {
 
     async screenshot(url: string, isMobile: boolean, dimensions: ViewportDimensions, options ?: object): Promise<Buffer> {
         return await this.browserPool.acquire(async (browser: Browser) => {
-            return await this.takeScreenShot(browser, url, isMobile, dimensions, options);
+            return await this._screenshot(browser, url, isMobile, dimensions, options);
         });
     }
 }
