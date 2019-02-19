@@ -90,6 +90,11 @@ export class Rendertron {
     const mobileVersion = 'mobile' in ctx.query ? true : false;
 
     const serialized = await this.renderer.serialize(url, mobileVersion);
+
+    for (const key in this.config.headers) {
+      ctx.set(key, this.config.headers[key]);
+    }
+
     // Mark the response as coming from Rendertron.
     ctx.set('x-renderer', 'rendertron');
     ctx.status = serialized.status;
@@ -120,7 +125,12 @@ export class Rendertron {
 
     try {
       const img = await this.renderer.screenshot(
-        url, mobileVersion, dimensions, options);
+          url, mobileVersion, dimensions, options);
+
+      for (const key in this.config.headers) {
+        ctx.set(key, this.config.headers[key]);
+      }
+
       ctx.set('Content-Type', 'image/jpeg');
       ctx.set('Content-Length', img.length.toString());
       ctx.body = img;
