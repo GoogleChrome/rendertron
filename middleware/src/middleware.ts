@@ -22,22 +22,22 @@ import * as request from 'request';
  * well with pages that require JavaScript.
  */
 export const botUserAgents = [
-  'baiduspider',
+  'Baiduspider',
   'bingbot',
-  'embedly',
+  'Embedly',
   'facebookexternalhit',
-  'linkedinbot',
+  'LinkedInBot',
   'outbrain',
   'pinterest',
   'quora link preview',
   'rogerbot',
   'showyoubot',
-  'slackbot',
+  'Slackbot',
   'TelegramBot',
-  'twitterbot',
+  'Twitterbot',
   'vkShare',
   'W3C_Validator',
-  'whatsapp',
+  'WhatsApp',
 ];
 
 /**

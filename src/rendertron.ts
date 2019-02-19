@@ -4,6 +4,7 @@ import * as bodyParser from 'koa-bodyparser';
 import * as koaCompress from 'koa-compress';
 import * as route from 'koa-route';
 import * as koaSend from 'koa-send';
+import * as koaLogger from 'koa-logger';
 import * as path from 'path';
 import * as url from 'url';
 import {merge} from 'lodash';
@@ -51,6 +52,8 @@ export class Rendertron {
     }
 
     this.renderer = new Renderer(this.config.rendererConfig);
+
+    this.app.use(koaLogger());
 
     this.app.use(koaCompress());
 
