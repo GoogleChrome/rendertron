@@ -211,7 +211,7 @@ export class Renderer {
         // https://github.com/GoogleChrome/puppeteer/blob/v1.8.0/docs/api.md#pagescreenshotoptions
         const buffer = await page.screenshot(screenshotOptions) as Buffer;
         await page.close();
-        if (newIncognitoBrowserContext){
+        if (newIncognitoBrowserContext) {
             await newIncognitoBrowserContext.close();
         }
         return buffer;
