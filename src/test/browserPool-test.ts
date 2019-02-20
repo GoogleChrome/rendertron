@@ -3,7 +3,8 @@
 import {test} from 'ava';
 
 import {BrowserPool} from '../browserPool';
-import {Browser} from 'puppeteer';
+import {Browser, LaunchOptions} from 'puppeteer';
+import * as puppeteer from 'puppeteer';
 
 test('after max use browser is disposed', async (t) => {
     const browserPool = new BrowserPool({
@@ -84,5 +85,26 @@ test('acquired browser is not closed when testOnBorrow is true', async (t) => {
     browser = await browserPool.acquire(async(browser: Browser) => browser);
     pageReturned = await browser.newPage().catch(() => false);
     t.truthy(pageReturned);
+});
+
+test('browser args are passed as launch options to puppeteer.launch', async (t) => {
+    const originalFunction = puppeteer.launch;
+    let launchOptionPassed: LaunchOptions|undefined;
+    // @ts-ignore
+    puppeteer.launch = async function(options: LaunchOptions) {
+        launchOptionPassed = options;
+        return await originalFunction.call(puppeteer, options);
+    };
+    new BrowserPool({
+        browserMaxUse: 2,
+        poolSettings: { // options for generic pool
+            idleTimeoutMillis: 300000,
+            max: 1,
+            min: 1,
+            testOnBorrow: true,
+        },
+        browserArgs: {args: ['--no-sandbox']}
+    });
+    t.deepEqual(launchOptionPassed, {args: ['--no-sandbox']});
 });
 
