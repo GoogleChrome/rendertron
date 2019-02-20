@@ -31,7 +31,6 @@ export class BrowserPool {
      */
     async acquire(fn: Function) {
         const browserWrapper: BrowserWrapper = await this.pool.acquire();
-        browserWrapper.incrementUseCount();
         const result = await fn(browserWrapper.getBrowser());
         await this.pool.release(browserWrapper);
         return result;

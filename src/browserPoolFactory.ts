@@ -25,6 +25,6 @@ export default class BrowserPoolFactory implements Factory<BrowserWrapper> {
     }
 
     async validate(browserWrapper: BrowserWrapper): Promise<boolean> {
-        return browserWrapper.ifClosed() && browserWrapper.useCount < this.maxCount;
+        return !browserWrapper.ifClosed() && browserWrapper.useCount < this.maxCount;
     }
 }

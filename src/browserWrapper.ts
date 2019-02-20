@@ -12,7 +12,7 @@ export default class BrowserWrapper {
         return this.closed;
     }
 
-    incrementUseCount(): number {
+    private incrementUseCount(): number {
         this.useCount++;
         return this.useCount;
     }
@@ -27,6 +27,7 @@ export default class BrowserWrapper {
     }
 
     getBrowser(): Browser {
+        this.incrementUseCount();
         return this.browser;
     }
 
