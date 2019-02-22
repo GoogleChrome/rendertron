@@ -8,7 +8,7 @@ class Entry<T> {
 
     constructor(value: T, expiry: number|undefined) {
         this.value = value;
-        if(expiry) {
+        if (expiry) {
             this.expiry = expiry;
             this.createdAt = (new Date()).getTime();
         }
@@ -23,7 +23,7 @@ export default class InMemoryLRUCache<T> {
     public get(key: string): T|undefined {
         const entry: Entry<T>|undefined = this.store.get(key);
         if (entry && entry.value) {
-            if (!entry.expiry || !entry.createdAt || (entry.expiry + entry.createdAt) < (new Date()).getTime()) {
+            if (!entry.expiry || !entry.createdAt || (entry.expiry + entry.createdAt) > (new Date()).getTime()) {
                 this.store.delete(key);
                 this.store.set(key, entry);
                 return entry.value;

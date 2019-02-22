@@ -21,7 +21,7 @@ const MOBILE_USERAGENT =
 
 export interface RendererConfig {
   internalRequestCacheConfig?: ResponseCacheConfig;
-  allowedRequestUrlsRegex?: string;
+  allowedRequestUrlsRegex?: RegExp;
 }
 
 export class Renderer {
@@ -83,17 +83,19 @@ export class Renderer {
 
     await page.setRequestInterception(true);
 
-    page.on('request',  (interceptedRequest: Request) => {
+    page.on('request',  async (interceptedRequest: Request) => {
       if (this.config.allowedRequestUrlsRegex) {
         if (interceptedRequest.url().match(this.config.allowedRequestUrlsRegex)) {
           if (this.interalRequestCacheInterceptor) {
-            return this.interalRequestCacheInterceptor(interceptedRequest);
+            await this.interalRequestCacheInterceptor(interceptedRequest);
+          } else {
+            interceptedRequest.continue();
           }
-          return interceptedRequest.continue();
+        } else {
+          await interceptedRequest.abort();
         }
-        return interceptedRequest.abort();
       } else {
-        return interceptedRequest.continue();
+        await interceptedRequest.continue();
       }
     });
 
@@ -113,13 +115,15 @@ export class Renderer {
     page.addListener('response', (r: puppeteer.Response) => {
       if (!response) {
         response = r;
+      } else {
+        // console.log('response.url', response.url());
       }
     });
 
     try {
       // Navigate to page. Wait until there are no oustanding network requests.
       response = await page.goto(
-          requestUrl, {timeout: 10000, waitUntil: 'networkidle0'});
+          requestUrl, {timeout: 10000, waitUntil: 'networkidle2'});
     } catch (e) {
       console.error(e);
     }

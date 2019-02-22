@@ -25,7 +25,15 @@ type Config = {
 export class Rendertron {
   app: Koa = new Koa();
   config: Config = {
-    datastoreCache: false
+    datastoreCache: false,
+    rendererConfig: {
+      allowedRequestUrlsRegex: /^https?:\/\/(.*?).?gozefo.com.*/,
+      internalRequestCacheConfig: {
+        cacheUrlRegex: /^https?:\/\/(img[0-9]{0,2}).?gozefo.com.*/,
+        imageCacheOptions: 'BLANK_PIXEL',
+        cacheExpiry: 24 * 60 * 60 * 1000,
+      }
+    }
   };
   private renderer: Renderer|undefined;
   private port = process.env.PORT || '3000';
