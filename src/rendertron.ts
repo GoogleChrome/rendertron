@@ -9,12 +9,13 @@ import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import * as url from 'url';
 
-import {Renderer, ScreenshotError} from './renderer';
+import {Renderer, RendererConfig, ScreenshotError} from './renderer';
 
 const CONFIG_PATH = path.resolve(__dirname, '../config.json');
 
 type Config = {
   datastoreCache: boolean;
+  rendererConfig?: RendererConfig;
 };
 
 /**
@@ -23,7 +24,9 @@ type Config = {
  */
 export class Rendertron {
   app: Koa = new Koa();
-  config: Config = {datastoreCache: false};
+  config: Config = {
+    datastoreCache: false
+  };
   private renderer: Renderer|undefined;
   private port = process.env.PORT || '3000';
 
@@ -34,7 +37,8 @@ export class Rendertron {
     }
 
     const browser = await puppeteer.launch({args: ['--no-sandbox']});
-    this.renderer = new Renderer(browser);
+    this.renderer = new Renderer(browser, this.config.rendererConfig);
+    await this.renderer.initialize();
 
     this.app.use(koaLogger());
 

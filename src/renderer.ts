@@ -1,5 +1,7 @@
 import * as puppeteer from 'puppeteer';
+import {Request} from 'puppeteer';
 import * as url from 'url';
+import {getInternalRequestCacheInterceptor, ResponseCacheConfig} from './internalRequestCacheInterceptor';
 
 type SerializedResponse = {
   status: number; content: string;
@@ -16,11 +18,25 @@ const MOBILE_USERAGENT =
  * Wraps Puppeteer's interface to Headless Chrome to expose high level rendering
  * APIs that are able to handle web components and PWAs.
  */
+
+export interface RendererConfig {
+  internalRequestCacheConfig?: ResponseCacheConfig;
+  allowedRequestUrlsRegex?: string;
+}
+
 export class Renderer {
   private browser: puppeteer.Browser;
-
-  constructor(browser: puppeteer.Browser) {
+  private interalRequestCacheInterceptor: Function|undefined;
+  private config: RendererConfig;
+  constructor(browser: puppeteer.Browser, config?: RendererConfig) {
     this.browser = browser;
+    this.config = config || {};
+  }
+
+  public async initialize() {
+    if (this.config.internalRequestCacheConfig) {
+      this.interalRequestCacheInterceptor = await getInternalRequestCacheInterceptor(this.config.internalRequestCacheConfig);
+    }
   }
 
   async serialize(requestUrl: string, isMobile: boolean):
@@ -64,6 +80,22 @@ export class Renderer {
     // Page may reload when setting isMobile
     // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
     await page.setViewport({width: 1000, height: 1000, isMobile});
+
+    await page.setRequestInterception(true);
+
+    page.on('request',  (interceptedRequest: Request) => {
+      if (this.config.allowedRequestUrlsRegex) {
+        if (interceptedRequest.url().match(this.config.allowedRequestUrlsRegex)) {
+          if (this.interalRequestCacheInterceptor) {
+            return this.interalRequestCacheInterceptor(interceptedRequest);
+          }
+          return interceptedRequest.continue();
+        }
+        return interceptedRequest.abort();
+      } else {
+        return interceptedRequest.continue();
+      }
+    });
 
     if (isMobile) {
       page.setUserAgent(MOBILE_USERAGENT);
