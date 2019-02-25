@@ -1,7 +1,10 @@
 import * as puppeteer from 'puppeteer';
 import {Request} from 'puppeteer';
 import * as url from 'url';
-import {getInternalRequestAndResponseInterceptorForCache, ResponseCacheConfig} from './getInternalRequestAndResponseInterceptorForCache';
+import {RespondOptions} from 'puppeteer';
+import * as fse from 'fs-extra';
+import InMemoryLRUCache from './InMemoryLRUCache';
+import {Response} from 'puppeteer';
 
 type SerializedResponse = {
   status: number; content: string;
@@ -19,6 +22,17 @@ const MOBILE_USERAGENT =
  * APIs that are able to handle web components and PWAs.
  */
 
+type ImageResponseOption =
+    | 'BLANK_PIXEL'
+    | 'IGNORE'
+    | 'ALLOW';
+
+interface ResponseCacheConfig {
+  cacheExpiry: number;
+  cacheUrlRegex: RegExp;
+  imageCacheOptions: ImageResponseOption;
+}
+
 export interface RendererConfig {
   internalRequestCacheConfig?: ResponseCacheConfig;
   allowedRequestUrlsRegex?: RegExp;
@@ -26,9 +40,10 @@ export interface RendererConfig {
 
 export class Renderer {
   private browser: puppeteer.Browser;
-  private internalRequestCacheInterceptor: Function|undefined;
-  private internalResponseCacheInterceptor: Function|undefined;
   private config: RendererConfig;
+  private cacheStore = new InMemoryLRUCache<RespondOptions>();
+  private IMAGE_TYPES = ['png', 'jpg', 'jpeg', 'gif', 'svg'];
+  private imageRespondOptions = new Map<string, RespondOptions>();
   constructor(browser: puppeteer.Browser, config?: RendererConfig) {
     this.browser = browser;
     this.config = config || {};
@@ -36,11 +51,70 @@ export class Renderer {
 
   public async initialize() {
     if (this.config.internalRequestCacheConfig) {
-      const {internalRequestCacheInterceptor, internalResponseCacheInterceptor} = await getInternalRequestAndResponseInterceptorForCache(this.config.internalRequestCacheConfig);
-      this.internalRequestCacheInterceptor = internalRequestCacheInterceptor;
-      this.internalResponseCacheInterceptor = internalResponseCacheInterceptor;
+
+      await Promise.all(this.IMAGE_TYPES.map(async (extension) => {
+        const imageBuffer: Buffer = await fse.readFile(`${__dirname}/../image-resources/blank.${extension}`);
+        const respondOptions: RespondOptions = {
+          contentType: `image/${extension}`,
+          body: imageBuffer,
+        };
+        this.imageRespondOptions.set(extension, respondOptions);
+      }));
     }
   }
+
+    async internalRequestCacheInterceptor(interceptedRequest: Request) {
+    if (this.config.internalRequestCacheConfig) {
+      const interceptedRequestFullUrl = interceptedRequest.url();
+      const interceptedUrl = interceptedRequest.url().split('?')[0] || '';
+      const extension = interceptedUrl.split('.').pop();
+      if (extension && this.IMAGE_TYPES.indexOf(extension) !== -1) {
+        if (this.config.internalRequestCacheConfig.imageCacheOptions === 'BLANK_PIXEL') {
+          const respondOptions: RespondOptions | undefined = this.imageRespondOptions.get(extension);
+          if (respondOptions) {
+            await interceptedRequest.respond(respondOptions);
+          } else {
+            await interceptedRequest.continue();
+          }
+        } else if (this.config.internalRequestCacheConfig.imageCacheOptions === 'IGNORE') {
+          await interceptedRequest.abort();
+        } else {
+          await interceptedRequest.continue();
+        }
+      } else if (interceptedUrl.match(this.config.internalRequestCacheConfig.cacheUrlRegex)) {
+        const cachedResponse = this.cacheStore.get(interceptedRequestFullUrl);
+        if (cachedResponse) {
+          await interceptedRequest.respond(cachedResponse);
+        } else {
+          await interceptedRequest.continue();
+        }
+      } else {
+        await interceptedRequest.continue();
+      }
+    }
+
+    }
+
+    private async internalResponseCacheInterceptor(response: Response) {
+      if (this.config.internalRequestCacheConfig && response) {
+        const url = response.url();
+        const interceptedUrl = url.split('?')[0] || '';
+        const extension = interceptedUrl.split('.').pop();
+        if (interceptedUrl.match(this.config.internalRequestCacheConfig.cacheUrlRegex) && (!extension || this.IMAGE_TYPES.indexOf(extension) === -1 || this.config.internalRequestCacheConfig.imageCacheOptions === 'ALLOW') && !this.cacheStore.get(url)) {
+          const headers = response.headers();
+          return await response.buffer().then((buffer: Buffer) => {
+            this.cacheStore.set(url, {
+              headers: headers,
+              contentType: headers && headers['content-type'] ? headers['content-type'] : 'text/html',
+              status: response.status(),
+              body: buffer,
+              // @ts-ignore
+            }, this.config.internalRequestCacheConfig.cacheExpiry);
+          });
+        }
+      }
+    }
+
 
   async serialize(requestUrl: string, isMobile: boolean):
       Promise<SerializedResponse> {
@@ -85,22 +159,23 @@ export class Renderer {
     await page.setViewport({width: 1000, height: 1000, isMobile});
 
     await page.setRequestInterception(true);
-
-    page.on('request',  async (interceptedRequest: Request) => {
-      if (this.config.allowedRequestUrlsRegex) {
-        if (interceptedRequest.url().match(this.config.allowedRequestUrlsRegex)) {
-          if (this.internalRequestCacheInterceptor) {
-            await this.internalRequestCacheInterceptor(interceptedRequest);
+    if (this.config.internalRequestCacheConfig) {
+      page.on('request', async (interceptedRequest: Request) => {
+        if (this.config.allowedRequestUrlsRegex) {
+          if (interceptedRequest.url().match(this.config.allowedRequestUrlsRegex)) {
+            if (this.internalRequestCacheInterceptor) {
+              await this.internalRequestCacheInterceptor(interceptedRequest);
+            } else {
+              interceptedRequest.continue();
+            }
           } else {
-            interceptedRequest.continue();
+            await interceptedRequest.abort();
           }
         } else {
-          await interceptedRequest.abort();
+          await interceptedRequest.continue();
         }
-      } else {
-        await interceptedRequest.continue();
-      }
-    });
+      });
+    }
 
     if (isMobile) {
       page.setUserAgent(MOBILE_USERAGENT);
@@ -119,7 +194,7 @@ export class Renderer {
       if (!response) {
         response = r;
       }
-      if (this.internalResponseCacheInterceptor) {
+      if (this.config.internalRequestCacheConfig) {
         await this.internalResponseCacheInterceptor(r);
       }
     });
