@@ -38,7 +38,6 @@ export class Rendertron {
 
     const browser = await puppeteer.launch({args: ['--no-sandbox']});
     this.renderer = new Renderer(browser, this.config.rendererConfig);
-    await this.renderer.initialize();
 
     this.app.use(koaLogger());
 
