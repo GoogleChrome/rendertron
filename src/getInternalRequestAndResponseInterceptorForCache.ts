@@ -1,5 +1,5 @@
 import InMemoryLRUCache from './InMemoryLRUCache';
-import {RespondOptions, Request} from 'puppeteer';
+import {RespondOptions, Request, Response} from 'puppeteer';
 import * as fse from 'fs-extra';
 
 export type ImageResponseOption =
@@ -13,7 +13,7 @@ export interface ResponseCacheConfig {
     imageCacheOptions: ImageResponseOption;
 }
 
-export async function getInternalRequestCacheInterceptor (config: ResponseCacheConfig) {
+export async function getInternalRequestAndResponseInterceptorForCache (config: ResponseCacheConfig) {
     const imageTypes = ['png', 'jpg', 'jpeg', 'gif', 'svg'];
     const imageRespondOptions = new Map<string, RespondOptions>();
     await Promise.all(imageTypes.map(async (extension) => {
@@ -27,7 +27,7 @@ export async function getInternalRequestCacheInterceptor (config: ResponseCacheC
 
     const cacheStore = new InMemoryLRUCache<RespondOptions>();
 
-    return async function (interceptedRequest: Request) {
+    async function internalRequestCacheInterceptor(interceptedRequest: Request) {
         const interceptedRequestFullUrl = interceptedRequest.url();
         const interceptedUrl = interceptedRequest.url().split('?')[0] || '';
         const extension = interceptedUrl.split('.').pop();
@@ -50,26 +50,34 @@ export async function getInternalRequestCacheInterceptor (config: ResponseCacheC
                 await interceptedRequest.respond(cachedResponse);
             } else {
                 await interceptedRequest.continue();
-                setTimeout(async () => {
-                    const response = interceptedRequest.response();
-                    // console.log('got response for ', interceptedUrl);
-                    if (response) {
-                        const headers = response.headers();
-                        await response.buffer().then((buffer: Buffer) => {
-                            console.log('caching: ', response.url());
-                            cacheStore.set(interceptedRequestFullUrl, {
-                                headers: headers,
-                                contentType: headers && headers['content-type'] ? headers['content-type'] : 'text/html',
-                                status: response.status(),
-                                body: buffer,
-                            }, config.cacheExpiry);
-                        });
-                    }
-                }, 1000);
             }
         } else {
             await interceptedRequest.continue();
         }
 
+    }
+
+    async function internalResponseCacheInterceptor(response: Response) {
+            if (response) {
+                const url = response.url();
+                const interceptedUrl = url.split('?')[0] || '';
+                const extension = interceptedUrl.split('.').pop();
+                if (interceptedUrl.match(config.cacheUrlRegex) && (!extension || imageTypes.indexOf(extension) === -1 || config.imageCacheOptions === 'ALLOW') && !cacheStore.get(url)) {
+                    const headers = response.headers();
+                    return await response.buffer().then((buffer: Buffer) => {
+                        console.log('caching: ', response.url());
+                        cacheStore.set(url, {
+                            headers: headers,
+                            contentType: headers && headers['content-type'] ? headers['content-type'] : 'text/html',
+                            status: response.status(),
+                            body: buffer,
+                        }, config.cacheExpiry);
+                    });
+                }
+            }
+    }
+    return {
+        internalRequestCacheInterceptor,
+        internalResponseCacheInterceptor,
     };
 }

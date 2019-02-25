@@ -18,7 +18,7 @@ class Entry<T> {
 
 export default class InMemoryLRUCache<T> {
     private store: Map<string, Entry<T>> = new Map<string, Entry<T>>();
-    private maxEntries: number = 20;
+    private maxEntries: number = 2000;
 
     public get(key: string): T|undefined {
         const entry: Entry<T>|undefined = this.store.get(key);

@@ -1,7 +1,7 @@
 import * as puppeteer from 'puppeteer';
 import {Request} from 'puppeteer';
 import * as url from 'url';
-import {getInternalRequestCacheInterceptor, ResponseCacheConfig} from './internalRequestCacheInterceptor';
+import {getInternalRequestAndResponseInterceptorForCache, ResponseCacheConfig} from './getInternalRequestAndResponseInterceptorForCache';
 
 type SerializedResponse = {
   status: number; content: string;
@@ -26,7 +26,8 @@ export interface RendererConfig {
 
 export class Renderer {
   private browser: puppeteer.Browser;
-  private interalRequestCacheInterceptor: Function|undefined;
+  private internalRequestCacheInterceptor: Function|undefined;
+  private internalResponseCacheInterceptor: Function|undefined;
   private config: RendererConfig;
   constructor(browser: puppeteer.Browser, config?: RendererConfig) {
     this.browser = browser;
@@ -35,7 +36,9 @@ export class Renderer {
 
   public async initialize() {
     if (this.config.internalRequestCacheConfig) {
-      this.interalRequestCacheInterceptor = await getInternalRequestCacheInterceptor(this.config.internalRequestCacheConfig);
+      const {internalRequestCacheInterceptor, internalResponseCacheInterceptor} = await getInternalRequestAndResponseInterceptorForCache(this.config.internalRequestCacheConfig);
+      this.internalRequestCacheInterceptor = internalRequestCacheInterceptor;
+      this.internalResponseCacheInterceptor = internalResponseCacheInterceptor;
     }
   }
 
@@ -86,8 +89,8 @@ export class Renderer {
     page.on('request',  async (interceptedRequest: Request) => {
       if (this.config.allowedRequestUrlsRegex) {
         if (interceptedRequest.url().match(this.config.allowedRequestUrlsRegex)) {
-          if (this.interalRequestCacheInterceptor) {
-            await this.interalRequestCacheInterceptor(interceptedRequest);
+          if (this.internalRequestCacheInterceptor) {
+            await this.internalRequestCacheInterceptor(interceptedRequest);
           } else {
             interceptedRequest.continue();
           }
@@ -112,11 +115,12 @@ export class Renderer {
     // times out, which results in puppeteer throwing an error. This allows us
     // to return a partial response for what was able to be rendered in that
     // time frame.
-    page.addListener('response', (r: puppeteer.Response) => {
+    page.addListener('response', async (r: puppeteer.Response) => {
       if (!response) {
         response = r;
-      } else {
-        // console.log('response.url', response.url());
+      }
+      if (this.internalResponseCacheInterceptor) {
+        await this.internalResponseCacheInterceptor(r);
       }
     });
 
