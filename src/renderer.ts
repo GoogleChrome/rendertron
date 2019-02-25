@@ -158,8 +158,8 @@ export class Renderer {
     // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
     await page.setViewport({width: 1000, height: 1000, isMobile});
 
-    await page.setRequestInterception(true);
     if (this.config.internalRequestCacheConfig) {
+      await page.setRequestInterception(true);
       page.on('request', async (interceptedRequest: Request) => {
         if (this.config.allowedRequestUrlsRegex) {
           if (interceptedRequest.url().match(this.config.allowedRequestUrlsRegex)) {

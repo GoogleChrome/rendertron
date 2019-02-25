@@ -31,7 +31,7 @@ export class Rendertron {
       internalRequestCacheConfig: {
         cacheUrlRegex: /^https?:\/\/(img[0-9]{0,2}).?gozefo.com.*/,
         imageCacheOptions: 'BLANK_PIXEL',
-        cacheExpiry: 24 * 60 * 60 * 1000,
+        cacheExpiry: 24 * 60 * 60 * 1000, // expiry for internal cache
       }
     }
   };
