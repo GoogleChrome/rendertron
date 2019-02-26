@@ -29,14 +29,14 @@ type ImageResponseOption =
 
 interface ResponseCacheConfig {
     maxEntries: number;
-    cacheExpiry: number;
-    cacheUrlRegex: RegExp;
+    cacheExpiry?: number;
+    cacheUrlRegex: RegExp|string;
     imageCacheOptions: ImageResponseOption;
 }
 
 export interface RendererConfig {
     internalRequestCacheConfig?: ResponseCacheConfig;
-    allowedRequestUrlsRegex?: RegExp;
+    allowedRequestUrlsRegex?: RegExp | string;
 }
 
 export class Renderer {
@@ -65,6 +65,7 @@ export class Renderer {
     private async internalRequestCacheInterceptor(interceptedRequest: Request) {
         if (this.config.internalRequestCacheConfig) {
             const interceptedRequestFullUrl = interceptedRequest.url();
+            console.log('interceptedRequestFullUrl', interceptedRequestFullUrl);
             const interceptedUrl = interceptedRequest.url().split('?')[0] || '';
             const extension = interceptedUrl.split('.').pop();
             if (extension && this.IMAGE_TYPES.indexOf(extension) !== -1) {

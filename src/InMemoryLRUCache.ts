@@ -29,7 +29,7 @@ export default class InMemoryLRUCache<T> {
     public get(key: string): T|undefined {
         const entry: Entry<T>|undefined = this.store.get(key);
         if (entry && entry.value) {
-            const expired = entry.expiry && entry.createdAt ? (entry.expiry + entry.createdAt > (new Date()).getTime()) : false;
+            const expired = entry.expiry && entry.createdAt ? (entry.expiry + entry.createdAt < (new Date()).getTime()) : false;
             if (!expired) {
                 this.store.delete(key);
                 this.store.set(key, entry);
