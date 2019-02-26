@@ -162,6 +162,30 @@ on how to deploy run headless Chrome in Docker.
 When deploying the service, set configuration variables by including a `config.json` in the
 root. Available configuration options:
  * `datastoreCache` default `false` - set to `true` to enable caching on Google Cloud using datastore
+ * `rendererConfig` default `undefined`. 
+  
+    Structure of rendererConfig object:
+    ``` json
+      {
+        "allowedRequestUrlsRegex": "<regex for url allowed>",
+        "internalRequestCacheConfig": {
+          "cacheUrlRegex": "<regex for url patters whose response needs to be cached",
+          "imageCacheOptions": "BLANK_PIXEL",
+          "cacheExpiry": 10000,
+          "maxEntries": 2000
+        }
+      }
+    ```
+    * `allowedRequestUrlsRegex`: this attributes allow you to ignore all request not matching regex, it would be particularly beneficial in ignoring third party request
+    * `internalRequestCacheConfig`: this is config for caching of internal requests made by page. Cache used here is in memory LRU cache, where on breach of maxEntries least recently used values would be removed to accommodate new entries
+        * `cacheUrlRegex`: This defined regex for url pattern which should be cached
+        * `cacheExpiry`: This defines duration in milliseconds cache entry would be valid. This does not automatically removes entries at expiry time. But ensures cache is not used beyond expiry and entry is also deleted on fetching the entry beyond expiry.
+        * `maxEntries`: This defines max entries cache would maintain
+        * `imageCacheOptions`: This defines the way image request needed to be made.
+            Possible value is:
+            * i) 'BLANK_PIXEL', this make us respond with dummy data for image
+            * ii) 'IGNORE', this stops any request made for any image type
+            * iii) 'ALLOW', this would allow image requests to pass through, it could be cached or allowed to go through depending upon cacheUrlRegex regex
 
 ### Troubleshooting
 If you're having troubles with getting Headless Chrome to run in your

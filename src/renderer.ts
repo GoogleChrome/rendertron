@@ -28,6 +28,7 @@ type ImageResponseOption =
     | 'ALLOW';
 
 interface ResponseCacheConfig {
+    maxEntries: number;
     cacheExpiry: number;
     cacheUrlRegex: RegExp;
     imageCacheOptions: ImageResponseOption;
@@ -41,7 +42,7 @@ export interface RendererConfig {
 export class Renderer {
     private browser: puppeteer.Browser;
     private config: RendererConfig;
-    private cacheStore = new InMemoryLRUCache<RespondOptions>();
+    private cacheStore: InMemoryLRUCache<RespondOptions> = new InMemoryLRUCache<RespondOptions>();
     private IMAGE_TYPES = ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'bmp'];
     private imageRespondOptions = new Map<string, RespondOptions>();
 
@@ -49,6 +50,7 @@ export class Renderer {
         this.browser = browser;
         this.config = config || {};
         if (this.config.internalRequestCacheConfig) {
+            this.cacheStore = new InMemoryLRUCache<RespondOptions>(this.config.internalRequestCacheConfig.maxEntries);
             this.IMAGE_TYPES.forEach((extension) => {
                 const imageBuffer: Buffer = new Buffer('');
                 const respondOptions: RespondOptions = {

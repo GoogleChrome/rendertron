@@ -18,15 +18,24 @@ class Entry<T> {
 
 export default class InMemoryLRUCache<T> {
     private store: Map<string, Entry<T>> = new Map<string, Entry<T>>();
-    private maxEntries: number = 2000;
+    private maxEntries: number = 2000; // default max entries
+
+    constructor(maxEntries?: number) {
+        if (maxEntries) {
+            this.maxEntries = maxEntries;
+        }
+    }
 
     public get(key: string): T|undefined {
         const entry: Entry<T>|undefined = this.store.get(key);
         if (entry && entry.value) {
-            if (!entry.expiry || !entry.createdAt || (entry.expiry + entry.createdAt) > (new Date()).getTime()) {
+            const expired = entry.expiry && entry.createdAt ? (entry.expiry + entry.createdAt > (new Date()).getTime()) : false;
+            if (!expired) {
                 this.store.delete(key);
                 this.store.set(key, entry);
                 return entry.value;
+            } else {
+                this.store.delete(key);
             }
         }
         return undefined;
