@@ -29,7 +29,11 @@ export class Rendertron {
   };
   private renderer: Renderer|undefined;
   private port = process.env.PORT || '3000';
-
+  constructor(config: Config) {
+    if (config) {
+      this.config = config;
+    }
+  }
   async initialize() {
     // Load config.json if it exists.
     if (fse.pathExistsSync(CONFIG_PATH)) {
