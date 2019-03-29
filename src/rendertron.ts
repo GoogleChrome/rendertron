@@ -98,7 +98,7 @@ export class Rendertron {
     // Mark the response as coming from Rendertron.
     ctx.set('x-renderer', 'rendertron');
     // Add custom headers to the response like 'Location'
-    serialized.customHeaders.forEach((value: string, key: string) => { ctx.set(key, value)});
+    serialized.customHeaders.forEach((value: string, key: string) => ctx.set(key, value));
     ctx.status = serialized.status;
     ctx.body = serialized.content;
   }

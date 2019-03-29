@@ -137,7 +137,7 @@ export class Renderer {
           const result = new Map<string, string>();
           const header = element.getAttribute('content');
           if (header) {
-            const i = header.indexOf(":");
+            const i = header.indexOf(':');
             if (i !== -1) {
               result.set(
                 header.substr(0, i).trim(),
