@@ -122,7 +122,7 @@ export class Rendertron {
 
     try {
       const img = await this.renderer.screenshot(
-        `${url}?${ctx.querystring}`, mobileVersion, dimensions, options);
+        url, mobileVersion, dimensions, options);
       ctx.set('Content-Type', 'image/jpeg');
       ctx.set('Content-Length', img.length.toString());
       if (ctx.query['filename']) {
