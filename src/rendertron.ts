@@ -123,6 +123,9 @@ export class Rendertron {
         url, mobileVersion, dimensions, options);
       ctx.set('Content-Type', 'image/jpeg');
       ctx.set('Content-Length', img.length.toString());
+      if (ctx.query['filename']) {
+        ctx.set('Content-Disposition', `attachment; filename=${ctx.query['filename']}`);
+      }
       ctx.body = img;
     } catch (error) {
       const err = error as ScreenshotError;
