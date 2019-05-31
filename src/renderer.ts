@@ -173,12 +173,14 @@ export class Renderer {
     }
 
     if (!response) {
+      await page.close();
       throw new ScreenshotError('NoResponse');
     }
 
     // Disable access to compute metadata. See
     // https://cloud.google.com/compute/docs/storing-retrieving-metadata.
     if (response!.headers()['metadata-flavor'] === 'Google') {
+      await page.close();
       throw new ScreenshotError('Forbidden');
     }
 
@@ -188,6 +190,7 @@ export class Renderer {
     // Screenshot returns a buffer based on specified encoding above.
     // https://github.com/GoogleChrome/puppeteer/blob/v1.8.0/docs/api.md#pagescreenshotoptions
     const buffer = await page.screenshot(screenshotOptions) as Buffer;
+    await page.close();
     return buffer;
   }
 }
