@@ -170,6 +170,7 @@ export class Renderer {
           await page.goto(url, {timeout: 10000, waitUntil: 'networkidle0'});
       await page.waitFor(this.config.waitAfterLoad);
     } catch (e) {
+      await page.close();
       console.error(e);
     }
 
@@ -189,6 +190,7 @@ export class Renderer {
     // Screenshot returns a buffer based on specified encoding above.
     // https://github.com/GoogleChrome/puppeteer/blob/v1.8.0/docs/api.md#pagescreenshotoptions
     const buffer = await page.screenshot(screenshotOptions) as Buffer;
+    await page.close();
     return buffer;
   }
 }
