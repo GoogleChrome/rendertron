@@ -156,7 +156,7 @@ export class Renderer {
     // Page may reload when setting isMobile
     // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
     await page.setViewport(
-        {width: dimensions.width, height: dimensions.height, isMobile});
+        {width: dimensions.width, height: dimensions.height, isMobile, deviceScaleFactor: 2});
 
     if (isMobile) {
       page.setUserAgent(MOBILE_USERAGENT);
