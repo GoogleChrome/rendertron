@@ -19,7 +19,7 @@ export class Rendertron {
   app: Koa = new Koa();
   config: Config = ConfigManager.config;
   private renderer: Renderer|undefined;
-  private port = process.env.PORT || '3000';
+  private port = process.env.PORT || this.config.port;
 
   async initialize() {
     // Load config
