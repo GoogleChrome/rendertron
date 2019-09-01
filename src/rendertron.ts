@@ -18,18 +18,14 @@ import {Config, ConfigManager} from './config';
 export class Rendertron {
   app: Koa = new Koa();
   private config: Config = ConfigManager.config;
-  private renderer: Renderer | undefined;
-  private port = process.env.PORT;
+  private renderer: Renderer|undefined;
+  private port = process.env.PORT || this.config.port;
 
   async initialize() {
     // Load config
     this.config = await ConfigManager.getConfiguration();
 
     this.port = this.port || this.config.port;
-
-
-    const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
-    this.renderer = new Renderer(browser, this.config);
 
     const browser = await puppeteer.launch({args: ['--no-sandbox']});
     this.renderer = new Renderer(browser, this.config);
