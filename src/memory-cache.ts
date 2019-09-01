@@ -23,71 +23,75 @@ import * as Koa from 'koa';
 
 type CacheEntry = {
   saved: Date,
-  expires: Date,
   headers: string,
   payload: string,
 };
 
-export const CACHE_DURATION_MINUTES = 60 * 24;
+export const CACHE_MAX_ENTRIES = 100;
 
+// implements a cache that uses the "least-recently used" strategy to clear unused elements.
 export class MemoryCache {
-  private store: {[id: string]: CacheEntry} = {};
+  private store: Map<string, CacheEntry> = new Map();
 
   async clearCache() {
-    this.store = {};
+    this.store.clear();
   }
 
   cacheContent(key: string, headers: {[key: string]: string}, payload: Buffer) {
-    const now = new Date();
+    // if the cache gets too big, we evict the least recently used entry (i.e. the first value in the map)
+    if (this.store.size >= CACHE_MAX_ENTRIES) {
+      const keyToDelete = this.store.keys().next().value;
+      this.store.delete(keyToDelete);
+    }
 
-    this.store[key] = {
-      saved: now,
-      expires: new Date(now.getTime() + CACHE_DURATION_MINUTES * 60 * 1000),
+    this.store.set(key, {
+      saved: new Date(),
       headers: JSON.stringify(headers),
       payload: JSON.stringify(payload)
-    };
+    });
   }
 
   getCachedContent(key: string) {
-    return this.store[key];
+    const entry = this.store.get(key);
+    // we need to re-insert this key to mark it as "most recently read"
+    if (entry) {
+      this.store.delete(key);
+      this.store.set(key, entry);
+    }
+    return entry;
   }
 
   middleware() {
-    const addToCache = this.cacheContent.bind(this);
-    const getFromCache = this.getCachedContent.bind(this);
+    return this.handleRequest.bind(this);
+  }
 
-    return async function (
-      this: MemoryCache,
-      ctx: Koa.Context,
-      next: () => Promise<unknown>) {
-        // Cache based on full URL. This means requests with different params are
-        // cached separately.
-        const cacheKey = ctx.url;
-        const cachedContent = getFromCache(cacheKey);
-        if (cachedContent && cachedContent.expires.getTime() >= new Date().getTime()) {
-          const headers = JSON.parse(cachedContent.headers);
-          ctx.set(headers);
-          ctx.set('x-rendertron-cached', cachedContent.saved.toUTCString());
-          try {
-            let payload = JSON.parse(cachedContent.payload);
-            if (payload && typeof (payload) === 'object' &&
-                payload.type === 'Buffer') {
-              payload = new Buffer(payload);
-            }
-            ctx.body = payload;
-            return;
-          } catch (error) {
-            console.log(
-                'Erroring parsing cache contents, falling back to normal render');
-          }
+  private async handleRequest(ctx: Koa.Context, next: () => Promise<unknown>) {
+    // Cache based on full URL. This means requests with different params are
+    // cached separately.
+    const cacheKey = ctx.url;
+    const cachedContent = this.getCachedContent(cacheKey);
+    if (cachedContent) {
+      const headers = JSON.parse(cachedContent.headers);
+      ctx.set(headers);
+      ctx.set('x-rendertron-cached', cachedContent.saved.toUTCString());
+      try {
+        let payload = JSON.parse(cachedContent.payload);
+        if (payload && typeof (payload) === 'object' &&
+          payload.type === 'Buffer') {
+          payload = new Buffer(payload);
         }
+        ctx.body = payload;
+        return;
+      } catch (error) {
+        console.log(
+          'Erroring parsing cache contents, falling back to normal render');
+      }
+    }
 
-        await next();
+    await next();
 
-        if (ctx.status === 200) {
-          addToCache(cacheKey, ctx.response.headers, ctx.body);
-          console.log(`cached ${cacheKey}`);
-        }
-    }.bind(this);
+    if (ctx.status === 200) {
+      this.cacheContent(cacheKey, ctx.response.headers, ctx.body);
+    }
   }
 }
