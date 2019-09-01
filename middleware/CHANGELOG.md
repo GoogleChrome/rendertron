@@ -2,6 +2,12 @@
 
 <!-- ## Unreleased -->
 
+## [0.1.5] 2018-12-14
+* Add TelegramBot as bot.
+
+## [0.1.4] 2018-12-10
+* Add Whatsapp as bot.
+
 ## [0.1.3] 2018-09-18
 * Converted to TypeScript.
 
