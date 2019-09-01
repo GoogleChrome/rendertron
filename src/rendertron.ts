@@ -13,8 +13,7 @@ import {Renderer, ScreenshotError} from './renderer';
 const CONFIG_PATH = path.resolve(__dirname, '../config.json');
 
 type Config = {
-  datastoreCache: boolean;
-  memoryCache: boolean;
+  cache: 'memory'|'datastore'|null;
 };
 
 /**
@@ -23,7 +22,7 @@ type Config = {
  */
 export class Rendertron {
   app: Koa = new Koa();
-  config: Config = {datastoreCache: false, memoryCache: false};
+  config: Config = {cache:null};
   private renderer: Renderer|undefined;
   private port = process.env.PORT || '3000';
 
@@ -48,10 +47,10 @@ export class Rendertron {
       route.get('/_ah/health', (ctx: Koa.Context) => ctx.body = 'OK'));
 
     // Optionally enable cache for rendering requests.
-    if (this.config.datastoreCache) {
+    if (this.config.cache === 'datastore') {
       const {DatastoreCache} = await import('./datastore-cache');
       this.app.use(new DatastoreCache().middleware());
-    } else if (this.config.memoryCache) {
+    } else if (this.config.cache === 'memory') {
       const {MemoryCache} = await import('./memory-cache');
       this.app.use(new MemoryCache().middleware());
     }
