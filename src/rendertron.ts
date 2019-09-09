@@ -18,8 +18,8 @@ import { Config, ConfigManager } from './config';
 export class Rendertron {
   app: Koa = new Koa();
   private config: Config = ConfigManager.config;
-  private renderer: Renderer | undefined;
-  private port = process.env.PORT;
+  private renderer: Renderer|undefined;
+  private port = process.env.PORT || this.config.port;
 
   async initialize() {
     // Load config
@@ -39,15 +39,18 @@ export class Rendertron {
 
     this.app.use(route.get('/', async (ctx: Koa.Context) => {
       await koaSend(
-        ctx, 'index.html', { root: path.resolve(__dirname, '../src') });
+        ctx, 'index.html', {root: path.resolve(__dirname, '../src')});
     }));
     this.app.use(
       route.get('/_ah/health', (ctx: Koa.Context) => ctx.body = 'OK'));
 
     // Optionally enable cache for rendering requests.
-    if (this.config.datastoreCache) {
-      const { DatastoreCache } = await import('./datastore-cache');
+    if (this.config.cache === 'datastore') {
+      const {DatastoreCache} = await import('./datastore-cache');
       this.app.use(new DatastoreCache().middleware());
+    } else if (this.config.cache === 'memory') {
+      const {MemoryCache} = await import('./memory-cache');
+      this.app.use(new MemoryCache().middleware());
     }
 
     this.app.use(
@@ -90,6 +93,11 @@ export class Rendertron {
     const mobileVersion = 'mobile' in ctx.query ? true : false;
 
     const serialized = await this.renderer.serialize(url, mobileVersion);
+
+    for (const key in this.config.headers) {
+      ctx.set(key, this.config.headers[key]);
+    }
+
     // Mark the response as coming from Rendertron.
     ctx.set('x-renderer', 'rendertron');
     ctx.status = serialized.status;
@@ -120,7 +128,12 @@ export class Rendertron {
 
     try {
       const img = await this.renderer.screenshot(
-        url, mobileVersion, dimensions, options);
+          url, mobileVersion, dimensions, options);
+
+      for (const key in this.config.headers) {
+        ctx.set(key, this.config.headers[key]);
+      }
+
       ctx.set('Content-Type', 'image/jpeg');
       ctx.set('Content-Length', img.length.toString());
       ctx.body = img;

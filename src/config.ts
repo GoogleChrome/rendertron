@@ -26,20 +26,22 @@ const CONFIG_PATH = path.resolve(__dirname, '../config.json');
 
 
 export type Config = {
-    datastoreCache: boolean;
+    cache: 'datastore'|'memory'|null;
     timeout: number;
     port: string;
     width: number;
     height: number;
+    headers: {[key: string]: string};
 };
 
 export class ConfigManager {
     public static config: Config = {
-        datastoreCache: false,
+        cache: null,
         timeout: 10000,
         port: '3000',
         width: 1000,
         height: 1000,
+        headers: {}
     };
 
     static async getConfiguration(): Promise<Config> {
