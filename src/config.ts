@@ -26,11 +26,12 @@ const CONFIG_PATH = path.resolve(__dirname, '../config.json');
 
 
 export type Config = {
-    cache: 'datastore' | 'memory' | null;
+    cache: 'datastore'|'memory'|null;
     timeout: number;
     port: string;
     width: number;
     height: number;
+    headers: {[key: string]: string};
 };
 
 export class ConfigManager {
@@ -40,6 +41,7 @@ export class ConfigManager {
         port: '3000',
         width: 1000,
         height: 1000,
+        headers: {}
     };
 
     static async getConfiguration(): Promise<Config> {
