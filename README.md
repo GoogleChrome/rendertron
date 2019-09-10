@@ -161,15 +161,11 @@ on how to deploy run headless Chrome in Docker.
 ### Config
 When deploying the service, set configuration variables by including a `config.json` in the
 root. Available configuration options:
-<<<<<<< HEAD
- * `datastoreCache` default `false` - set to `true` to enable caching on Google Cloud using datastore
  * `timeout` default `10000` - set the timeout used to render the target page. 
  * `port` default `3000` - set the port to use for running and listening the rendertron service. Note if process.env.PORT is set, it will be used instead.
  * `width` default `1000` - set the width (resolution) to be used for rendering the page.
  * `height` default `1000` - set the height (resolution) to be used for rendering the page.
-=======
  * `cache` default `null` - set to `datastore` to enable caching on Google Cloud using datastore or to `memory` to enable in-memory caching
->>>>>>> Rewrites cache config option to allow memory, datastore or null
 
 ### Troubleshooting
 If you're having troubles with getting Headless Chrome to run in your
