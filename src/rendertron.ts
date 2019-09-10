@@ -8,8 +8,8 @@ import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import * as url from 'url';
 
-import { Renderer, ScreenshotError } from './renderer';
-import { Config, ConfigManager } from './config';
+import {Renderer, ScreenshotError} from './renderer';
+import {Config, ConfigManager} from './config';
 
 /**
  * Rendertron rendering service. This runs the server which routes rendering
