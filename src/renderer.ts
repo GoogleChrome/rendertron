@@ -4,7 +4,9 @@ import * as url from 'url';
 import {Config} from './config';
 
 type SerializedResponse = {
-  status: number; content: string;
+  status: number;
+  customHeaders: Map<string, string>;
+  content: string;
 };
 
 type ViewportDimensions = {
@@ -77,7 +79,7 @@ export class Renderer {
     page.evaluateOnNewDocument('ShadyDOM = {force: true}');
     page.evaluateOnNewDocument('ShadyCSS = {shimcssproperties: true}');
 
-    let response: puppeteer.Response|null = null;
+    let response: puppeteer.Response | null = null;
     // Capture main frame response. This is used in the case that rendering
     // times out, which results in puppeteer throwing an error. This allows us
     // to return a partial response for what was able to be rendered in that
@@ -101,14 +103,14 @@ export class Renderer {
       // This should only occur when the page is about:blank. See
       // https://github.com/GoogleChrome/puppeteer/blob/v1.5.0/docs/api.md#pagegotourl-options.
       await page.close();
-      return {status: 400, content: ''};
+      return {status: 400, customHeaders: new Map(), content: ''};
     }
 
     // Disable access to compute metadata. See
     // https://cloud.google.com/compute/docs/storing-retrieving-metadata.
     if (response.headers()['metadata-flavor'] === 'Google') {
       await page.close();
-      return {status: 403, content: ''};
+      return {status: 403, customHeaders: new Map(), content: ''};
     }
 
     // Set status to the initial server's response code. Check for a <meta
@@ -132,6 +134,26 @@ export class Renderer {
       statusCode = newStatusCode;
     }
 
+    // Check for <meta name="render:header" content="key:value" /> tag to allow a custom header in the response
+    // to the crawlers.
+    const customHeaders = await page
+      .$eval(
+        'meta[name="render:header"]',
+        (element) => {
+          const result = new Map<string, string>();
+          const header = element.getAttribute('content');
+          if (header) {
+            const i = header.indexOf(':');
+            if (i !== -1) {
+              result.set(
+                header.substr(0, i).trim(),
+                header.substring(i + 1).trim());
+            }
+          }
+          return JSON.stringify([...result]);
+        })
+        .catch(() => undefined);
+
     // Remove script & import tags.
     await page.evaluate(stripPage);
     // Inject <base> tag with the origin of the request (ie. no path).
@@ -143,7 +165,7 @@ export class Renderer {
     const result = await page.evaluate('document.firstElementChild.outerHTML');
 
     await page.close();
-    return {status: statusCode, content: result};
+    return {status: statusCode, customHeaders: customHeaders ? new Map(JSON.parse(customHeaders)) : new Map(), content: result};
   }
 
   async screenshot(
