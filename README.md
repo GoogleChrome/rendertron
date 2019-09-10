@@ -46,6 +46,7 @@ This is a list of middleware available to use with the Rendertron service:
  * [Express.js middleware](/middleware)
  * [Firebase functions](https://github.com/justinribeiro/pwa-firebase-functions-botrender) (Community maintained)
  * [ASP.net core middleware](https://github.com/galamai/AspNetCore.Rendertron) (Community maintained)
+ * [Python (Django) middleware and decorator](https://github.com/frontendr/python-rendertron) (Community maintained)
 
 Rendertron is also compatible with [prerender.io middleware](https://prerender.io/documentation/install-middleware).
 Note: the user agent lists differ there.
@@ -161,7 +162,11 @@ on how to deploy run headless Chrome in Docker.
 ### Config
 When deploying the service, set configuration variables by including a `config.json` in the
 root. Available configuration options:
- * `datastoreCache` default `false` - set to `true` to enable caching on Google Cloud using datastore
+ * `timeout` default `10000` - set the timeout used to render the target page. 
+ * `port` default `3000` - set the port to use for running and listening the rendertron service. Note if process.env.PORT is set, it will be used instead.
+ * `width` default `1000` - set the width (resolution) to be used for rendering the page.
+ * `height` default `1000` - set the height (resolution) to be used for rendering the page.
+ * `cache` default `null` - set to `datastore` to enable caching on Google Cloud using datastore or to `memory` to enable in-memory caching
 
 ### Troubleshooting
 If you're having troubles with getting Headless Chrome to run in your
