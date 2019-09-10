@@ -149,6 +149,9 @@ async function logUncaughtError(error: Error) {
   process.exit(1);
 }
 
+// The type for the unhandleRejection handler is set to contain Promise<any>,
+// so we disable that linter rule for the next line
+// tslint:disable-next-line: no-any
 async function logUnhandledRejection(reason: {} | null | undefined, _: Promise<any>) {
   console.error('Unhandled rejection');
   console.error(reason);
