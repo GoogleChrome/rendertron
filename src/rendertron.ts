@@ -8,8 +8,8 @@ import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import * as url from 'url';
 
-import {Renderer, ScreenshotError} from './renderer';
-import {Config, ConfigManager} from './config';
+import { Renderer, ScreenshotError } from './renderer';
+import { Config, ConfigManager } from './config';
 
 /**
  * Rendertron rendering service. This runs the server which routes rendering
@@ -18,7 +18,7 @@ import {Config, ConfigManager} from './config';
 export class Rendertron {
   app: Koa = new Koa();
   private config: Config = ConfigManager.config;
-  private renderer: Renderer|undefined;
+  private renderer: Renderer | undefined;
   private port = process.env.PORT || this.config.port;
 
   async initialize() {
@@ -27,7 +27,7 @@ export class Rendertron {
 
     this.port = this.port || this.config.port;
 
-    const browser = await puppeteer.launch({args: ['--no-sandbox']});
+    const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
     this.renderer = new Renderer(browser, this.config);
 
     this.app.use(koaLogger());
@@ -38,17 +38,17 @@ export class Rendertron {
 
     this.app.use(route.get('/', async (ctx: Koa.Context) => {
       await koaSend(
-        ctx, 'index.html', {root: path.resolve(__dirname, '../src')});
+        ctx, 'index.html', { root: path.resolve(__dirname, '../src') });
     }));
     this.app.use(
       route.get('/_ah/health', (ctx: Koa.Context) => ctx.body = 'OK'));
 
     // Optionally enable cache for rendering requests.
     if (this.config.cache === 'datastore') {
-      const {DatastoreCache} = await import('./datastore-cache');
+      const { DatastoreCache } = await import('./datastore-cache');
       this.app.use(new DatastoreCache().middleware());
     } else if (this.config.cache === 'memory') {
-      const {MemoryCache} = await import('./memory-cache');
+      const { MemoryCache } = await import('./memory-cache');
       this.app.use(new MemoryCache().middleware());
     }
 
@@ -127,7 +127,7 @@ export class Rendertron {
 
     try {
       const img = await this.renderer.screenshot(
-          url, mobileVersion, dimensions, options);
+        url, mobileVersion, dimensions, options);
 
       for (const key in this.config.headers) {
         ctx.set(key, this.config.headers[key]);
@@ -149,11 +149,17 @@ async function logUncaughtError(error: Error) {
   process.exit(1);
 }
 
+async function logUnhandledRejection(reason: {} | null | undefined, _: Promise<any>) {
+  console.error('Unhandled rejection');
+  console.error(reason);
+  process.exit(1);
+}
+
 // Start rendertron if not running inside tests.
 if (!module.parent) {
   const rendertron = new Rendertron();
   rendertron.initialize();
 
   process.on('uncaughtException', logUncaughtError);
-  process.on('unhandledRejection', logUncaughtError);
+  process.on('unhandledRejection', logUnhandledRejection);
 }
