@@ -8,8 +8,8 @@ import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import * as url from 'url';
 
-import { Renderer, ScreenshotError } from './renderer';
-import { Config, ConfigManager } from './config';
+import {Renderer, ScreenshotError} from './renderer';
+import {Config, ConfigManager} from './config';
 
 /**
  * Rendertron rendering service. This runs the server which routes rendering
@@ -27,8 +27,7 @@ export class Rendertron {
 
     this.port = this.port || this.config.port;
 
-
-    const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
+    const browser = await puppeteer.launch({args: ['--no-sandbox']});
     this.renderer = new Renderer(browser, this.config);
 
     this.app.use(koaLogger());
