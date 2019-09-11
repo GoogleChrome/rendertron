@@ -14,7 +14,7 @@
  * the License.
  */
 
-import {test} from 'ava';
+import test from 'ava';
 import * as express from 'express';
 import * as net from 'net';
 import * as supertest from 'supertest';
