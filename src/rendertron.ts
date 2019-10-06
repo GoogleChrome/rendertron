@@ -8,8 +8,8 @@ import * as path from 'path';
 import * as puppeteer from 'puppeteer';
 import * as url from 'url';
 
-import {Renderer, ScreenshotError} from './renderer';
-import {Config, ConfigManager} from './config';
+import { Renderer, ScreenshotError } from './renderer';
+import { Config, ConfigManager } from './config';
 
 /**
  * Rendertron rendering service. This runs the server which routes rendering
@@ -20,12 +20,14 @@ export class Rendertron {
   private config: Config = ConfigManager.config;
   private renderer: Renderer | undefined;
   private port = process.env.PORT || this.config.port;
+  private host = process.env.HOST || this.config.host;
 
   async initialize() {
     // Load config
     this.config = await ConfigManager.getConfiguration();
 
     this.port = this.port || this.config.port;
+    this.host = this.host || this.config.host;
 
     const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
     this.renderer = new Renderer(browser, this.config);
@@ -59,7 +61,7 @@ export class Rendertron {
     this.app.use(route.post(
       '/screenshot/:url(.*)', this.handleScreenshotRequest.bind(this)));
 
-    return this.app.listen(this.port, () => {
+    return this.app.listen(+this.port, this.host, () => {
       console.log(`Listening on port ${this.port}`);
     });
   }
