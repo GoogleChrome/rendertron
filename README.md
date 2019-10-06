@@ -164,6 +164,7 @@ When deploying the service, set configuration variables by including a `config.j
 root. Available configuration options:
  * `timeout` default `10000` - set the timeout used to render the target page. 
  * `port` default `3000` - set the port to use for running and listening the rendertron service. Note if process.env.PORT is set, it will be used instead.
+ * `host` default `0.0.0.0` - set the hostname to use for running and listening the rendertron service. Note if process.env.HOST is set, it will be used instead.
  * `width` default `1000` - set the width (resolution) to be used for rendering the page.
  * `height` default `1000` - set the height (resolution) to be used for rendering the page.
  * `cache` default `null` - set to `datastore` to enable caching on Google Cloud using datastore or to `memory` to enable in-memory caching
