@@ -10,7 +10,7 @@
 
 # How to Contribute
 
-First of all, thank you for your interest in Puppeteer!
+First of all, thank you for your interest in Rendertron!
 We'd love to accept your patches and contributions!
 
 ## Contributor License Agreement
