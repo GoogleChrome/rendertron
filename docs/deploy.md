@@ -76,9 +76,6 @@ Finally, add a `Procfile` to your project with the following:
 web: node bin/rendertron
 ```
 
-This worked for me and now I have a rendertron app running a node web server for free on Heroku.
-
-
 
 
 
