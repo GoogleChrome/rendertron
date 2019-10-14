@@ -31,6 +31,7 @@ are no uptime guarantees.
 -   [Rendertron user guide](users-guide)
 -   [Configuring Rendertron](configure)
 -   [Deploying Rendertron](deploy)
+- [Using Rendertron with your server](server-setup)
 -   [API Reference](api-reference)
 -   [Best practices](best_practices)
 -   [Contributing to Rendertron](contributing)
