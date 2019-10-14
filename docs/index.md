@@ -24,5 +24,6 @@ to be used as a production endpoint. You can use it, but there are no uptime gua
 - [Rendertron user guide](users-guide)
 - [Configuring Rendertron](configure)
 - [Deploying Rendertron](deploy)
+- [Using Rendertron with your server](server-setup)
 - [Best practices](best_practices)
 - [Contributing to Rendertron](contributing)
