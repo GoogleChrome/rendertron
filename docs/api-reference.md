@@ -83,3 +83,12 @@ const screenshotOptions = Object.assign({}, options, {
     encoding: 'binary',
 });
 ```
+
+`/invalidate`
+
+Invalidate a cache entry from memory or cloud datastore.   
+(Only available if cache is configured)
+
+| param  | type     | description                     |
+| ------ | -------- | ------------------------------- |
+| `url`  | `String` | URL to invalidate in cache      |

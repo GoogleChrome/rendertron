@@ -43,7 +43,7 @@ export class DatastoreCache {
     const data = await query.run();
     const entities = data[0];
     const entityKeys = entities.map(
-        (entity) => (entity as DatastoreObject)[this.datastore.KEY]);
+      (entity) => (entity as DatastoreObject)[this.datastore.KEY]);
     console.log(`Removing ${entities.length} items from the cache`);
     await this.datastore.delete(entityKeys);
     // TODO(samli): check info (data[1]) and loop through pages of entities to
@@ -76,6 +76,11 @@ export class DatastoreCache {
     await this.datastore.save(entity);
   }
 
+  async removeEntry(key: string) {
+    const datastoreKey = this.datastore.key(['Page', key]);
+    await this.datastore.delete(datastoreKey);
+  }
+
   /**
    * Returns middleware function.
    */
@@ -83,9 +88,9 @@ export class DatastoreCache {
     const cacheContent = this.cacheContent.bind(this);
 
     return async function(
-               this: DatastoreCache,
-               ctx: Koa.Context,
-               next: () => Promise<unknown>) {
+      this: DatastoreCache,
+      ctx: Koa.Context,
+      next: () => Promise<unknown>) {
       // Cache based on full URL. This means requests with different params are
       // cached separately.
       const key = this.datastore.key(['Page', ctx.url]);
@@ -101,14 +106,14 @@ export class DatastoreCache {
           try {
             let payload = JSON.parse(content.payload);
             if (payload && typeof (payload) === 'object' &&
-                payload.type === 'Buffer') {
+              payload.type === 'Buffer') {
               payload = new Buffer(payload);
             }
             ctx.body = payload;
             return;
           } catch (error) {
             console.log(
-                'Erroring parsing cache contents, falling back to normal render');
+              'Erroring parsing cache contents, falling back to normal render');
           }
         }
       }
@@ -120,4 +125,14 @@ export class DatastoreCache {
       }
     }.bind(this);
   }
+
+  invalidateHandler() {
+    return this.handleInvalidateRequest.bind(this);
+  }
+
+  private async handleInvalidateRequest(ctx: Koa.Context, url: string) {
+    this.removeEntry(url);
+    ctx.status = 200;
+  }
+
 }

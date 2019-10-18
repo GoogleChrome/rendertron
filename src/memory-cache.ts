@@ -61,8 +61,21 @@ export class MemoryCache {
     return entry;
   }
 
+  removeEntry(key: string) {
+    this.store.delete(key);
+  }
+
   middleware() {
     return this.handleRequest.bind(this);
+  }
+
+  invalidateHandler() {
+    return this.handleInvalidateRequest.bind(this);
+  }
+
+  private async handleInvalidateRequest(ctx: Koa.Context, url: string) {
+    this.removeEntry(url);
+    ctx.status = 200;
   }
 
   private async handleRequest(ctx: Koa.Context, next: () => Promise<unknown>) {

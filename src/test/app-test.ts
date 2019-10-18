@@ -57,28 +57,28 @@ test('renders script after page load event', async (t) => {
 // yet injected properly.
 test.failing('renders shadow DOM - no polyfill', async (t) => {
   const res = await server.get(
-      `/render/${testBase}shadow-dom-no-polyfill.html?wc-inject-shadydom=true`);
+    `/render/${testBase}shadow-dom-no-polyfill.html?wc-inject-shadydom=true`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('shadow-root-text') !== -1);
 });
 
 test('renders shadow DOM - polyfill loader', async (t) => {
   const res = await server.get(`/render/${
-      testBase}shadow-dom-polyfill-loader.html?wc-inject-shadydom=true`);
+    testBase}shadow-dom-polyfill-loader.html?wc-inject-shadydom=true`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('shadow-root-text') !== -1);
 });
 
 test('renders shadow DOM - polyfill loader - different flag', async (t) => {
   const res = await server.get(
-      `/render/${testBase}shadow-dom-polyfill-loader.html?wc-inject-shadydom`);
+    `/render/${testBase}shadow-dom-polyfill-loader.html?wc-inject-shadydom`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('shadow-root-text') !== -1);
 });
 
 test('renders shadow DOM - webcomponents-lite.js polyfill', async (t) => {
   const res = await server.get(`/render/${
-      testBase}shadow-dom-polyfill-all.html?wc-inject-shadydom=true`);
+    testBase}shadow-dom-polyfill-all.html?wc-inject-shadydom=true`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('shadow-root-text') !== -1);
 });
@@ -109,14 +109,14 @@ test('server status code should be forwarded', async (t) => {
 test('http status code should be able to be set via a meta tag', async (t) => {
   const testFile = 'http-meta-status-code.html';
   const res = await server.get(
-      `/render/${testBase}${testFile}?wc-inject-shadydom=true`);
+    `/render/${testBase}${testFile}?wc-inject-shadydom=true`);
   t.is(res.status, 400);
 });
 
 test('http status codes need to be respected from top to bottom', async (t) => {
   const testFile = 'http-meta-status-code-multiple.html';
   const res = await server.get(
-      `/render/${testBase}${testFile}?wc-inject-shadydom=true`);
+    `/render/${testBase}${testFile}?wc-inject-shadydom=true`);
   t.is(res.status, 401);
 });
 
@@ -130,10 +130,10 @@ test('screenshot is an image', async (t) => {
 
 test('screenshot accepts options', async (t) => {
   const res =
-      await server.post(`/screenshot/${testBase}basic-script.html`).send({
-        clip: {x: 100, y: 100, width: 100, height: 100},
-        path: 'test.jpeg'
-      });
+    await server.post(`/screenshot/${testBase}basic-script.html`).send({
+      clip: {x: 100, y: 100, width: 100, height: 100},
+      path: 'test.jpeg'
+    });
   t.is(res.status, 200);
   t.is(res.header['content-type'], 'image/jpeg');
   t.true(res.body.length > 300);
@@ -182,3 +182,16 @@ test('unknown url fails safely on screenshot', async (t) => {
   const res = await server.get(`/render/http://unknown.blah.com`);
   t.is(res.status, 400);
 });
+
+// test('endpont for invalidate works if configured', async (t) => {
+//   // TODO mock the configration to use cache
+//   const cached_server = request(await (new Rendertron()).initialize());
+//   await app.listen(1235);
+//   const res = await cached_server.get(`/render/${testBase}basic-script.html`);
+//   t.is(res.status, 200);
+//   t.true(res.text.indexOf('document-title') !== -1);
+//   t.is(res.header['x-renderer'], 'rendertron');
+//   t.true(res.header['x-rendertron-cached'] != null);
+//   const res2 = await cached_server.get(`/invalidate/${testBase}basic-script.html`)
+//   t.true(res2.header['x-rendertron-cached'] == null);
+// });
