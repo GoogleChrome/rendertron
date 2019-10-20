@@ -44,14 +44,25 @@ export class MemoryCache {
       this.store.delete(keyToDelete);
     }
 
-    this.store.set(key, {
+    //remove refreshCache from URL
+    let cacheKey = key
+        .replace(/&?refreshCache=(?:true|false)&?/i, '');
+
+    if (cacheKey.charAt(cacheKey.length - 1) === '?') {
+      cacheKey = cacheKey.slice(0, -1);
+    }
+
+    this.store.set(cacheKey, {
       saved: new Date(),
       headers: JSON.stringify(headers),
       payload: JSON.stringify(payload)
     });
   }
 
-  getCachedContent(key: string) {
+  getCachedContent(ctx: Koa.Context, key: string) {
+    if (ctx.query.refreshCache) {
+      return;
+    }
     const entry = this.store.get(key);
     // we need to re-insert this key to mark it as "most recently read"
     if (entry) {
@@ -69,7 +80,7 @@ export class MemoryCache {
     // Cache based on full URL. This means requests with different params are
     // cached separately.
     const cacheKey = ctx.url;
-    const cachedContent = this.getCachedContent(cacheKey);
+    const cachedContent = this.getCachedContent(ctx, cacheKey);
     if (cachedContent) {
       const headers = JSON.parse(cachedContent.headers);
       ctx.set(headers);
