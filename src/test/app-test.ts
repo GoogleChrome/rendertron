@@ -183,15 +183,39 @@ test('unknown url fails safely on screenshot', async (t) => {
   t.is(res.status, 400);
 });
 
-// test('endpont for invalidate works if configured', async (t) => {
-//   // TODO mock the configration to use cache
-//   const cached_server = request(await (new Rendertron()).initialize());
-//   await app.listen(1235);
-//   const res = await cached_server.get(`/render/${testBase}basic-script.html`);
-//   t.is(res.status, 200);
-//   t.true(res.text.indexOf('document-title') !== -1);
-//   t.is(res.header['x-renderer'], 'rendertron');
-//   t.true(res.header['x-rendertron-cached'] != null);
-//   const res2 = await cached_server.get(`/invalidate/${testBase}basic-script.html`)
-//   t.true(res2.header['x-rendertron-cached'] == null);
-// });
+test('endpont for invalidating memory cache works if configured', async (t) => {
+  const mock_config = {
+    cache: 'memory' as const,
+    timeout: 10000,
+    port: '3000',
+    host: '0.0.0.0',
+    width: 1000,
+    height: 1000,
+    headers: {}
+  };
+  const cached_server = request(await (new Rendertron()).initialize(mock_config));
+  const test_url = `/render/${testBase}basic-script.html`;
+  await app.listen(1235);
+  // Make a request which is not in cache
+  let res = await cached_server.get(test_url);
+  t.is(res.status, 200);
+  t.true(res.text.indexOf('document-title') !== -1);
+  t.is(res.header['x-renderer'], 'rendertron');
+  t.true(res.header['x-rendertron-cached'] == null);
+
+  // Ensure that it is cached
+  res = await cached_server.get(test_url);
+  t.is(res.status, 200);
+  t.true(res.text.indexOf('document-title') !== -1);
+  t.is(res.header['x-renderer'], 'rendertron');
+  t.true(res.header['x-rendertron-cached'] != null);
+
+  // Invalidate cache and ensure it is not cached
+  res = await cached_server.get(`/invalidate/${test_url}`);
+  res = await cached_server.get(test_url);
+  t.is(res.status, 200);
+  t.true(res.text.indexOf('document-title') !== -1);
+  t.is(res.header['x-renderer'], 'rendertron');
+  t.true(res.header['x-rendertron-cached'] == null);
+
+});

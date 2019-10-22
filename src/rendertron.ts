@@ -22,9 +22,9 @@ export class Rendertron {
   private port = process.env.PORT || this.config.port;
   private host = process.env.HOST || this.config.host;
 
-  async initialize() {
+  async initialize(config?: Config) {
     // Load config
-    this.config = await ConfigManager.getConfiguration();
+    this.config = config || await ConfigManager.getConfiguration();
 
     this.port = this.port || this.config.port;
     this.host = this.host || this.config.host;

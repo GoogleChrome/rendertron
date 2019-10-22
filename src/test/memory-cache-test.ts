@@ -136,27 +136,27 @@ test('original status is preserved', async (t) => {
   t.is(res.status, 401);
 });
 
-// test('cache entry can be removed', async (t) => {
-//   TODO Fix this
-//   let res = await server.get('/?basictest');
-//   t.is(res.status, 200);
-//   t.falsy(res.header['x-rendertron-cached']);
-//   t.true(new Date(res.header['x-rendertron-cached']) <= new Date());
+test('cache entry can be removed', async (t) => {
 
-//   res = await server.get('/?basictest');
-//   t.is(res.status, 200);
-//   t.truthy(res.header['x-rendertron-cached']);
-//   t.true(new Date(res.header['x-rendertron-cached']) <= new Date());
+  let res = await server.get('/?basictest');
+  t.is(res.status, 200);
+  t.falsy(res.header['x-rendertron-cached']);
+  t.true(new Date(res.header['x-rendertron-cached']) <= new Date());
 
-//   //cache.removeEntry('/?basictest');
-//   res = await server.get('/?basictest');
-//   t.is(res.status, 200);
-//   t.falsy(res.header['x-rendertron-cached']);
-//   t.false(new Date(res.header['x-rendertron-cached']) <= new Date());
+  res = await server.get('/?basictest');
+  t.is(res.status, 200);
+  t.truthy(res.header['x-rendertron-cached']);
+  t.true(new Date(res.header['x-rendertron-cached']) <= new Date());
 
-//   res = await server.get('/?basictest');
-//   t.is(res.status, 200);
-//   t.truthy(res.header['x-rendertron-cached']);
-//   t.true(new Date(res.header['x-rendertron-cached']) <= new Date());
+  // cache.removeEntry('/?basictest');
+  res = await server.get('/?basictest');
+  t.is(res.status, 200);
+  t.falsy(res.header['x-rendertron-cached']);
+  t.false(new Date(res.header['x-rendertron-cached']) <= new Date());
 
-// });
+  res = await server.get('/?basictest');
+  t.is(res.status, 200);
+  t.truthy(res.header['x-rendertron-cached']);
+  t.true(new Date(res.header['x-rendertron-cached']) <= new Date());
+
+ });
