@@ -62,6 +62,9 @@ The `render` endpoint will render your page and serialize your page. Options are
 specified as query parameters:
  * `mobile` defaults to `false`. Enable by passing `?mobile` to request the
   mobile version of your site.
+ * `refreshCache`: Pass `refreshCache=true` to ignore potentially cached render results 
+ and treat the request as if it is not cached yet. 
+ The new render result is used to replace the previous result.  
 
 ### Screenshot
 ```

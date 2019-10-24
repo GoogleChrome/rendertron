@@ -76,6 +76,14 @@ export class DatastoreCache {
     await this.datastore.save(entity);
   }
 
+  async getCachedContent(ctx: Koa.Context, key: DatastoreKey) {
+    if (ctx.query.refreshCache) {
+      return null;
+    } else {
+      return await this.datastore.get(key);
+    }
+  }
+
   /**
    * Returns middleware function.
    */
@@ -87,11 +95,16 @@ export class DatastoreCache {
                ctx: Koa.Context,
                next: () => Promise<unknown>) {
       // Cache based on full URL. This means requests with different params are
-      // cached separately.
-      const key = this.datastore.key(['Page', ctx.url]);
-      const results = await this.datastore.get(key);
+      // cached separately (except for refreshCache parameter)
+      let cacheKey = ctx.url
+          .replace(/&?refreshCache=(?:true|false)&?/i, '');
 
-      if (results.length && results[0] !== undefined) {
+      if (cacheKey.charAt(cacheKey.length - 1) === '?') {
+        cacheKey = cacheKey.slice(0, -1);
+      }
+      const key = this.datastore.key(['Page', cacheKey]);
+      const results = await this.getCachedContent(ctx, key);
+      if (results && results.length && results[0] !== undefined) {
         const content = results[0] as CacheContent;
         // Serve cached content if its not expired.
         if (content.expires.getTime() >= new Date().getTime()) {
