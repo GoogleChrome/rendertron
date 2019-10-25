@@ -46,6 +46,11 @@ npm install
 npm test
 ```
 
+4. (Optional) when developing cache related stuff you will need `npm run test-cache` commands for tests.
+    - This requires the Google Cloud SDK, follow the steps described [here](https://cloud.google.com/sdk/docs/#install_the_latest_cloud_tools_version_cloudsdk_current_version) to install
+    - run `gcloud components install beta cloud-datastore-emulator`
+    - if you do not have Java 8+ JRE installed, you should install it too, as the Google Cloud Datastore emulator requires it
+
 ## Code reviews
 
 All submissions, including submissions by project members, require review. We
