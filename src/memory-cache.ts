@@ -27,7 +27,7 @@ type CacheEntry = {
   payload: string,
 };
 
-export const CACHE_MAX_ENTRIES = 100;
+export const CACHE_MAX_ENTRIES = 5000;
 
 // implements a cache that uses the "least-recently used" strategy to clear unused elements.
 export class MemoryCache {
