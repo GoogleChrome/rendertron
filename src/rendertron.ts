@@ -92,8 +92,9 @@ export class Rendertron {
     }
 
     const mobileVersion = 'mobile' in ctx.query ? true : false;
+    const stripPage = 'keepScripts' in ctx.query ? false : true;
 
-    const serialized = await this.renderer.serialize(url, mobileVersion);
+    const serialized = await this.renderer.serialize(url, mobileVersion, stripPage);
 
     for (const key in this.config.headers) {
       ctx.set(key, this.config.headers[key]);

@@ -64,7 +64,9 @@ specified as query parameters:
   mobile version of your site.
  * `refreshCache`: Pass `refreshCache=true` to ignore potentially cached render results 
  and treat the request as if it is not cached yet. 
- The new render result is used to replace the previous result.  
+ The new render result is used to replace the previous result.
+ * `keepScripts`: By default rendered output doesn't contain scripts. Pass `?keepScripts` to keep 
+ javascripts intact.   
 
 ### Screenshot
 ```

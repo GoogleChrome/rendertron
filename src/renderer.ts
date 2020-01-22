@@ -29,7 +29,7 @@ export class Renderer {
     this.config = config;
   }
 
-  async serialize(requestUrl: string, isMobile: boolean):
+  async serialize(requestUrl: string, isMobile: boolean, isStripPage: boolean):
       Promise<SerializedResponse> {
     /**
      * Executed on the page after the page has loaded. Strips script and
@@ -155,7 +155,9 @@ export class Renderer {
         .catch(() => undefined);
 
     // Remove script & import tags.
-    await page.evaluate(stripPage);
+    if (isStripPage) {
+      await page.evaluate(stripPage);
+    }
     // Inject <base> tag with the origin of the request (ie. no path).
     const parsedUrl = url.parse(requestUrl);
     await page.evaluate(
