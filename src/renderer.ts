@@ -29,7 +29,7 @@ export class Renderer {
     this.config = config;
   }
 
-  async serialize(requestUrl: string, isMobile: boolean, isStripPage: boolean):
+  async serialize(requestUrl: string, isMobile: boolean, isStripPage: boolean, waitForSelectorString: string | null):
       Promise<SerializedResponse> {
     /**
      * Executed on the page after the page has loaded. Strips script and
@@ -111,6 +111,11 @@ export class Renderer {
     if (response.headers()['metadata-flavor'] === 'Google') {
       await page.close();
       return {status: 403, customHeaders: new Map(), content: ''};
+    }
+
+    if (waitForSelectorString) {
+      // wait for html element to appear on the page before further processing
+      await page.waitForSelector(waitForSelectorString);
     }
 
     // Set status to the initial server's response code. Check for a <meta
