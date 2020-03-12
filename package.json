@@ -38,8 +38,7 @@
     "performance-now": "^2.1.0",
     "progress-bar-element": "^2.0.0",
     "puppeteer": "^2.0.0",
-    "semver": "^7.0.0",
-    "uuid": "^3.3.0"
+    "semver": "^7.0.0"
   },
   "devDependencies": {
     "@types/fs-extra": "^8.1.0",
