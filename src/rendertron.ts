@@ -22,6 +22,16 @@ export class Rendertron {
   private port = process.env.PORT || this.config.port;
   private host = process.env.HOST || this.config.host;
 
+  async createBrowser() {
+    const browser = await puppeteer.launch({
+      args: ['--no-sandbox']
+    });
+
+    browser.on('disconnected', this.createBrowser);
+
+    return browser;
+  }
+
   async initialize() {
     // Load config
     this.config = await ConfigManager.getConfiguration();
@@ -29,7 +39,7 @@ export class Rendertron {
     this.port = this.port || this.config.port;
     this.host = this.host || this.config.host;
 
-    const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
+    const browser = await this.createBrowser();
     this.renderer = new Renderer(browser, this.config);
 
     this.app.use(koaLogger());
