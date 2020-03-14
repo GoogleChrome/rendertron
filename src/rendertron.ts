@@ -27,7 +27,6 @@ export class Rendertron {
     onRendererCreated: (renderer: Renderer) => void
   ) {
     const browser = await puppeteer.launch({
-      headless: false,
       args: ['--no-sandbox']
     });
 
