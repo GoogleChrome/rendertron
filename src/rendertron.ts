@@ -46,7 +46,7 @@ export class Rendertron {
     this.port = this.port || this.config.port;
     this.host = this.host || this.config.host;
 
-    this.createRenderer(this.config, renderer => {
+    this.createRenderer(this.config, (renderer) => {
       this.renderer = renderer;
     });
 
