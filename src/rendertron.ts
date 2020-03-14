@@ -22,21 +22,14 @@ export class Rendertron {
   private port = process.env.PORT || this.config.port;
   private host = process.env.HOST || this.config.host;
 
-  async createRenderer(
-    config: Config,
-    onRendererCreated: (renderer: Renderer) => void
-  ) {
-    const browser = await puppeteer.launch({
-      args: ['--no-sandbox']
-    });
+  async createRenderer(config: Config) {
+    const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
 
     browser.on('disconnected', () => {
-      this.createRenderer(config, onRendererCreated);
+      this.createRenderer(config);
     });
 
-    const renderer = new Renderer(browser, config);
-
-    onRendererCreated(renderer);
+    this.renderer = new Renderer(browser, config);
   }
 
   async initialize() {
@@ -46,9 +39,7 @@ export class Rendertron {
     this.port = this.port || this.config.port;
     this.host = this.host || this.config.host;
 
-    this.createRenderer(this.config, (renderer) => {
-      this.renderer = renderer;
-    });
+    this.createRenderer(this.config);
 
     this.app.use(koaLogger());
 
