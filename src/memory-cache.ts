@@ -61,7 +61,7 @@ export class MemoryCache {
 
   getCachedContent(ctx: Koa.Context, key: string) {
     if (ctx.query.refreshCache) {
-      return;
+      return null;
     }
     const entry = this.store.get(key);
     // we need to re-insert this key to mark it as "most recently read"
