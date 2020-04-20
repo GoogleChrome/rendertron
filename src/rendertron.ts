@@ -86,6 +86,10 @@ export class Rendertron {
     if (!protocol.match(/^https?/)) {
       return true;
     }
+    console.log(parsedUrl);
+    if (parsedUrl.hostname && parsedUrl.hostname.match(/google.internal$/)) {
+      return true;
+    }
 
     return false;
   }

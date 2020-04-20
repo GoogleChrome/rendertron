@@ -14,13 +14,13 @@
  * the License.
  */
 
-import {test} from 'ava';
+import { test } from 'ava';
 import * as Koa from 'koa';
 import * as koaStatic from 'koa-static';
 import * as path from 'path';
 import * as request from 'supertest';
 
-import {Rendertron} from '../rendertron';
+import { Rendertron } from '../rendertron';
 
 const app = new Koa();
 app.use(koaStatic(path.resolve(__dirname, '../../test-resources')));
@@ -57,28 +57,28 @@ test('renders script after page load event', async (t) => {
 // yet injected properly.
 test.failing('renders shadow DOM - no polyfill', async (t) => {
   const res = await server.get(
-      `/render/${testBase}shadow-dom-no-polyfill.html?wc-inject-shadydom=true`);
+    `/render/${testBase}shadow-dom-no-polyfill.html?wc-inject-shadydom=true`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('shadow-root-text') !== -1);
 });
 
 test('renders shadow DOM - polyfill loader', async (t) => {
   const res = await server.get(`/render/${
-      testBase}shadow-dom-polyfill-loader.html?wc-inject-shadydom=true`);
+    testBase}shadow-dom-polyfill-loader.html?wc-inject-shadydom=true`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('shadow-root-text') !== -1);
 });
 
 test('renders shadow DOM - polyfill loader - different flag', async (t) => {
   const res = await server.get(
-      `/render/${testBase}shadow-dom-polyfill-loader.html?wc-inject-shadydom`);
+    `/render/${testBase}shadow-dom-polyfill-loader.html?wc-inject-shadydom`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('shadow-root-text') !== -1);
 });
 
 test('renders shadow DOM - webcomponents-lite.js polyfill', async (t) => {
   const res = await server.get(`/render/${
-      testBase}shadow-dom-polyfill-all.html?wc-inject-shadydom=true`);
+    testBase}shadow-dom-polyfill-all.html?wc-inject-shadydom=true`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('shadow-root-text') !== -1);
 });
@@ -109,14 +109,14 @@ test('server status code should be forwarded', async (t) => {
 test('http status code should be able to be set via a meta tag', async (t) => {
   const testFile = 'http-meta-status-code.html';
   const res = await server.get(
-      `/render/${testBase}${testFile}?wc-inject-shadydom=true`);
+    `/render/${testBase}${testFile}?wc-inject-shadydom=true`);
   t.is(res.status, 400);
 });
 
 test('http status codes need to be respected from top to bottom', async (t) => {
   const testFile = 'http-meta-status-code-multiple.html';
   const res = await server.get(
-      `/render/${testBase}${testFile}?wc-inject-shadydom=true`);
+    `/render/${testBase}${testFile}?wc-inject-shadydom=true`);
   t.is(res.status, 401);
 });
 
@@ -130,10 +130,10 @@ test('screenshot is an image', async (t) => {
 
 test('screenshot accepts options', async (t) => {
   const res =
-      await server.post(`/screenshot/${testBase}basic-script.html`).send({
-        clip: {x: 100, y: 100, width: 100, height: 100},
-        path: 'test.jpeg'
-      });
+    await server.post(`/screenshot/${testBase}basic-script.html`).send({
+      clip: { x: 100, y: 100, width: 100, height: 100 },
+      path: 'test.jpeg'
+    });
   t.is(res.status, 200);
   t.is(res.header['content-type'], 'image/jpeg');
   t.true(res.body.length > 300);
@@ -157,6 +157,16 @@ test('file url fails', async (t) => {
 
 test('file url fails for screenshot', async (t) => {
   const res = await server.get(`/screenshot/file:///dev/fd/0`);
+  t.is(res.status, 403);
+});
+
+test('appengine internal url fails', async (t) => {
+  const res = await server.get(`/render/http://metadata.google.internal/computeMetadata/v1beta1/instance/service-accounts/default/token`);
+  t.is(res.status, 403);
+});
+
+test('appengine internal url fails for screenshot', async (t) => {
+  const res = await server.get(`/screenshot/http://metadata.google.internal/computeMetadata/v1beta1/instance/service-accounts/default/token`);
   t.is(res.status, 403);
 });
 
