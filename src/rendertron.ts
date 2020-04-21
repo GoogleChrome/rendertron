@@ -75,6 +75,10 @@ export class Rendertron {
       return true;
     }
 
+    if (parsedUrl.hostname && parsedUrl.hostname.match(/\.internal$/)) {
+      return true;
+    }
+
     return false;
   }
 
