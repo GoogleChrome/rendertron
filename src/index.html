@@ -80,12 +80,27 @@ the License.
       text-align: center;
     }
 
-    progress-bar {
-      --progress-bar-color: #99f3ff;
-      height: 10px;
+    .loading-bar {
+      background-color: #fff;
+      border: 1px solid #ffffff;
+      height: 20px;
       position: absolute;
-      margin-top: -10px;
-      border-radius: 0 0 10px 10px;
+      margin-top: 10px;
+      border-radius: 5px;
+      width: 100%;
+    }
+
+    .loading-bar span {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 5px;
+      background-size: 30px 30px;
+      background-image: linear-gradient(135deg, rgba(0, 0, 0, 1) 25%,
+          transparent 25%,
+          transparent 50%, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 1) 75%,
+          transparent 75%, transparent);
+      animation: animate-stripes 3s linear infinite;
     }
 
     #options {
@@ -130,6 +145,7 @@ the License.
         filter: blur(0px);
         transform: none;
       }
+
       to {
         filter: blur(1px);
         transform: scale(1.05);
@@ -163,6 +179,16 @@ the License.
         font-size: 40px;
       }
     }
+
+    @keyframes animate-stripes {
+      0% {
+        background-position: 0 0;
+      }
+
+      100% {
+        background-position: 60px 0;
+      }
+    }
   </style>
 </head>
 
@@ -171,7 +197,7 @@ the License.
 
   <div id="search-bar">
     <input id="url" type="url" placeholder="Enter a URL" autocapitalize="off" spellcheck="false">
-    <progress-bar hidden></progress-bar>
+    <div class="loading-bar" hidden><span></span></div>
   </div>
 
   <div id="options">
@@ -208,7 +234,7 @@ the License.
       }
 
       element.classList.add('loading');
-      document.querySelector('progress-bar').removeAttribute('hidden');
+      document.querySelector('.loading-bar').removeAttribute('hidden');
       window.location.href += `render/${encodeUrl(url.value)}${isMobile ? '?mobile' : ''}`;
     }
 
@@ -225,7 +251,7 @@ the License.
       }
 
       element.classList.add('loading');
-      document.querySelector('progress-bar').removeAttribute('hidden');
+      document.querySelector('.loading-bar').removeAttribute('hidden');
       window.location.href += `screenshot/${encodeUrl(url.value)}?width=${window.innerWidth}&height=${window.innerHeight}`;
     }
 
@@ -233,8 +259,6 @@ the License.
       url.classList.add('error');
     }
   </script>
-
-  <link rel="import" href="progress-bar.html">
 </body>
 
 </html>
