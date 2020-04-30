@@ -162,7 +162,7 @@ export class Renderer {
         injectBaseHref, `${parsedUrl.protocol}//${parsedUrl.host}`);
 
     // Serialize page.
-    const result = await page.evaluate('document.firstElementChild.outerHTML') as string;
+    const result = await page.content() as string;
 
     await page.close();
     return {status: statusCode, customHeaders: customHeaders ? new Map(JSON.parse(customHeaders)) : new Map(), content: result};
