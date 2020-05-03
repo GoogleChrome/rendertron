@@ -37,32 +37,31 @@ Open up the nginx configuration.
 
 The following configuration will set you up to use nginx as the front end server. It is very similar to the default set up, and the details are under the configuration.
 
+```nginx
 server {
-listen 80;
+  listen 80;
+  root /var/www/;
+  index index.php index.html index.htm;
 
-        root /var/www/;
-        index index.php index.html index.htm;
+  server_name example.com;
 
-        server_name example.com;
+  location / {
+    try_files $uri $uri/ /index.php;
+  }
 
-        location / {
-        try_files $uri $uri/ /index.php;
-        }
+  location ~ \.php$ {
+    proxy_set_header X-Real-IP  $remote_addr;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    proxy_set_header Host $host;
+    proxy_pass http://127.0.0.1:8080;
+  }
 
-        location ~ \.php$ {
-
-        proxy_set_header X-Real-IP  $remote_addr;
-        proxy_set_header X-Forwarded-For $remote_addr;
-        proxy_set_header Host $host;
-        proxy_pass http://127.0.0.1:8080;
-
-         }
-
-         location ~ /\.ht {
-                deny all;
-        }
+  location ~ /\.ht {
+    deny all;
+  }
 
 }
+```
 
 The following changes were implemented in the configuration:
 
@@ -139,9 +138,11 @@ Go ahead and create the php.info file:
 
 Paste the following lines into that file:
 
+```php
 <?
 phpinfo( );
 ?>
+```
 
 Save and exit.
 
