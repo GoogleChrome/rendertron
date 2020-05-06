@@ -20,6 +20,7 @@
 'use strict';
 
 import * as Koa from 'koa';
+import { Config, ConfigManager } from './config';
 
 type CacheEntry = {
   saved: Date,
@@ -27,26 +28,25 @@ type CacheEntry = {
   payload: string,
 };
 
-export const CACHE_MAX_ENTRIES = 100;
-
 // implements a cache that uses the "least-recently used" strategy to clear unused elements.
 export class MemoryCache {
   private store: Map<string, CacheEntry> = new Map();
+  private config: Config = ConfigManager.config;
 
   async clearCache() {
     this.store.clear();
   }
 
-  cacheContent(key: string, headers: {[key: string]: string}, payload: Buffer) {
+  cacheContent(key: string, headers: { [key: string]: string }, payload: Buffer) {
     // if the cache gets too big, we evict the least recently used entry (i.e. the first value in the map)
-    if (this.store.size >= CACHE_MAX_ENTRIES) {
+    if (this.store.size >= this.config.cacheMaxEntries) {
       const keyToDelete = this.store.keys().next().value;
       this.store.delete(keyToDelete);
     }
 
     //remove refreshCache from URL
     let cacheKey = key
-        .replace(/&?refreshCache=(?:true|false)&?/i, '');
+      .replace(/&?refreshCache=(?:true|false)&?/i, '');
 
     if (cacheKey.charAt(cacheKey.length - 1) === '?') {
       cacheKey = cacheKey.slice(0, -1);
@@ -60,14 +60,22 @@ export class MemoryCache {
   }
 
   getCachedContent(ctx: Koa.Context, key: string) {
+    const now = new Date();
+    const expireDate = new Date(now.getTime() - this.config.cacheDurationMinutes * 60 * 1000)
     if (ctx.query.refreshCache) {
       return null;
     }
-    const entry = this.store.get(key);
-    // we need to re-insert this key to mark it as "most recently read"
+    let entry = this.store.get(key);
+    // we need to re-insert this key to mark it as "most recently read", will remove the cache if expired
     if (entry) {
-      this.store.delete(key);
-      this.store.set(key, entry);
+      // if the cache is expired, delete and recreate
+      if (entry.saved.getTime() <= expireDate.getTime()) {
+        this.store.delete(key);
+        entry = undefined;
+      } else {
+        this.store.delete(key);
+        this.store.set(key, entry);
+      }
     }
     return entry;
   }

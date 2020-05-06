@@ -171,7 +171,9 @@ root. Available configuration options:
  * `width` default `1000` - set the width (resolution) to be used for rendering the page.
  * `height` default `1000` - set the height (resolution) to be used for rendering the page.
  * `cache` default `null` - set to `datastore` to enable caching on Google Cloud using datastore or to `memory` to enable in-memory caching or `filesystem` to use file system caching
-
+ * `cacheDurationMinutes` _default `1440`_ - how long cache lives
+ * `cacheMaxEntries` _default `100`_- how many max entries exist
+ 
 ### Troubleshooting
 If you're having troubles with getting Headless Chrome to run in your
 environment, refer to the
