@@ -21,12 +21,14 @@
 
 import * as fse from 'fs-extra';
 import * as path from 'path';
+import * as os from 'os';
 
 const CONFIG_PATH = path.resolve(__dirname, '../config.json');
 
 
 export type Config = {
-    cache: 'datastore' | 'memory' | null;
+    cache: 'datastore' | 'memory' | 'filesystem' | null;
+    cacheConfig: { [key: string]: string };
     timeout: number;
     port: string;
     host: string
@@ -39,6 +41,13 @@ export type Config = {
 export class ConfigManager {
     public static config: Config = {
         cache: null,
+        cacheConfig: {
+          responseFilename: 'response.json',
+          requestFilename: 'request.json',
+          payloadFilename: 'content.html',
+          snapshotDir: path.join(os.tmpdir(), 'rendertron'),
+          cacheDurationMinutes: (60 * 24).toString(),
+        },
         timeout: 10000,
         port: '3000',
         host: '0.0.0.0',
@@ -51,7 +60,14 @@ export class ConfigManager {
     static async getConfiguration(): Promise<Config> {
         // Load config.json if it exists.
         if (fse.pathExistsSync(CONFIG_PATH)) {
-            ConfigManager.config = Object.assign(ConfigManager.config, await fse.readJson(CONFIG_PATH));
+            const configJson = await fse.readJson(CONFIG_PATH);
+
+            // merge cacheConfig
+            const cacheConfig = Object.assign(ConfigManager.config.cacheConfig, configJson.cacheConfig);
+
+            ConfigManager.config = Object.assign(ConfigManager.config, configJson);
+
+            ConfigManager.config.cacheConfig = cacheConfig;
         }
         return ConfigManager.config;
     }
