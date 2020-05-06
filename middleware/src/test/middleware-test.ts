@@ -58,8 +58,14 @@ const human = 'Chrome';
 /**
  * GET a URL with the given user agent.
  */
-async function get(userAgent: string, host: string, path: string) {
-  return await supertest(host).get(path).set('User-Agent', userAgent);
+async function get(userAgent: string, host: string, path: string, headers?: Record<string, string>) {
+  const t = supertest(host).get(path).set('User-Agent', userAgent);
+  if (headers) {
+    for (const key in headers) {
+      t.set(key, headers[key]);
+    }
+  }
+  return await t;
 }
 
 test('makes a middleware function', async (t) => {
@@ -174,4 +180,35 @@ test('falls through after timeout', async (t) => {
 
   const res = await get(bot, appUrl, '/foo');
   t.is(res.text, 'fallthrough');
+});
+
+test('forwards request to allowed host', async (t) => {
+  const forwardedHost = 'example.com';
+
+  const proxyUrl = await listen(makeProxy());
+  const appUrl = await listen(makeApp({
+    proxyUrl,
+    allowedForwardedHosts: [forwardedHost]
+  }));
+
+  const forwardedUrl = new URL(appUrl);
+  forwardedUrl.host = forwardedHost;
+  forwardedUrl.port = '';
+  forwardedUrl.pathname = '/foo';
+
+  const res = await get(bot, appUrl, '/foo', { 'X-Forwarded-Host': forwardedHost });
+  t.is(res.status, 200);
+  t.is(res.text, 'proxy ' + forwardedUrl.href);
+});
+
+test('ignores forwarded host that is not allowed', async (t) => {
+  const proxyUrl = await listen(makeProxy());
+  const appUrl = await listen(makeApp({
+    proxyUrl,
+    allowedForwardedHosts: ['example.com']
+  }));
+
+  const res = await get(bot, appUrl, '/foo', { 'X-Forwarded-Host': 'malicious.com' });
+  t.is(res.status, 200);
+  t.is(res.text, 'proxy ' + appUrl + '/foo');
 });
