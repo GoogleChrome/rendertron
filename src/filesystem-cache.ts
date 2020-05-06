@@ -49,7 +49,7 @@ export class FilesystemCache {
     this.cacheConfig = this.config.cacheConfig;
 
     if (!fs.existsSync(this.getDir(''))) {
-      fs.mkdirSync(this.getDir(''));
+      fs.mkdirSync(this.getDir(''), { recursive: true });
     }
   }
 
@@ -77,7 +77,7 @@ export class FilesystemCache {
     const request = ctx.request;
 
     if (!fs.existsSync(this.getDir(key))) {
-      fs.mkdirSync(this.getDir(key));
+      fs.mkdirSync(this.getDir(key), { recursive: true });
     }
 
     fs.writeFileSync(path.join(this.getDir(key), this.cacheConfig.payloadFilename), responseBody);
