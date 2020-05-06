@@ -3,7 +3,7 @@
   "version": "0.1.5",
   "description": "Express middleware for the rendertron service.",
   "engines": {
-    "node": ">=6"
+    "node": ">=10"
   },
   "main": "build/middleware.js",
   "types": "build/middleware.d.ts",
