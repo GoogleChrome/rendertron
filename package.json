@@ -5,7 +5,7 @@
   "license": "Apache-2.0",
   "repository": "https://github.com/GoogleChrome/rendertron",
   "engines": {
-    "node": ">=7"
+    "node": ">=10"
   },
   "main": "build/rendertron.js",
   "types": "build/rendertron.d.ts",
