@@ -21,6 +21,7 @@
 
 import { DatastoreKey } from '@google-cloud/datastore/entity';
 import * as Koa from 'koa';
+import { Config, ConfigManager } from './config';
 
 import Datastore = require('@google-cloud/datastore');
 
@@ -37,6 +38,7 @@ type DatastoreObject = {
 
 export class DatastoreCache {
   datastore: Datastore = new Datastore();
+  private config: Config = ConfigManager.config;
 
   async clearCache() {
     const query = this.datastore.createQuery('Page');
@@ -51,7 +53,6 @@ export class DatastoreCache {
   }
 
   async cacheContent(key: DatastoreKey, headers: {}, payload: Buffer) {
-    const cacheDurationMinutes = 60 * 24;
     const now = new Date();
     // query datastore to see if we are over the max number of allowed entries, and remove over quota, removes oldest first
     const query = this.datastore.createQuery('Page').select('__key__').order('expires');
@@ -63,9 +64,9 @@ export class DatastoreCache {
       const dataStoreCache = entities.map(
         (entity) => (entity as DatastoreObject)[self.datastore.KEY]);
       console.log(`datastore contains: ${dataStoreCache.length} entities`);
-      if (dataStoreCache.length > 2) {
-        const toRemove = dataStoreCache.length - 2;
-        const toDelete = dataStoreCache.slice(0, toRemove)
+      if (dataStoreCache.length > self.config.cacheMaxEntries) {
+        const toRemove = dataStoreCache.length - self.config.cacheMaxEntries;
+        const toDelete = dataStoreCache.slice(0, toRemove + 1);
         console.log(`Deleting: ${toRemove}`);
         self.datastore.delete(toDelete);
       }
@@ -76,7 +77,7 @@ export class DatastoreCache {
         { name: 'saved', value: now },
         {
           name: 'expires',
-          value: new Date(now.getTime() + cacheDurationMinutes * 60 * 1000)
+          value: new Date(now.getTime() + this.config.cacheDurationMinutes * 60 * 1000)
         },
         {
           name: 'headers',
