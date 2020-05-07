@@ -19,7 +19,7 @@
 
 'use strict';
 
-import {DatastoreKey} from '@google-cloud/datastore/entity';
+import { DatastoreKey } from '@google-cloud/datastore/entity';
 import * as Koa from 'koa';
 
 import Datastore = require('@google-cloud/datastore');
@@ -28,7 +28,7 @@ type CacheContent = {
   saved: Date,
   expires: Date,
   headers: string,
-  payload: string,
+  payload: string
 };
 
 type DatastoreObject = {
@@ -43,7 +43,7 @@ export class DatastoreCache {
     const data = await query.run();
     const entities = data[0];
     const entityKeys = entities.map(
-        (entity) => (entity as DatastoreObject)[this.datastore.KEY]);
+      (entity) => (entity as DatastoreObject)[this.datastore.KEY]);
     console.log(`Removing ${entities.length} items from the cache`);
     await this.datastore.delete(entityKeys);
     // TODO(samli): check info (data[1]) and loop through pages of entities to
@@ -53,10 +53,27 @@ export class DatastoreCache {
   async cacheContent(key: DatastoreKey, headers: {}, payload: Buffer) {
     const cacheDurationMinutes = 60 * 24;
     const now = new Date();
+    // query datastore to see if we are over the max number of allowed entries, and remove over quota, removes oldest first
+    const query = this.datastore.createQuery('Page').select('__key__').order('expires');
+    const self = this;
+    this.datastore.runQuery(query, function (err, entities) {
+      if (err) {
+        console.log(`datastore err: ${err} reported`);
+      }
+      const dataStoreCache = entities.map(
+        (entity) => (entity as DatastoreObject)[self.datastore.KEY]);
+      console.log(`datastore contains: ${dataStoreCache.length} entities`);
+      if (dataStoreCache.length > 2) {
+        const toRemove = dataStoreCache.length - 2;
+        const toDelete = dataStoreCache.slice(0, toRemove)
+        console.log(`Deleting: ${toRemove}`);
+        self.datastore.delete(toDelete);
+      }
+    });
     const entity = {
       key: key,
       data: [
-        {name: 'saved', value: now},
+        { name: 'saved', value: now },
         {
           name: 'expires',
           value: new Date(now.getTime() + cacheDurationMinutes * 60 * 1000)
@@ -70,7 +87,7 @@ export class DatastoreCache {
           name: 'payload',
           value: JSON.stringify(payload),
           excludeFromIndexes: true
-        },
+        }
       ]
     };
     await this.datastore.save(entity);
@@ -90,14 +107,14 @@ export class DatastoreCache {
   middleware() {
     const cacheContent = this.cacheContent.bind(this);
 
-    return async function(
-               this: DatastoreCache,
-               ctx: Koa.Context,
-               next: () => Promise<unknown>) {
+    return async function (
+      this: DatastoreCache,
+      ctx: Koa.Context,
+      next: () => Promise<unknown>) {
       // Cache based on full URL. This means requests with different params are
       // cached separately (except for refreshCache parameter)
       let cacheKey = ctx.url
-          .replace(/&?refreshCache=(?:true|false)&?/i, '');
+        .replace(/&?refreshCache=(?:true|false)&?/i, '');
 
       if (cacheKey.charAt(cacheKey.length - 1) === '?') {
         cacheKey = cacheKey.slice(0, -1);
@@ -114,14 +131,14 @@ export class DatastoreCache {
           try {
             let payload = JSON.parse(content.payload);
             if (payload && typeof (payload) === 'object' &&
-                payload.type === 'Buffer') {
+              payload.type === 'Buffer') {
               payload = new Buffer(payload);
             }
             ctx.body = payload;
             return;
           } catch (error) {
             console.log(
-                'Erroring parsing cache contents, falling back to normal render');
+              'Erroring parsing cache contents, falling back to normal render');
           }
         }
       }
