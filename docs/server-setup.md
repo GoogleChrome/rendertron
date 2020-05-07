@@ -6,7 +6,6 @@ Usually your web application already uses a web server and you need to configure
 This can be done with every common web server but the steps differ between them.
 Here are guides for some web servers:
 
-- [Apache](./apache)
 - [nginx](./nginx)
 - [express.js](./expressjs)
 
