@@ -29,9 +29,9 @@ are no uptime guarantees.
 ## Learn more
 
 -   [Rendertron user guide](users-guide)
--   [Configuring Rendertron](https://github.com/GoogleChrome/rendertron/blob/master/configure.md)
--   [Deploying Rendertron](https://github.com/GoogleChrome/rendertron/blob/master/deploy.md)
--   [Using Rendertron with your server](https://github.com/GoogleChrome/rendertron/blob/master/server-setup.md)
--   [API Reference](https://github.com/GoogleChrome/rendertron/blob/master/api-reference.md)
+-   [Configuring Rendertron](https://github.com/GoogleChrome/rendertron/blob/master/docs/configure.md)
+-   [Deploying Rendertron](https://github.com/GoogleChrome/rendertron/blob/master/docs/deploy.md)
+-   [Using Rendertron with your server](https://github.com/GoogleChrome/rendertron/blob/master/docs/server-setup.md)
+-   [API Reference](https://github.com/GoogleChrome/rendertron/blob/master/docs/api-reference.md)
 -   [Best practices](best_practices)
--   [Contributing to Rendertron](https://github.com/GoogleChrome/rendertron/blob/master/CONTRIBUTING.md)
+-   [Contributing to Rendertron](https://github.com/GoogleChrome/rendertron/blob/master/docs/CONTRIBUTING.md)
