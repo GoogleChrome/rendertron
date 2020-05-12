@@ -28,8 +28,6 @@ const CONFIG_PATH = path.resolve(__dirname, '../config.json');
 
 export type Config = {
     cache: 'datastore' | 'memory' | 'filesystem' | null;
-    cacheDurationMinutes: number;
-    cacheMaxEntries: number;
     cacheConfig: { [key: string]: string };
     timeout: number;
     port: string;
@@ -43,14 +41,13 @@ export type Config = {
 export class ConfigManager {
     public static config: Config = {
         cache: null,
-        cacheDurationMinutes: 1440,
-        cacheMaxEntries: 100,
         cacheConfig: {
             responseFilename: 'response.json',
             requestFilename: 'request.json',
             payloadFilename: 'content.html',
             snapshotDir: path.join(os.tmpdir(), 'rendertron'),
             cacheDurationMinutes: (60 * 24).toString(),
+            cacheMaxEntries: '100'
         },
         timeout: 10000,
         port: '3000',

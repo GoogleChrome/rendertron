@@ -55,7 +55,7 @@ export class DatastoreCache {
   async cacheContent(key: DatastoreKey, headers: {}, payload: Buffer) {
     const now = new Date();
     // query datastore to see if we are over the max number of allowed entries, and max entries isn't disabled with a value of -1 and remove over quota, removes oldest first
-    if (this.config.cacheMaxEntries !== -1) {
+    if (parseInt(this.config.cacheConfig.cacheMaxEntries) !== -1) {
       const query = this.datastore.createQuery('Page').select('__key__').order('expires');
       const self = this;
       this.datastore.runQuery(query, function (err, entities) {
@@ -64,8 +64,8 @@ export class DatastoreCache {
         }
         const dataStoreCache = entities.map(
           (entity) => (entity as DatastoreObject)[self.datastore.KEY]);
-        if (dataStoreCache.length >= self.config.cacheMaxEntries) {
-          const toRemove = dataStoreCache.length - self.config.cacheMaxEntries + 1;
+        if (dataStoreCache.length >= parseInt(self.config.cacheConfig.cacheMaxEntries)) {
+          const toRemove = dataStoreCache.length - parseInt(self.config.cacheConfig.cacheMaxEntries) + 1;
           const toDelete = dataStoreCache.slice(0, toRemove);
           console.log(`Deleting: ${toRemove}`);
           self.datastore.delete(toDelete);
@@ -78,7 +78,7 @@ export class DatastoreCache {
         { name: 'saved', value: now },
         {
           name: 'expires',
-          value: new Date(now.getTime() + this.config.cacheDurationMinutes * 60 * 1000)
+          value: new Date(now.getTime() + parseInt(this.config.cacheConfig.cacheDurationMinutes) * 60 * 1000)
         },
         {
           name: 'headers',
@@ -126,7 +126,7 @@ export class DatastoreCache {
       if (results && results.length && results[0] !== undefined) {
         const content = results[0] as CacheContent;
         // Serve cached content if its not expired.
-        if (content.expires.getTime() >= new Date().getTime() || this.config.cacheDurationMinutes === -1) {
+        if (content.expires.getTime() >= new Date().getTime() || parseInt(this.config.cacheConfig.cacheDurationMinutes) === -1) {
           const headers = JSON.parse(content.headers);
           ctx.set(headers);
           ctx.set('x-rendertron-cached', content.saved.toUTCString());
