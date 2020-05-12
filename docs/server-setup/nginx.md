@@ -12,43 +12,52 @@ server {
   server_name example.com;
   # ...other configuration...
 
-  location ~ \.*$ {
-    # only send requests from user agents containing the word "bot" to Rendertron
-    if ($http_user_agent ~* 'bot') {
-      proxy_set_header X-Real-IP  $remote_addr;
-      proxy_set_header X-Forwarded-For $remote_addr;
-      proxy_set_header Host $host;
-      # replace PUT-YOUR-RENDERTRON-URL-HERE with your rendertron server address below:
-      proxy_pass http://PUT-YOUR-RENDERTRON-URL-HERE/render; 
-    }
+  # only send requests from user agents containing the word "bot" to Rendertron
+  if ($http_user_agent ~* 'bot') {
+    rewrite ^(.*)$ /rendertron/$1;
+  }
+
+	location /rendertron/ {
+    add_header x-wtf $host;
+		proxy_set_header X-Real-IP  $remote_addr;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    # replace PUT-YOUR-RENDERTRON-URL-HERE with your rendertron server address below
+    proxy_pass http://PUT-YOUR-RENDERTRON-URL-HERE/render/$scheme://$host:$server_port$request_uri; 
   }
 }
 ```
 
 ### Setting up Rendertron for multiple bot user agents:
 
+To enable Rendertron for a list of (bot) user agents, you can map the `$http_user_agent` to a custom variable indicating if you consider this user agent a bot. To do so, add this to your `nginx.conf`:
+
+```
+  # Creates $is_bot variable and match user agents
+  map $http_user_agent $is_bot {
+    default 0;
+    '~*googlebot' 1;
+    '~*bingbot' 1;
+    # add more lines for other user agents here
+  }
+```
+In your site configuration, you can use the following to send requests where `$is_bot` is 1 (i.e. the user agent is considered a bot) to Rendertron:
+
 ```
 server {
   listen 80;
   server_name example.com;
   # ...other configuration...
-
-  # Create $is_bot variable and match user agents
-  map $http_user_agent $is_bot {
-    default 'no';
-    ~*(googlebot) yes;
-    ~*(bingbot) yes;
+  # only send requests from user agents containing the word "bot" to Rendertron
+  if ($is_bot = 1) {
+    rewrite ^(.*)$ /rendertron/$1;
   }
 
-  location ~ \.*$ {
-    # only send requests that we know to come from bots to Rendertron
-    if ($is_bot = 'yes') {
-      proxy_set_header X-Real-IP  $remote_addr;
-      proxy_set_header X-Forwarded-For $remote_addr;
-      proxy_set_header Host $host;
-      # replace PUT-YOUR-RENDERTRON-URL-HERE with your rendertron server address below:
-      proxy_pass http://PUT-YOUR-RENDERTRON-URL-HERE/render; 
-    }
+	location /rendertron/ {
+    add_header x-wtf $host;
+		proxy_set_header X-Real-IP  $remote_addr;
+    proxy_set_header X-Forwarded-For $remote_addr;
+    # replace PUT-YOUR-RENDERTRON-URL-HERE with your rendertron server address below
+    proxy_pass http://PUT-YOUR-RENDERTRON-URL-HERE/render/$scheme://$host:$server_port$request_uri; 
   }
 }
 ```
