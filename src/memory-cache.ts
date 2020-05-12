@@ -39,7 +39,7 @@ export class MemoryCache {
 
   cacheContent(key: string, headers: { [key: string]: string }, payload: Buffer) {
     // if the cache gets too big, we evict the least recently used entry (i.e. the first value in the map)
-    if (this.store.size >= this.config.cacheMaxEntries) {
+    if (this.store.size >= this.config.cacheMaxEntries && this.config.cacheMaxEntries !== -1) {
       const keyToDelete = this.store.keys().next().value;
       this.store.delete(keyToDelete);
     }
@@ -69,7 +69,7 @@ export class MemoryCache {
     // we need to re-insert this key to mark it as "most recently read", will remove the cache if expired
     if (entry) {
       // if the cache is expired, delete and recreate
-      if (entry.saved.getTime() <= expireDate.getTime()) {
+      if (entry.saved.getTime() <= expireDate.getTime() && this.config.cacheDurationMinutes !== -1) {
         this.store.delete(key);
         entry = undefined;
       } else {
