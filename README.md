@@ -165,15 +165,34 @@ on how to deploy run headless Chrome in Docker.
 ### Config
 When deploying the service, set configuration variables by including a `config.json` in the
 root. Available configuration options:
- * `timeout` default `10000` - set the timeout used to render the target page. 
- * `port` default `3000` - set the port to use for running and listening the rendertron service. Note if process.env.PORT is set, it will be used instead.
- * `host` default `0.0.0.0` - set the hostname to use for running and listening the rendertron service. Note if process.env.HOST is set, it will be used instead.
- * `width` default `1000` - set the width (resolution) to be used for rendering the page.
- * `height` default `1000` - set the height (resolution) to be used for rendering the page.
- * `cache` default `null` - set to `datastore` to enable caching on Google Cloud using datastore or to `memory` to enable in-memory caching or `filesystem` to use file system caching
- * `cacheDurationMinutes` _default `1440`_ - how long cache lives
- * `cacheMaxEntries` _default `100`_- how many max entries exist
- 
+ * `timeout` _default `10000`_ - set the timeout used to render the target page. 
+ * `port` _default `3000`_ - set the port to use for running and listening the rendertron service. Note if process.env.PORT is set, it will be used instead.
+ * `host` _default `0.0.0.0`_ - set the hostname to use for running and listening the rendertron service. Note if process.env.HOST is set, it will be used instead.
+ * `width` _default `1000`_ - set the width (resolution) to be used for rendering the page.
+ * `height` _default `1000`_ - set the height (resolution) to be used for rendering the page.
+ * `cache` _default `null`_ - set to `datastore` to enable caching on Google Cloud using datastore _only use if deploying to google cloud_, `memory` to enable in-memory caching or `filesystem` to enable disk based caching
+ * `cacheConfig` - an object array to specify caching options
+
+#### cacheConfig
+* `cacheDurationMinutes` _default `1440`_ - set an expiry time in minues, defaults to 24 hours. Set to -1 to disable cache Expiration
+* `cacheMaxEntries` _default `100`_ - set the maximum number of entries stored in the selected cache method. Set to `-1` to allow unlimited caching. If using the datastore caching method, setting this value over `1000` may lead to degraded performance as the query to determine the size of the cache may be too slow. If you want to allow a larger cache in `datastore` consider setting this to `-1` and managing the the size of your datastore using a method like this [Deleting Entries in Bulk](https://cloud.google.com/datastore/docs/bulk-delete)
+* `responseFilename` _default `response.json`_ - **filesystem only** the filename of the cached response
+* `requestFilename` _default `request.json`_ - **filesystem only** the filename of the cached request
+* `payloadFilename` _default `content.html`_ - **filesystem only** the filename of the cached payload
+* `snapshotDir` _default `<your os's default tmp dir>/renderton`_ - **filesystem only** the directory the rendertron caches will be stored in
+
+##### Example
+An example config file specifing a memory cache, with a 2 hour expiration, and a maximum of 50 entries
+```javascript
+{
+    "cache": "memory",
+    "cacheConfig": {
+        "cacheDurationMinutes": 120,
+        "cacheMaxEntries": 50
+    }
+}
+```
+
 ### Troubleshooting
 If you're having troubles with getting Headless Chrome to run in your
 environment, refer to the
