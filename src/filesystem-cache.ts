@@ -24,7 +24,7 @@ import { createHash } from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as Koa from 'koa';
-import {Config} from './config';
+import { Config } from './config';
 
 type CacheContent = {
   saved: Date,
@@ -64,22 +64,70 @@ export class FilesystemCache {
   }
 
   async clearCache(key: string) {
-    fs.rmdirSync(this.getDir(key), {recursive: true});
+    if (fs.existsSync(path.join(this.getDir(key), this.cacheConfig.payloadFilename))) {
+      fs.unlink(path.join(this.getDir(key), this.cacheConfig.payloadFilename), (err) => {
+        if (err) {
+          console.error(err)
+        }
+      });
+    }
+    if (fs.existsSync(path.join(this.getDir(key), this.cacheConfig.responseFilename))) {
+      fs.unlink(path.join(this.getDir(key), this.cacheConfig.responseFilename), (err) => {
+        if (err) {
+          console.error(err)
+        }
+      });
+    }
+    if (fs.existsSync(path.join(this.getDir(key), this.cacheConfig.requestFilename))) {
+      fs.unlink(path.join(this.getDir(key), this.cacheConfig.requestFilename), (err) => {
+        if (err) {
+          console.error(err)
+        }
+      });
+    }
+    if (fs.existsSync(this.getDir(key))) {
+      fs.rmdir(this.getDir(key), () => {
+        console.log(`${key} cache Dir Deleted`);
+      });
+    }
   }
 
   async clearAllCache() {
-    fs.rmdirSync(this.getDir(''), {recursive: true});
+    fs.rmdirSync(this.getDir(''), { recursive: true });
   }
 
   cacheContent(key: string, ctx: Koa.Context) {
     const responseHeaders = ctx.response;
     const responseBody = ctx.body;
     const request = ctx.request;
-
+    // check size of stored cache to see if we are over the max number of allowed entries, and max entries isn't disabled with a value of -1 and remove over quota, removes oldest first
+    if (parseInt(this.config.cacheConfig.cacheMaxEntries) !== -1) {
+      const numCache = fs.readdirSync(this.getDir(''));
+      if (numCache.length >= parseInt(this.config.cacheConfig.cacheMaxEntries)) {
+        const toRemove = numCache.length - parseInt(this.config.cacheConfig.cacheMaxEntries) + 1;
+        let dirsDate = [];
+        for (let i = 0; i < numCache.length; i++) {
+          if (fs.existsSync(path.join(this.getDir(key), this.cacheConfig.responseFilename))) {
+            const stats = fs.statSync(path.join(this.getDir(numCache[i]), this.cacheConfig.responseFilename));
+            const mtime = stats.mtime;
+            dirsDate.push({ hash: numCache[i], age: mtime.getTime() })
+          } else {
+            dirsDate.push({ hash: numCache[i], age: 1 })
+          }
+        }
+        dirsDate.sort((a, b) => (a.age > b.age) ? 1 : -1)
+        dirsDate = dirsDate.slice(0, toRemove)
+        dirsDate.forEach((rmDir) => {
+          if (rmDir.hash !== key) {
+            console.log(`removing cache: ${rmDir.hash}`);
+            this.clearCache(rmDir.hash);
+          }
+        })
+      }
+    }
     if (!fs.existsSync(this.getDir(key))) {
       fs.mkdirSync(this.getDir(key));
     }
-
     fs.writeFileSync(path.join(this.getDir(key), this.cacheConfig.payloadFilename), responseBody);
     fs.writeFileSync(path.join(this.getDir(key), this.cacheConfig.responseFilename), JSON.stringify(responseHeaders));
     fs.writeFileSync(path.join(this.getDir(key), this.cacheConfig.requestFilename), JSON.stringify(request));
@@ -90,6 +138,7 @@ export class FilesystemCache {
       return null;
     } else {
       try {
+
         const response = fs.readFileSync(path.join(this.getDir(key), this.cacheConfig.responseFilename), 'utf8');
         const payload = fs.readFileSync(path.join(this.getDir(key), this.cacheConfig.payloadFilename), 'utf8');
 
@@ -122,14 +171,14 @@ export class FilesystemCache {
   middleware() {
     const cacheContent = this.cacheContent.bind(this);
 
-    return async function(
-               this: FilesystemCache,
-               ctx: Koa.Context,
-               next: () => Promise<unknown>) {
+    return async function (
+      this: FilesystemCache,
+      ctx: Koa.Context,
+      next: () => Promise<unknown>) {
       // Cache based on full URL. This means requests with different params are
       // cached separately (except for refreshCache parameter)
       let cacheKey = ctx.url
-          .replace(/&?refreshCache=(?:true|false)&?/i, '');
+        .replace(/&?refreshCache=(?:true|false)&?/i, '');
 
       if (cacheKey.charAt(cacheKey.length - 1) === '?') {
         cacheKey = cacheKey.slice(0, -1);
@@ -157,7 +206,7 @@ export class FilesystemCache {
             return;
           } catch (error) {
             console.log(
-                'Erroring parsing cache contents, falling back to normal render');
+              'Erroring parsing cache contents, falling back to normal render');
           }
         }
       }
