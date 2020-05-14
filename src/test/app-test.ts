@@ -62,14 +62,14 @@ test('renders HTML docType declaration', async (t) => {
 
 test('sets the correct base URL for a subfolder', async (t) => {
   const res = await server.get(`/render/${testBase}subfolder/index.html`);
-  const matches = res.text.match('<base href="(.+)">');
+  const matches = res.text.match('<base href="([^"]+)">');
   const baseUrl = matches ? matches[1] : '';
   t.is(baseUrl, `${testBase}subfolder`);
 });
 
 test('sets the correct base URL for the root folder', async (t) => {
   const res = await server.get(`/render/${testBase}basic-script.html`);
-  const matches = res.text.match('<base href="(.+)">');
+  const matches = res.text.match('<base href="([^"]+)">');
   const baseUrl = matches ? matches[1] : '';
   t.is(baseUrl, `${testBase}`);
 });
