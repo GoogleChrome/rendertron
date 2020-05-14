@@ -1,10 +1,12 @@
 ## Set up Rendertron with nginx
 
-In nginx you would configure Rendertron by [setting up nginx as a reverse proxy](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/), but make it conditional on the `$http_user_agent` value of the request.
+To use Rendertron with nginx, [set up nginx as a reverse proxy](https://docs.nginx.com/nginx/admin-guide/web-server/reverse-proxy/).
 
-If the `$http_user_agent` is looking like a bot, send the request to Rendertron, otherwise send it to your web application directly.
+To use Rendertron only for bots, check the `$http_user_agent`. When it's looking like a bot, send the request to Rendertron, otherwise send it to your web application directly.
 
-Example configuration that uses Rendertron for every user agent that contains "bot" (case insensitive):
+### Sample configuration for a single bot
+
+To send requests from user agents containing `bot` to Rendertron, use the following configuration:
 
 ```
 server {
@@ -18,7 +20,6 @@ server {
   }
 
 	location /rendertron/ {
-    add_header x-wtf $host;
 		proxy_set_header X-Real-IP  $remote_addr;
     proxy_set_header X-Forwarded-For $remote_addr;
     # replace PUT-YOUR-RENDERTRON-URL-HERE with your rendertron server address below
@@ -40,7 +41,7 @@ To enable Rendertron for a list of (bot) user agents, you can map the `$http_use
     # add more lines for other user agents here
   }
 ```
-In your site configuration, you can use the following to send requests where `$is_bot` is 1 (i.e. the user agent is considered a bot) to Rendertron:
+In your site configuration, you can use the following to send requests where `$is_bot` is 1 to Rendertron:
 
 ```
 server {
@@ -53,7 +54,6 @@ server {
   }
 
 	location /rendertron/ {
-    add_header x-wtf $host;
 		proxy_set_header X-Real-IP  $remote_addr;
     proxy_set_header X-Forwarded-For $remote_addr;
     # replace PUT-YOUR-RENDERTRON-URL-HERE with your rendertron server address below
