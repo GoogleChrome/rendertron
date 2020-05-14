@@ -1,4 +1,4 @@
-## Set up Rendertron with nginx
+## Set up Rendertron with Apache
 
 For Apache you would configure Rendertron by configuring a conditional URL rewrite (using mod_rewrite) to send requests coming from the desired bots to Rendertron.
 
