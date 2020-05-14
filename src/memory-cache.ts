@@ -61,7 +61,7 @@ export class MemoryCache {
 
   getCachedContent(ctx: Koa.Context, key: string) {
     const now = new Date();
-    const expireDate = new Date(now.getTime() - parseInt(this.config.cacheConfig.cacheDurationMinutes) * 60 * 1000)
+    const expireDate = new Date(now.getTime() - parseInt(this.config.cacheConfig.cacheDurationMinutes) * 60 * 1000);
     if (ctx.query.refreshCache) {
       return null;
     }

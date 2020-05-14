@@ -67,21 +67,21 @@ export class FilesystemCache {
     if (fs.existsSync(path.join(this.getDir(key), this.cacheConfig.payloadFilename))) {
       fs.unlink(path.join(this.getDir(key), this.cacheConfig.payloadFilename), (err) => {
         if (err) {
-          console.error(err)
+          console.error(err);
         }
       });
     }
     if (fs.existsSync(path.join(this.getDir(key), this.cacheConfig.responseFilename))) {
       fs.unlink(path.join(this.getDir(key), this.cacheConfig.responseFilename), (err) => {
         if (err) {
-          console.error(err)
+          console.error(err);
         }
       });
     }
     if (fs.existsSync(path.join(this.getDir(key), this.cacheConfig.requestFilename))) {
       fs.unlink(path.join(this.getDir(key), this.cacheConfig.requestFilename), (err) => {
         if (err) {
-          console.error(err)
+          console.error(err);
         }
       });
     }
@@ -110,19 +110,19 @@ export class FilesystemCache {
           if (fs.existsSync(path.join(this.getDir(key), this.cacheConfig.responseFilename))) {
             const stats = fs.statSync(path.join(this.getDir(numCache[i]), this.cacheConfig.responseFilename));
             const mtime = stats.mtime;
-            dirsDate.push({ hash: numCache[i], age: mtime.getTime() })
+            dirsDate.push({ hash: numCache[i], age: mtime.getTime() });
           } else {
-            dirsDate.push({ hash: numCache[i], age: 1 })
+            dirsDate.push({ hash: numCache[i], age: 1 });
           }
         }
-        dirsDate.sort((a, b) => (a.age > b.age) ? 1 : -1)
-        dirsDate = dirsDate.slice(0, toRemove)
+        dirsDate.sort((a, b) => (a.age > b.age) ? 1 : -1);
+        dirsDate = dirsDate.slice(0, toRemove);
         dirsDate.forEach((rmDir) => {
           if (rmDir.hash !== key) {
             console.log(`removing cache: ${rmDir.hash}`);
             this.clearCache(rmDir.hash);
           }
-        })
+        });
       }
     }
     if (!fs.existsSync(this.getDir(key))) {
