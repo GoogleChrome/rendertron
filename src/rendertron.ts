@@ -19,8 +19,8 @@ export class Rendertron {
   app: Koa = new Koa();
   private config: Config = ConfigManager.config;
   private renderer: Renderer | undefined;
-  private port = process.env.PORT || this.config.port;
-  private host = process.env.HOST || this.config.host;
+  private port = process.env.PORT || null;
+  private host = process.env.HOST || null;
 
   async createRenderer(config: Config) {
     const browser = await puppeteer.launch({ args: config.puppeteerArgs });
