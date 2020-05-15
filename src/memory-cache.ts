@@ -24,6 +24,7 @@ import { Config, ConfigManager } from './config';
 
 type CacheEntry = {
   saved: Date,
+  expires: Date,
   headers: string,
   payload: string,
 };
@@ -51,9 +52,10 @@ export class MemoryCache {
     if (cacheKey.charAt(cacheKey.length - 1) === '?') {
       cacheKey = cacheKey.slice(0, -1);
     }
-
+    const now = new Date();
     this.store.set(cacheKey, {
       saved: new Date(),
+      expires: new Date(now.getTime() + parseInt(this.config.cacheConfig.cacheDurationMinutes) * 60 * 1000),
       headers: JSON.stringify(headers),
       payload: JSON.stringify(payload)
     });
@@ -61,7 +63,6 @@ export class MemoryCache {
 
   getCachedContent(ctx: Koa.Context, key: string) {
     const now = new Date();
-    const expireDate = new Date(now.getTime() - parseInt(this.config.cacheConfig.cacheDurationMinutes) * 60 * 1000);
     if (ctx.query.refreshCache) {
       return null;
     }
@@ -69,7 +70,7 @@ export class MemoryCache {
     // we need to re-insert this key to mark it as "most recently read", will remove the cache if expired
     if (entry) {
       // if the cache is expired, delete and recreate
-      if (entry.saved.getTime() <= expireDate.getTime() && parseInt(this.config.cacheConfig.cacheDurationMinutes) !== -1) {
+      if (entry.expires.getTime() <= now.getTime() && parseInt(this.config.cacheConfig.cacheDurationMinutes) !== -1) {
         this.store.delete(key);
         entry = undefined;
       } else {
