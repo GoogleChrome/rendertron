@@ -42,9 +42,6 @@ export class ConfigManager {
     public static config: Config = {
         cache: null,
         cacheConfig: {
-            responseFilename: 'response.json',
-            requestFilename: 'request.json',
-            payloadFilename: 'content.html',
             snapshotDir: path.join(os.tmpdir(), 'rendertron'),
             cacheDurationMinutes: (60 * 24).toString(),
             cacheMaxEntries: '100'

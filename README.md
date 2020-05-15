@@ -176,13 +176,10 @@ root. Available configuration options:
 #### cacheConfig
 * `cacheDurationMinutes` _default `1440`_ - set an expiry time in minues, defaults to 24 hours. Set to -1 to disable cache Expiration
 * `cacheMaxEntries` _default `100`_ - set the maximum number of entries stored in the selected cache method. Set to `-1` to allow unlimited caching. If using the datastore caching method, setting this value over `1000` may lead to degraded performance as the query to determine the size of the cache may be too slow. If you want to allow a larger cache in `datastore` consider setting this to `-1` and managing the the size of your datastore using a method like this [Deleting Entries in Bulk](https://cloud.google.com/datastore/docs/bulk-delete)
-* `responseFilename` _default `response.json`_ - **filesystem only** the filename of the cached response
-* `requestFilename` _default `request.json`_ - **filesystem only** the filename of the cached request
-* `payloadFilename` _default `content.html`_ - **filesystem only** the filename of the cached payload
-* `snapshotDir` _default `<your os's default tmp dir>/renderton`_ - **filesystem only** the directory the rendertron caches will be stored in
+* `snapshotDir` _default `<your os's default tmp dir>/renderton`_ - **filesystem only** the directory the rendertron cache files will be stored in
 
 ##### Example
-An example config file specifing a memory cache, with a 2 hour expiration, and a maximum of 50 entries
+An example config file specifying a memory cache, with a 2 hour expiration, and a maximum of 50 entries
 ```javascript
 {
     "cache": "memory",

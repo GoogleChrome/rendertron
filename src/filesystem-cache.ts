@@ -64,36 +64,26 @@ export class FilesystemCache {
   }
 
   async clearCache(key: string) {
-    if (fs.existsSync(path.join(this.getDir(key), this.cacheConfig.payloadFilename))) {
-      fs.unlink(path.join(this.getDir(key), this.cacheConfig.payloadFilename), (err) => {
-        if (err) {
-          console.error(err);
-        }
-      });
-    }
-    if (fs.existsSync(path.join(this.getDir(key), this.cacheConfig.responseFilename))) {
-      fs.unlink(path.join(this.getDir(key), this.cacheConfig.responseFilename), (err) => {
-        if (err) {
-          console.error(err);
-        }
-      });
-    }
-    if (fs.existsSync(path.join(this.getDir(key), this.cacheConfig.requestFilename))) {
-      fs.unlink(path.join(this.getDir(key), this.cacheConfig.requestFilename), (err) => {
-        if (err) {
-          console.error(err);
-        }
-      });
-    }
-    if (fs.existsSync(this.getDir(key))) {
-      fs.rmdir(this.getDir(key), () => {
-        console.log(`${key} cache Dir Deleted`);
-      });
+    if (fs.existsSync(path.join(this.getDir(''), key))) {
+      fs.unlinkSync(path.join(this.getDir(''), key));
     }
   }
 
   async clearAllCache() {
     fs.rmdirSync(this.getDir(''), { recursive: true });
+  }
+
+  private sortFilesByModDate(numCache: string[]) {
+    let dirsDate = [];
+    for (let i = 0; i < numCache.length; i++) {
+      if (fs.existsSync(path.join(this.getDir(''), numCache[i]))) {
+        const stats = fs.statSync(path.join(this.getDir(''), numCache[i]));
+        const mtime = stats.mtime;
+        dirsDate.push({ fileName: numCache[i], age: mtime.getTime() });
+      }
+    }
+    dirsDate.sort((a, b) => (a.age > b.age) ? 1 : -1);
+    return dirsDate;
   }
 
   cacheContent(key: string, ctx: Koa.Context) {
@@ -105,32 +95,17 @@ export class FilesystemCache {
       const numCache = fs.readdirSync(this.getDir(''));
       if (numCache.length >= parseInt(this.config.cacheConfig.cacheMaxEntries)) {
         const toRemove = numCache.length - parseInt(this.config.cacheConfig.cacheMaxEntries) + 1;
-        let dirsDate = [];
-        for (let i = 0; i < numCache.length; i++) {
-          if (fs.existsSync(path.join(this.getDir(key), this.cacheConfig.responseFilename))) {
-            const stats = fs.statSync(path.join(this.getDir(numCache[i]), this.cacheConfig.responseFilename));
-            const mtime = stats.mtime;
-            dirsDate.push({ hash: numCache[i], age: mtime.getTime() });
-          } else {
-            dirsDate.push({ hash: numCache[i], age: 1 });
-          }
-        }
-        dirsDate.sort((a, b) => (a.age > b.age) ? 1 : -1);
+        let dirsDate = this.sortFilesByModDate(numCache);
         dirsDate = dirsDate.slice(0, toRemove);
         dirsDate.forEach((rmDir) => {
-          if (rmDir.hash !== key) {
-            console.log(`removing cache: ${rmDir.hash}`);
-            this.clearCache(rmDir.hash);
+          if (rmDir.fileName !== key + '.json') {
+            console.log(`removing cache: ${rmDir.fileName}`);
+            this.clearCache(rmDir.fileName);
           }
         });
       }
     }
-    if (!fs.existsSync(this.getDir(key))) {
-      fs.mkdirSync(this.getDir(key));
-    }
-    fs.writeFileSync(path.join(this.getDir(key), this.cacheConfig.payloadFilename), responseBody);
-    fs.writeFileSync(path.join(this.getDir(key), this.cacheConfig.responseFilename), JSON.stringify(responseHeaders));
-    fs.writeFileSync(path.join(this.getDir(key), this.cacheConfig.requestFilename), JSON.stringify(request));
+    fs.writeFileSync(path.join(this.getDir(''), key + '.json'), JSON.stringify({ responseBody, responseHeaders, request }));
   }
 
   getCachedContent(ctx: Koa.Context, key: string): CacheContent | null {
@@ -138,21 +113,17 @@ export class FilesystemCache {
       return null;
     } else {
       try {
-
-        const response = fs.readFileSync(path.join(this.getDir(key), this.cacheConfig.responseFilename), 'utf8');
-        const payload = fs.readFileSync(path.join(this.getDir(key), this.cacheConfig.payloadFilename), 'utf8');
-
-        if (!payload || !response) {
+        const cacheFile = JSON.parse(fs.readFileSync(path.join(this.getDir(''), key + '.json'), 'utf8'));
+        const payload = cacheFile.responseBody;
+        const response = JSON.stringify(cacheFile.responseHeaders);
+        if (!payload) {
           return null;
         }
-
-        const fd = fs.openSync(path.join(this.getDir(key), this.cacheConfig.payloadFilename), 'r');
+        const fd = fs.openSync(path.join(this.getDir(''), key + '.json'), 'r');
         const stats = fs.fstatSync(fd);
-
         // use modification time as the saved time
         const saved = stats.mtime;
         const expires = new Date(saved.getTime() + parseInt(this.cacheConfig.cacheDurationMinutes) * 60 * 1000);
-
         return {
           saved,
           expires,
@@ -193,7 +164,6 @@ export class FilesystemCache {
       // key is hashed crudely
       const key = hashCode(cacheKey);
       const content = await this.getCachedContent(ctx, key);
-
       if (content) {
         // Serve cached content if its not expired.
         if (content.expires.getTime() >= new Date().getTime()) {
