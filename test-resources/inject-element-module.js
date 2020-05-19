@@ -15,5 +15,5 @@
  */
 
 var element = document.createElement('div');
-element.textContent = 'injectedElement';
+element.textContent = 'injectedElement by module script';
 document.body.appendChild(element);
