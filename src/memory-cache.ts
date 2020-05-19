@@ -20,43 +20,63 @@
 'use strict';
 
 import * as Koa from 'koa';
+import { Config, ConfigManager } from './config';
 
 type CacheEntry = {
   saved: Date,
+  expires: Date,
   headers: string,
   payload: string,
 };
 
-export const CACHE_MAX_ENTRIES = 100;
-
 // implements a cache that uses the "least-recently used" strategy to clear unused elements.
 export class MemoryCache {
   private store: Map<string, CacheEntry> = new Map();
+  private config: Config = ConfigManager.config;
 
   async clearCache() {
     this.store.clear();
   }
 
-  cacheContent(key: string, headers: {[key: string]: string}, payload: Buffer) {
+  cacheContent(key: string, headers: { [key: string]: string }, payload: Buffer) {
     // if the cache gets too big, we evict the least recently used entry (i.e. the first value in the map)
-    if (this.store.size >= CACHE_MAX_ENTRIES) {
+    if (this.store.size >= parseInt(this.config.cacheConfig.cacheMaxEntries) && parseInt(this.config.cacheConfig.cacheMaxEntries) !== -1) {
       const keyToDelete = this.store.keys().next().value;
       this.store.delete(keyToDelete);
     }
 
-    this.store.set(key, {
+    //remove refreshCache from URL
+    let cacheKey = key
+      .replace(/&?refreshCache=(?:true|false)&?/i, '');
+
+    if (cacheKey.charAt(cacheKey.length - 1) === '?') {
+      cacheKey = cacheKey.slice(0, -1);
+    }
+    const now = new Date();
+    this.store.set(cacheKey, {
       saved: new Date(),
+      expires: new Date(now.getTime() + parseInt(this.config.cacheConfig.cacheDurationMinutes) * 60 * 1000),
       headers: JSON.stringify(headers),
       payload: JSON.stringify(payload)
     });
   }
 
-  getCachedContent(key: string) {
-    const entry = this.store.get(key);
-    // we need to re-insert this key to mark it as "most recently read"
+  getCachedContent(ctx: Koa.Context, key: string) {
+    const now = new Date();
+    if (ctx.query.refreshCache) {
+      return null;
+    }
+    let entry = this.store.get(key);
+    // we need to re-insert this key to mark it as "most recently read", will remove the cache if expired
     if (entry) {
-      this.store.delete(key);
-      this.store.set(key, entry);
+      // if the cache is expired, delete and recreate
+      if (entry.expires.getTime() <= now.getTime() && parseInt(this.config.cacheConfig.cacheDurationMinutes) !== -1) {
+        this.store.delete(key);
+        entry = undefined;
+      } else {
+        this.store.delete(key);
+        this.store.set(key, entry);
+      }
     }
     return entry;
   }
@@ -82,7 +102,7 @@ export class MemoryCache {
     // Cache based on full URL. This means requests with different params are
     // cached separately.
     const cacheKey = ctx.url;
-    const cachedContent = this.getCachedContent(cacheKey);
+    const cachedContent = this.getCachedContent(ctx, cacheKey);
     if (cachedContent) {
       const headers = JSON.parse(cachedContent.headers);
       ctx.set(headers);

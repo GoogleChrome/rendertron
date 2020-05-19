@@ -40,5 +40,7 @@ properties:
 | `excludeUrlPattern` | A set of known static file extensions. [Full list.](https://github.com/samuelli/bot-render/blob/master/middleware/src/middleware.ts) | RegExp for excluding requests by the path component of the URL. |
 | `injectShadyDom` | `false` | Force the web components polyfills to be loaded. [Read more.](https://github.com/samuelli/bot-render#web-components) |
 | `timeout` | `11000` | Millisecond timeout for the proxy request to Rendertron. If exceeded, the standard response is served (i.e. `next()` is called). This is **not** the timeout for the Rendertron server itself. See also the [Rendertron timeout.](https://github.com/googlechrome/rendertron#rendering-budget-timeout) |
+| `allowedForwardedHosts` | `[]` | If a forwarded host header is found and matches one of the hosts in this array, then that host will be used for the request to the rendertron server instead of the actual host of the current request. This is usedful if this middleware is running on a different host which is proxied behind the actual site, and the rendertron server should request the main site. **Note:** For security, because the header info is untrusted, only those hosts which you explicitly allow will be forwarded, otherwise they will be ignored. Leaving this undefined or empty (the default) will disable host forwarding. |
+| `forwardedHostHeader` | `"X-Forwarded-Host"` | Header used to determine the forwarded host that should be used when building the URL to be rendered. Only used if `allowedForwardedHosts` is not empty. |
 
 

@@ -1,5 +1,5 @@
 {
   "dependencies": {
-    "@webcomponents/webcomponentsjs": "^1.0.3"
+    "@webcomponents/webcomponentsjs": "^2.4.0"
   }
 }

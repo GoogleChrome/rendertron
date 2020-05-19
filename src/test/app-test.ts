@@ -14,13 +14,13 @@
  * the License.
  */
 
-import {test} from 'ava';
+import { test } from 'ava';
 import * as Koa from 'koa';
 import * as koaStatic from 'koa-static';
 import * as path from 'path';
 import * as request from 'supertest';
 
-import {Rendertron} from '../rendertron';
+import { Rendertron } from '../rendertron';
 
 const app = new Koa();
 app.use(koaStatic(path.resolve(__dirname, '../../test-resources')));
@@ -52,6 +52,28 @@ test('renders script after page load event', async (t) => {
   t.is(res.status, 200);
   t.true(res.text.indexOf('injectedElement') !== -1);
 });
+
+test('renders HTML docType declaration', async (t) => {
+  const res = await server.get(
+    `/render/${testBase}include-doctype.html`);
+  t.is(res.status, 200);
+  t.true(res.text.indexOf('<!DOCTYPE html>') !== -1);
+});
+
+test('sets the correct base URL for a subfolder', async (t) => {
+  const res = await server.get(`/render/${testBase}subfolder/index.html`);
+  const matches = res.text.match('<base href="([^"]+)">');
+  const baseUrl = matches ? matches[1] : '';
+  t.is(baseUrl, `${testBase}subfolder`);
+});
+
+test('sets the correct base URL for the root folder', async (t) => {
+  const res = await server.get(`/render/${testBase}basic-script.html`);
+  const matches = res.text.match('<base href="([^"]+)">');
+  const baseUrl = matches ? matches[1] : '';
+  t.is(baseUrl, `${testBase}`);
+});
+
 
 // This test is failing as the polyfills (shady polyfill & scoping shim) are not
 // yet injected properly.
@@ -131,7 +153,7 @@ test('screenshot is an image', async (t) => {
 test('screenshot accepts options', async (t) => {
   const res =
     await server.post(`/screenshot/${testBase}basic-script.html`).send({
-      clip: {x: 100, y: 100, width: 100, height: 100},
+      clip: { x: 100, y: 100, width: 100, height: 100 },
       path: 'test.jpeg'
     });
   t.is(res.status, 200);

@@ -135,3 +135,28 @@ test('original status is preserved', async (t) => {
   res = await server.get('/status/400');
   t.is(res.status, 401);
 });
+
+test('refreshCache refreshes cache', async (t) => {
+  let content = 'content';
+  app.use(route.get('/refreshTest', (ctx: Koa.Context) => {
+    ctx.body = content;
+  }));
+
+  let res = await server.get('/refreshTest');
+  t.is(res.status, 200);
+  t.is(res.text, 'content');
+
+  // Workaround for race condition with writing to datastore.
+  await promiseTimeout(500);
+
+  res = await server.get('/refreshTest');
+  t.truthy(res.header['x-rendertron-cached']);
+  t.is(res.text, 'content');
+
+  content = 'updated content';
+
+  res = await server.get('/refreshTest?refreshCache=true');
+  t.is(res.status, 200);
+  t.is(res.text, 'updated content');
+  t.is(res.header['x-rendertron-cached'], undefined);
+});

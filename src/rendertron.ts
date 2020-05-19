@@ -19,8 +19,18 @@ export class Rendertron {
   app: Koa = new Koa();
   private config: Config = ConfigManager.config;
   private renderer: Renderer | undefined;
-  private port = process.env.PORT || this.config.port;
-  private host = process.env.HOST || this.config.host;
+  private port = process.env.PORT || null;
+  private host = process.env.HOST || null;
+
+  async createRenderer(config: Config) {
+    const browser = await puppeteer.launch({ args: config.puppeteerArgs });
+
+    browser.on('disconnected', () => {
+      this.createRenderer(config);
+    });
+
+    this.renderer = new Renderer(browser, config);
+  }
 
   async initialize(config?: Config) {
     // Load config
@@ -29,8 +39,7 @@ export class Rendertron {
     this.port = this.port || this.config.port;
     this.host = this.host || this.config.host;
 
-    const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
-    this.renderer = new Renderer(browser, this.config);
+    await this.createRenderer(this.config);
 
     this.app.use(koaLogger());
 
@@ -56,6 +65,9 @@ export class Rendertron {
       const memoryCache = new MemoryCache();
       this.app.use(route.get('/invalidate/:url(.*)', memoryCache.invalidateHandler()));
       this.app.use(memoryCache.middleware());
+    } else if (this.config.cache === 'filesystem') {
+      const { FilesystemCache } = await import('./filesystem-cache');
+      this.app.use(new FilesystemCache(this.config).middleware());
     }
 
     this.app.use(
