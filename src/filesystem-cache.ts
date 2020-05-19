@@ -74,7 +74,7 @@ export class FilesystemCache {
   }
 
   private sortFilesByModDate(numCache: string[]) {
-    let dirsDate = [];
+    const dirsDate = [];
     for (let i = 0; i < numCache.length; i++) {
       if (fs.existsSync(path.join(this.getDir(''), numCache[i]))) {
         const stats = fs.statSync(path.join(this.getDir(''), numCache[i]));
