@@ -42,11 +42,9 @@ export class ConfigManager {
     public static config: Config = {
         cache: null,
         cacheConfig: {
-          responseFilename: 'response.json',
-          requestFilename: 'request.json',
-          payloadFilename: 'content.html',
-          snapshotDir: path.join(os.tmpdir(), 'rendertron'),
-          cacheDurationMinutes: (60 * 24).toString(),
+            snapshotDir: path.join(os.tmpdir(), 'rendertron'),
+            cacheDurationMinutes: (60 * 24).toString(),
+            cacheMaxEntries: '100'
         },
         timeout: 10000,
         port: '3000',
@@ -54,7 +52,7 @@ export class ConfigManager {
         width: 1000,
         height: 1000,
         headers: {},
-        puppeteerArgs: [ '--no-sandbox' ]
+        puppeteerArgs: ['--no-sandbox']
     };
 
     static async getConfiguration(): Promise<Config> {

@@ -24,7 +24,7 @@ import { createHash } from 'crypto';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as Koa from 'koa';
-import {Config} from './config';
+import { Config } from './config';
 
 type CacheContent = {
   saved: Date,
@@ -64,25 +64,48 @@ export class FilesystemCache {
   }
 
   async clearCache(key: string) {
-    fs.rmdirSync(this.getDir(key), {recursive: true});
+    if (fs.existsSync(path.join(this.getDir(''), key))) {
+      fs.unlinkSync(path.join(this.getDir(''), key));
+    }
   }
 
   async clearAllCache() {
-    fs.rmdirSync(this.getDir(''), {recursive: true});
+    fs.rmdirSync(this.getDir(''), { recursive: true });
+  }
+
+  private sortFilesByModDate(numCache: string[]) {
+    const dirsDate = [];
+    for (let i = 0; i < numCache.length; i++) {
+      if (fs.existsSync(path.join(this.getDir(''), numCache[i]))) {
+        const stats = fs.statSync(path.join(this.getDir(''), numCache[i]));
+        const mtime = stats.mtime;
+        dirsDate.push({ fileName: numCache[i], age: mtime.getTime() });
+      }
+    }
+    dirsDate.sort((a, b) => (a.age > b.age) ? 1 : -1);
+    return dirsDate;
   }
 
   cacheContent(key: string, ctx: Koa.Context) {
     const responseHeaders = ctx.response;
     const responseBody = ctx.body;
     const request = ctx.request;
-
-    if (!fs.existsSync(this.getDir(key))) {
-      fs.mkdirSync(this.getDir(key), { recursive: true });
+    // check size of stored cache to see if we are over the max number of allowed entries, and max entries isn't disabled with a value of -1 and remove over quota, removes oldest first
+    if (parseInt(this.config.cacheConfig.cacheMaxEntries) !== -1) {
+      const numCache = fs.readdirSync(this.getDir(''));
+      if (numCache.length >= parseInt(this.config.cacheConfig.cacheMaxEntries)) {
+        const toRemove = numCache.length - parseInt(this.config.cacheConfig.cacheMaxEntries) + 1;
+        let dirsDate = this.sortFilesByModDate(numCache);
+        dirsDate = dirsDate.slice(0, toRemove);
+        dirsDate.forEach((rmDir) => {
+          if (rmDir.fileName !== key + '.json') {
+            console.log(`removing cache: ${rmDir.fileName}`);
+            this.clearCache(rmDir.fileName);
+          }
+        });
+      }
     }
-
-    fs.writeFileSync(path.join(this.getDir(key), this.cacheConfig.payloadFilename), responseBody);
-    fs.writeFileSync(path.join(this.getDir(key), this.cacheConfig.responseFilename), JSON.stringify(responseHeaders));
-    fs.writeFileSync(path.join(this.getDir(key), this.cacheConfig.requestFilename), JSON.stringify(request));
+    fs.writeFileSync(path.join(this.getDir(''), key + '.json'), JSON.stringify({ responseBody, responseHeaders, request }));
   }
 
   getCachedContent(ctx: Koa.Context, key: string): CacheContent | null {
@@ -90,20 +113,17 @@ export class FilesystemCache {
       return null;
     } else {
       try {
-        const response = fs.readFileSync(path.join(this.getDir(key), this.cacheConfig.responseFilename), 'utf8');
-        const payload = fs.readFileSync(path.join(this.getDir(key), this.cacheConfig.payloadFilename), 'utf8');
-
-        if (!payload || !response) {
+        const cacheFile = JSON.parse(fs.readFileSync(path.join(this.getDir(''), key + '.json'), 'utf8'));
+        const payload = cacheFile.responseBody;
+        const response = JSON.stringify(cacheFile.responseHeaders);
+        if (!payload) {
           return null;
         }
-
-        const fd = fs.openSync(path.join(this.getDir(key), this.cacheConfig.payloadFilename), 'r');
+        const fd = fs.openSync(path.join(this.getDir(''), key + '.json'), 'r');
         const stats = fs.fstatSync(fd);
-
         // use modification time as the saved time
         const saved = stats.mtime;
         const expires = new Date(saved.getTime() + parseInt(this.cacheConfig.cacheDurationMinutes) * 60 * 1000);
-
         return {
           saved,
           expires,
@@ -122,14 +142,14 @@ export class FilesystemCache {
   middleware() {
     const cacheContent = this.cacheContent.bind(this);
 
-    return async function(
-               this: FilesystemCache,
-               ctx: Koa.Context,
-               next: () => Promise<unknown>) {
+    return async function (
+      this: FilesystemCache,
+      ctx: Koa.Context,
+      next: () => Promise<unknown>) {
       // Cache based on full URL. This means requests with different params are
       // cached separately (except for refreshCache parameter)
       let cacheKey = ctx.url
-          .replace(/&?refreshCache=(?:true|false)&?/i, '');
+        .replace(/&?refreshCache=(?:true|false)&?/i, '');
 
       if (cacheKey.charAt(cacheKey.length - 1) === '?') {
         cacheKey = cacheKey.slice(0, -1);
@@ -144,7 +164,6 @@ export class FilesystemCache {
       // key is hashed crudely
       const key = hashCode(cacheKey);
       const content = await this.getCachedContent(ctx, key);
-
       if (content) {
         // Serve cached content if its not expired.
         if (content.expires.getTime() >= new Date().getTime()) {
@@ -157,7 +176,7 @@ export class FilesystemCache {
             return;
           } catch (error) {
             console.log(
-                'Erroring parsing cache contents, falling back to normal render');
+              'Erroring parsing cache contents, falling back to normal render');
           }
         }
       }
