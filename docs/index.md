@@ -34,4 +34,4 @@ are no uptime guarantees.
 - [Using Rendertron with your server](server-setup)
 -   [API Reference](api-reference)
 -   [Best practices](best_practices)
--   [Contributing to Rendertron](contributing)
+-   [Contributing to Rendertron](https://github.com/GoogleChrome/rendertron/blob/master/CONTRIBUTING.md)

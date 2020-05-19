@@ -49,7 +49,7 @@ export class FilesystemCache {
     this.cacheConfig = this.config.cacheConfig;
 
     if (!fs.existsSync(this.getDir(''))) {
-      fs.mkdirSync(this.getDir(''));
+      fs.mkdirSync(this.getDir(''), { recursive: true });
     }
   }
 

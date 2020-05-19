@@ -136,26 +136,27 @@ test('original status is preserved', async (t) => {
   t.is(res.status, 401);
 });
 
-let refreshCalledCount = 0;
-
-app.use(route.get('/refreshTest', (ctx: Koa.Context) => {
-  refreshCalledCount++;
-  ctx.body = `Called ${refreshCalledCount} times`;
-}));
-
 test('refreshCache refreshes cache', async (t) => {
-  let res = await server.get('/refreshTest');
-  const previousCount = refreshCalledCount;
-  t.is(res.status, 200);
-  t.is(res.text, 'Called ' + previousCount + ' times');
+  let content = 'content';
+  app.use(route.get('/refreshTest', (ctx: Koa.Context) => {
+    ctx.body = content;
+  }));
 
+  let res = await server.get('/refreshTest');
+  t.is(res.status, 200);
+  t.is(res.text, 'content');
+
+  // Workaround for race condition with writing to datastore.
   await promiseTimeout(500);
+
+  res = await server.get('/refreshTest');
+  t.truthy(res.header['x-rendertron-cached']);
+  t.is(res.text, 'content');
+
+  content = 'updated content';
 
   res = await server.get('/refreshTest?refreshCache=true');
   t.is(res.status, 200);
-  t.not(res.text, 'Called ' + previousCount + ' times');
-
-  res = await server.get('/refreshTest');
-  t.is(res.status, 200);
-  t.is(res.text, 'Called ' + (previousCount + 1) + ' times');
+  t.is(res.text, 'updated content');
+  t.is(res.header['x-rendertron-cached'], undefined);
 });
