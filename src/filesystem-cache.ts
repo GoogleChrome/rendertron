@@ -47,14 +47,13 @@ export class FilesystemCache {
   constructor(config: Config) {
     this.config = config;
     this.cacheConfig = this.config.cacheConfig;
-
-    if (!fs.existsSync(this.getDir(''))) {
-      fs.mkdirSync(this.getDir(''), { recursive: true });
-    }
   }
 
   getDir = (key: string) => {
     const dir = this.cacheConfig.snapshotDir;
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
 
     if (key) {
       return path.join(dir, key);
