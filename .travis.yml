@@ -16,7 +16,7 @@ install:
   - source $HOME/gcloud/google-cloud-sdk/path.bash.inc
   - (cd middleware && npm install)
   - mkdir ./tmp
-  - echo '{"cacheConfig": { "snapshotDir": "./tmp/rendertron" }}' > ./config.json
+  - echo '{"cacheConfig": { "snapshotDir": "./tmp/rendertron" } }' > ./config.json
 script:
   - npm run lint
   - npm run test
