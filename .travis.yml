@@ -17,7 +17,7 @@ install:
   - (cd middleware && npm install)
   - mkdir ./tmp
   - >
-    echo '{"cache": { "snapShotDir": "./tmp/rendertron" } }' > ./config.json
+    echo '{"cacheConfig": { "snapshotDir": "./tmp/rendertron" } }' > ./config.json
 script:
   - npm run lint
   - npm run test
