@@ -166,7 +166,7 @@ export class FilesystemCache {
       const content = await this.getCachedContent(ctx, key);
       if (content) {
         // Serve cached content if its not expired.
-        if (content.expires.getTime() >= new Date().getTime()) {
+        if (content.expires.getTime() >= new Date().getTime() || parseInt(this.config.cacheConfig.cacheDurationMinutes) === -1) {
           const response = JSON.parse(content.response);
           ctx.set(response.header);
           ctx.set('x-rendertron-cached', content.saved.toUTCString());
