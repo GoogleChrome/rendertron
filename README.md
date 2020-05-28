@@ -24,6 +24,7 @@ to be used as a production endpoint. You can use it, but there are no uptime gua
 - [API](#api)
   - [Render](#render)
   - [Screenshot](#screenshot)
+  - [Invalidate cache](#invalidate-cache)
 - [FAQ](#faq)
   - [Query parameters](#query-parameters)
   - [Auto detecting loading function](#auto-detecting-loading-function)
@@ -86,10 +87,12 @@ Additional options are available as a JSON string in the `POST` body. See
 for available options. You cannot specify the `type` (defaults to `jpeg`) and
 `encoding` (defaults to `binary`) parameters.
 
-### Invalidate Cache
+### Invalidate cache
 ```
 GET /invalidate/<url>
 ```
+
+Removes the cached response for the given URL from cache.
 
 The `invalidate` endpoint will remove cache entried for `<url>` from the configured cache (in-memory or cloud datastore).
 
