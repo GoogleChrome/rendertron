@@ -95,6 +95,11 @@ export class DatastoreCache {
     await this.datastore.save(entity);
   }
 
+  async removeEntry(key: string) {
+    const datastoreKey = this.datastore.key(['Page', key]);
+    await this.datastore.delete(datastoreKey);
+  }
+
   async getCachedContent(ctx: Koa.Context, key: DatastoreKey) {
     if (ctx.query.refreshCache) {
       return null;
@@ -109,7 +114,7 @@ export class DatastoreCache {
   middleware() {
     const cacheContent = this.cacheContent.bind(this);
 
-    return async function (
+    return async function(
       this: DatastoreCache,
       ctx: Koa.Context,
       next: () => Promise<unknown>) {
@@ -152,4 +157,14 @@ export class DatastoreCache {
       }
     }.bind(this);
   }
+
+  invalidateHandler() {
+    return this.handleInvalidateRequest.bind(this);
+  }
+
+  private async handleInvalidateRequest(ctx: Koa.Context, url: string) {
+    this.removeEntry(url);
+    ctx.status = 200;
+  }
+
 }

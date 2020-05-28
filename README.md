@@ -86,6 +86,13 @@ Additional options are available as a JSON string in the `POST` body. See
 for available options. You cannot specify the `type` (defaults to `jpeg`) and
 `encoding` (defaults to `binary`) parameters.
 
+### Invalidate Cache
+```
+GET /invalidate/<url>
+```
+
+The `invalidate` endpoint will remove cache entried for `<url>` from the configured cache (in-memory or cloud datastore).
+
 ## FAQ
 
 ### Query parameters

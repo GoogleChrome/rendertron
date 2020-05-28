@@ -32,9 +32,9 @@ export class Rendertron {
     this.renderer = new Renderer(browser, config);
   }
 
-  async initialize() {
+  async initialize(config?: Config) {
     // Load config
-    this.config = await ConfigManager.getConfiguration();
+    this.config = config || await ConfigManager.getConfiguration();
 
     this.port = this.port || this.config.port;
     this.host = this.host || this.config.host;
@@ -57,10 +57,14 @@ export class Rendertron {
     // Optionally enable cache for rendering requests.
     if (this.config.cache === 'datastore') {
       const { DatastoreCache } = await import('./datastore-cache');
-      this.app.use(new DatastoreCache().middleware());
+      const datastoreCache = new DatastoreCache();
+      this.app.use(route.get('/invalidate/:url(.*)', datastoreCache.invalidateHandler()));
+      this.app.use(datastoreCache.middleware());
     } else if (this.config.cache === 'memory') {
       const { MemoryCache } = await import('./memory-cache');
-      this.app.use(new MemoryCache().middleware());
+      const memoryCache = new MemoryCache();
+      this.app.use(route.get('/invalidate/:url(.*)', memoryCache.invalidateHandler()));
+      this.app.use(memoryCache.middleware());
     } else if (this.config.cache === 'filesystem') {
       const { FilesystemCache } = await import('./filesystem-cache');
       this.app.use(new FilesystemCache(this.config).middleware());
