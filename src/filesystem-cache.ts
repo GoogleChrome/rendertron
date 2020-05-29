@@ -63,7 +63,6 @@ export class FilesystemCache {
   }
 
   async clearCache(key: string) {
-    console.log(path.join(this.getDir(''), key + '.json'));
     if (fs.existsSync(path.join(this.getDir(''), key + '.json'))) {
       fs.unlinkSync(path.join(this.getDir(''), key + '.json'));
     }
