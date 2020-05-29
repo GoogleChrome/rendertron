@@ -63,8 +63,9 @@ export class FilesystemCache {
   }
 
   async clearCache(key: string) {
-    if (fs.existsSync(path.join(this.getDir(''), key))) {
-      fs.unlinkSync(path.join(this.getDir(''), key));
+    console.log(path.join(this.getDir(''), key + '.json'));
+    if (fs.existsSync(path.join(this.getDir(''), key + '.json'))) {
+      fs.unlinkSync(path.join(this.getDir(''), key + '.json'));
     }
   }
 
@@ -134,7 +135,29 @@ export class FilesystemCache {
       }
     }
   }
+  invalidateHandler() {
+    return this.handleInvalidateRequest.bind(this);
+  }
 
+  private async handleInvalidateRequest(ctx: Koa.Context, url: string) {
+    let cacheKey = url
+      .replace(/&?refreshCache=(?:true|false)&?/i, '');
+
+    if (cacheKey.charAt(cacheKey.length - 1) === '?') {
+      cacheKey = cacheKey.slice(0, -1);
+    }
+
+    // remove /render/ from key
+    cacheKey = cacheKey.replace(/^\/render\//, '');
+
+    // remove trailing slash from key
+    cacheKey = cacheKey.replace(/\/$/, '');
+
+    // key is hashed crudely
+    const key = hashCode(cacheKey);
+    this.clearCache(key);
+    ctx.status = 200;
+  }
   /**
    * Returns middleware function.
    */

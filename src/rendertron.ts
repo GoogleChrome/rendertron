@@ -67,6 +67,8 @@ export class Rendertron {
       this.app.use(memoryCache.middleware());
     } else if (this.config.cache === 'filesystem') {
       const { FilesystemCache } = await import('./filesystem-cache');
+      const filesystemCache = new FilesystemCache(this.config);
+      this.app.use(route.get('/invalidate/:url(.*)', filesystemCache.invalidateHandler()));
       this.app.use(new FilesystemCache(this.config).middleware());
     }
 
