@@ -91,7 +91,7 @@ for available options. You cannot specify the `type` (defaults to `jpeg`) and
 GET /invalidate/<url>
 ```
 
-The `invalidate` endpoint will remove cache entried for `<url>` from the configured cache (in-memory or cloud datastore).
+The `invalidate` endpoint will remove cache entried for `<url>` from the configured cache (in-memory, filesystem or cloud datastore).
 
 ## FAQ
 
