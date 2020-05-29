@@ -20,6 +20,7 @@ import * as koaStatic from 'koa-static';
 import * as path from 'path';
 import * as request from 'supertest';
 import * as fs from 'fs';
+import * as os from 'os';
 
 import { Rendertron } from '../rendertron';
 
@@ -254,7 +255,7 @@ test('endpont for invalidating filesystem cache works if configured', async (t) 
     cacheConfig: {
       cacheDurationMinutes: '120',
       cacheMaxEntries: '50',
-      snapshotDir: './rendertron-test-cache'
+      snapshotDir: path.join(os.tmpdir(), 'rendertron-test-cache')
     },
     timeout: 10000,
     port: '3000',
@@ -291,5 +292,5 @@ test('endpont for invalidating filesystem cache works if configured', async (t) 
 
   // cleanup cache to prevent future tests failing
   res = await cached_server.get(`/invalidate/${test_url}`);
-  fs.rmdirSync('./rendertron-test-cache');
+  fs.rmdirSync(path.join(os.tmpdir(), 'rendertron-test-cache'));
 });
