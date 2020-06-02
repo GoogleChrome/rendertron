@@ -33,12 +33,7 @@ type CacheContent = {
   payload: string,
 };
 
-function hashCode(s: string): string {
-  const hash = 0;
-  if (s.length === 0) return hash.toString();
 
-  return createHash('md5').update(s).digest('hex');
-}
 
 export class FilesystemCache {
   private config: Config;
@@ -47,6 +42,13 @@ export class FilesystemCache {
   constructor(config: Config) {
     this.config = config;
     this.cacheConfig = this.config.cacheConfig;
+  }
+
+  hashCode = (s: string) => {
+    const hash = 0;
+    if (s.length === 0) return hash.toString();
+
+    return createHash('md5').update(s).digest('hex');
   }
 
   getDir = (key: string) => {
@@ -69,7 +71,14 @@ export class FilesystemCache {
   }
 
   async clearAllCache() {
-    fs.rmdirSync(this.getDir(''), { recursive: true });
+    fs.readdir(this.getDir(''), (err, files) => {
+      if (err) throw err;
+      for (const file of files) {
+        fs.unlink(path.join(this.getDir(''), file), err => {
+          if (err) throw err;
+        });
+      }
+    });
   }
 
   private sortFilesByModDate(numCache: string[]) {
@@ -153,7 +162,7 @@ export class FilesystemCache {
     cacheKey = cacheKey.replace(/\/$/, '');
 
     // key is hashed crudely
-    const key = hashCode(cacheKey);
+    const key = this.hashCode(cacheKey);
     this.clearCache(key);
     ctx.status = 200;
   }
@@ -183,7 +192,7 @@ export class FilesystemCache {
       cacheKey = cacheKey.replace(/\/$/, '');
 
       // key is hashed crudely
-      const key = hashCode(cacheKey);
+      const key = this.hashCode(cacheKey);
       const content = await this.getCachedContent(ctx, key);
       if (content) {
         // Serve cached content if its not expired.
