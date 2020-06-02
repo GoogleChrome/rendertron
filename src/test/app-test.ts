@@ -220,7 +220,7 @@ test('endpont for invalidating memory cache works if configured', async (t) => {
     width: 1000,
     height: 1000,
     headers: {},
-    puppeteerArgs: ["--no-sandbox "]
+    puppeteerArgs: ['--no-sandbox']
   };
   const cached_server = request(await (new Rendertron()).initialize(mock_config));
   const test_url = `/render/${testBase}basic-script.html`;
@@ -263,7 +263,7 @@ test('endpont for invalidating filesystem cache works if configured', async (t) 
     width: 1000,
     height: 1000,
     headers: {},
-    puppeteerArgs: ["--no-sandbox "]
+    puppeteerArgs: ['--no-sandbox']
   };
   const cached_server = request(await (new Rendertron()).initialize(mock_config));
   const test_url = `/render/${testBase}basic-script.html`;

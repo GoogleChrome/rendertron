@@ -74,7 +74,7 @@ export class FilesystemCache {
     fs.readdir(this.getDir(''), (err, files) => {
       if (err) throw err;
       for (const file of files) {
-        fs.unlink(path.join(this.getDir(''), file), err => {
+        fs.unlink(path.join(this.getDir(''), file), (err) => {
           if (err) throw err;
         });
       }
