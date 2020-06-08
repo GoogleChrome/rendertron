@@ -218,12 +218,14 @@ test('unknown url fails safely on screenshot', async (t) => {
 test('endpont for invalidating memory cache works if configured', async (t) => {
   const mock_config = {
     cache: 'memory' as const,
+    cacheConfig: {},
     timeout: 10000,
     port: '3000',
     host: '0.0.0.0',
     width: 1000,
     height: 1000,
-    headers: {}
+    headers: {},
+    puppeteerArgs: ['--no-sandbox']
   };
   const cached_server = request(await (new Rendertron()).initialize(mock_config));
   const test_url = `/render/${testBase}basic-script.html`;
