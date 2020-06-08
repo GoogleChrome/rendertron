@@ -184,6 +184,16 @@ test('file url fails for screenshot', async (t) => {
   t.is(res.status, 403);
 });
 
+test('appengine internal url fails', async (t) => {
+  const res = await server.get(`/render/http://metadata.google.internal/computeMetadata/v1beta1/instance/service-accounts/default/token`);
+  t.is(res.status, 403);
+});
+
+test('appengine internal url fails for screenshot', async (t) => {
+  const res = await server.get(`/screenshot/http://metadata.google.internal/computeMetadata/v1beta1/instance/service-accounts/default/token`);
+  t.is(res.status, 403);
+});
+
 test.failing('explicit render event ends early', async (t) => {
   const res = await server.get(`/render/${testBase}explicit-render-event.html`);
   t.is(res.status, 200);

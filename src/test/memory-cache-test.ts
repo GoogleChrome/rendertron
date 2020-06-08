@@ -35,6 +35,7 @@ app.use(cache.middleware());
 let handlerCalledCount = 0;
 
 test.before(async () => {
+  handlerCalledCount = 0;
   await cache.clearCache();
 });
 
@@ -134,6 +135,10 @@ test('original status is preserved', async (t) => {
 });
 
 test('cache entry can be removed', async (t) => {
+  let counter = 0;
+  app.use(route.get('/removalTest', (ctx: Koa.Context) => {
+    ctx.body = `Counter: ${++counter}`;
+  }));
 
   let res = await server.get('/?cacheremovetest');
   t.is(res.status, 200);
@@ -141,6 +146,7 @@ test('cache entry can be removed', async (t) => {
   t.false(new Date(res.header['x-rendertron-cached']) <= new Date());
 
   res = await server.get('/?cacheremovetest');
+
   t.is(res.status, 200);
   t.truthy(res.header['x-rendertron-cached']);
   t.true(new Date(res.header['x-rendertron-cached']) <= new Date());
@@ -155,7 +161,6 @@ test('cache entry can be removed', async (t) => {
   t.is(res.status, 200);
   t.truthy(res.header['x-rendertron-cached']);
   t.true(new Date(res.header['x-rendertron-cached']) <= new Date());
-
 });
 
 test('refreshCache refreshes cache', async (t) => {
