@@ -155,9 +155,6 @@ export class FilesystemCache {
       cacheKey = cacheKey.slice(0, -1);
     }
 
-    // remove /render/ from key
-    cacheKey = cacheKey.replace(/^\/render\//, '');
-
     // remove trailing slash from key
     cacheKey = cacheKey.replace(/\/$/, '');
 
