@@ -86,7 +86,7 @@ const screenshotOptions = Object.assign({}, options, {
 
 `/invalidate`
 
-Invalidate a cache entry from memory or cloud datastore.   
+Invalidate a cache entry from memory, filesystem or cloud datastore.   
 (Only available if cache is configured)
 
 | param  | type     | description                     |
