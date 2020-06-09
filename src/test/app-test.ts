@@ -30,6 +30,7 @@ app.use(koaStatic(path.resolve(__dirname, '../../test-resources')));
 const testBase = 'http://localhost:1234/';
 
 const rendertron = new Rendertron();
+
 let server: request.SuperTest<request.Test>;
 
 test.before(async () => {
@@ -293,7 +294,7 @@ test('endpont for invalidating filesystem cache works if configured', async (t) 
   t.true(res.header['x-rendertron-cached'] != null);
 
   // Invalidate cache and ensure it is not cached
-  res = await cached_server.get(`/invalidate/${test_url}`);
+  res = await cached_server.get(`/invalidate/${testBase}basic-script.html`);
   res = await cached_server.get(test_url);
   t.is(res.status, 200);
   t.true(res.text.indexOf('document-title') !== -1);
@@ -301,6 +302,6 @@ test('endpont for invalidating filesystem cache works if configured', async (t) 
   t.true(res.header['x-rendertron-cached'] == null);
 
   // cleanup cache to prevent future tests failing
-  res = await cached_server.get(`/invalidate/${test_url}`);
+  res = await cached_server.get(`/invalidate/${testBase}basic-script.html`);
   fs.rmdirSync(path.join(os.tmpdir(), 'rendertron-test-cache'));
 });

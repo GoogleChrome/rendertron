@@ -155,6 +155,9 @@ export class FilesystemCache {
       cacheKey = cacheKey.slice(0, -1);
     }
 
+    // remove /invalidate/ from key
+    cacheKey = cacheKey.replace(/^\/invalidate\//, '');
+
     // remove trailing slash from key
     cacheKey = cacheKey.replace(/\/$/, '');
 
