@@ -2,6 +2,21 @@
 
 <!-- ## Unreleased -->
 
+## [3.0.0] 2020-07-02
+ * Introduces new configuration file format for the `config.json` options (see [README.md](./README.md))
+ * Introduces new cache providers:
+   - In-memory cache
+   - File system cache
+ * Introduces API endpoint to invalidate cache for a URL
+ * Introduces a number of new configuration options
+ * Introduces `refreshCache` parameter to force cache update for a URL
+ * Relaunches browser when the browser disconnects from Puppeteer
+ * Now includes doctype in rendered output
+ * Harmonises the configuration options for caches
+ * Closes page after screenshot
+ * Fixes security issue with AppEngine deployments
+ * Fixes issue with specifying host and port
+
 ## [2.0.1] 2018-09-18
  * Remove testing and other files from NPM package.
  * Fix NPM main config.
