@@ -67,7 +67,7 @@ export class FilesystemCache {
   async clearCache(key: string) {
     let cleanKey = key;
     if (!cleanKey.endsWith('.json')) {
-      cleanKey += '.json'
+      cleanKey += '.json';
     }
     if (fs.existsSync(path.join(this.getDir(''), cleanKey))) {
       try {
