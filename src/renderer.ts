@@ -58,7 +58,12 @@ export class Renderer {
         // Patch existing <base> if it is relative.
         const existingBase = bases[0].getAttribute('href') || '';
         if (existingBase.startsWith('/')) {
-          bases[0].setAttribute('href', origin + existingBase);
+          // check if is only "/" if so add the origin only
+          if (existingBase === '/') {
+            bases[0].setAttribute('href', origin);
+          } else {
+            bases[0].setAttribute('href', origin + existingBase);
+          }
         }
       } else {
         // Only inject <base> if it doesn't already exist.
