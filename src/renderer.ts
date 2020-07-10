@@ -67,6 +67,7 @@ export class Renderer {
       } else {
         // Only inject <base> if it doesn't already exist.
         const base = document.createElement('base');
+        // Base url is the current directory
         base.setAttribute('href', `${parsedUrl.protocol}//${parsedUrl.host}${dirname(parsedUrl.pathname || '')}`);  
         document.head.insertAdjacentElement('afterbegin', base);
       }
