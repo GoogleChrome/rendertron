@@ -49,13 +49,12 @@ export class Renderer {
      * has no effect on serialised output, but allows it to verify render
      * quality.
      */
-    function injectBaseHref(parsedUrl: any) {
+    function injectBaseHref(origin: string, directory: string) {
 
       const bases = document.head.querySelectorAll('base');
       if (bases.length) {
         // Patch existing <base> if it is relative.
         const existingBase = bases[0].getAttribute('href') || '';
-        const origin = `${parsedUrl.protocol}//${parsedUrl.host}`
         if (existingBase.startsWith('/')) {
           // check if is only "/" if so add the origin only
           if (existingBase === '/') {
@@ -68,7 +67,7 @@ export class Renderer {
         // Only inject <base> if it doesn't already exist.
         const base = document.createElement('base');
         // Base url is the current directory
-        base.setAttribute('href', `${parsedUrl.protocol}//${parsedUrl.host}${dirname(parsedUrl.pathname || '')}`);  
+        base.setAttribute('href', origin + directory);  
         document.head.insertAdjacentElement('afterbegin', base);
       }
     }
@@ -166,8 +165,7 @@ export class Renderer {
     await page.evaluate(stripPage);
     // Inject <base> tag with the origin of the request (ie. no path).
     const parsedUrl = url.parse(requestUrl);
-    await page.evaluate(
-      injectBaseHref, parsedUrl);
+    await page.evaluate(injectBaseHref, `${parsedUrl.protocol}//${parsedUrl.host}`, `${dirname(parsedUrl.pathname || '')}`);
 
     // Serialize page.
     const result = await page.content() as string;
