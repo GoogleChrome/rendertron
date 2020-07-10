@@ -165,7 +165,7 @@ export class Renderer {
     // Inject <base> tag with the origin of the request (ie. no path).
     const parsedUrl = url.parse(requestUrl);
     await page.evaluate(
-      injectBaseHref, `${parsedUrl.protocol}//${parsedUrl.host}${dirname(parsedUrl.pathname || '')}`);
+      injectBaseHref, `${parsedUrl.protocol}//${parsedUrl.host}`);
 
     // Serialize page.
     const result = await page.content() as string;
