@@ -37,7 +37,7 @@
     "koa-static": "^5.0.0",
     "performance-now": "^2.1.0",
     "puppeteer": "^2.0.0",
-    "semver": "^7.1.0"
+    "semver": "^7.3.2"
   },
   "devDependencies": {
     "@types/fs-extra": "^9.0.1",
