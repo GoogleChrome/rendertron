@@ -53,7 +53,7 @@
     "@types/puppeteer": "^2.0.0",
     "@types/supertest": "^2.0.10",
     "ava": "1.0.0-beta.6",
-    "nodemon": "^2.0.2",
+    "nodemon": "^2.0.4",
     "supertest": "^4.0.2",
     "tslint": "^5.20.0",
     "typescript": "^3.8.0"
