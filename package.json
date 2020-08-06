@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@google-cloud/datastore": "^2.0.0",
-    "@webcomponents/webcomponentsjs": "^2.4.0",
+    "@webcomponents/webcomponentsjs": "^2.4.4",
     "chrome-launcher": "^0.13.0",
     "chrome-remote-interface": "^0.28.0",
     "fs-extra": "^8.1.0",
