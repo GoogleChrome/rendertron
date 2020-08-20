@@ -178,6 +178,7 @@ root. Available configuration options:
  * `host` _default `0.0.0.0`_ - set the hostname to use for running and listening the rendertron service. Note if process.env.HOST is set, it will be used instead.
  * `width` _default `1000`_ - set the width (resolution) to be used for rendering the page.
  * `height` _default `1000`_ - set the height (resolution) to be used for rendering the page.
+ * `reqHeaders` _default `{}`_ - set the additional HTTP headers to be sent to the target page with every request.
  * `cache` _default `null`_ - set to `datastore` to enable caching on Google Cloud using datastore _only use if deploying to google cloud_, `memory` to enable in-memory caching or `filesystem` to enable disk based caching
  * `cacheConfig` - an object array to specify caching options
 

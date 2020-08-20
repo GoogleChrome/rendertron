@@ -230,6 +230,7 @@ test('endpont for invalidating memory cache works if configured', async (t) => {
     host: '0.0.0.0',
     width: 1000,
     height: 1000,
+    reqHeaders: {},
     headers: {},
     puppeteerArgs: ['--no-sandbox']
   };
@@ -273,6 +274,7 @@ test('endpont for invalidating filesystem cache works if configured', async (t) 
     host: '0.0.0.0',
     width: 1000,
     height: 1000,
+    reqHeaders: {},
     headers: {},
     puppeteerArgs: ['--no-sandbox']
   };
@@ -304,4 +306,31 @@ test('endpont for invalidating filesystem cache works if configured', async (t) 
   // cleanup cache to prevent future tests failing
   res = await cached_server.get(`/invalidate/${testBase}basic-script.html`);
   fs.rmdirSync(path.join(os.tmpdir(), 'rendertron-test-cache'));
+});
+
+test('http header should be set via config', async (t) => {
+  const mock_config = {
+    cache: 'memory' as const,
+    cacheConfig: {
+      cacheDurationMinutes: '120',
+      cacheMaxEntries: '50'
+    },
+    timeout: 10000,
+    port: '3000',
+    host: '0.0.0.0',
+    width: 1000,
+    height: 1000,
+    // In request-header.html, any headers except referer cannot be shown
+    reqHeaders: {
+      'Referer': 'http://example.com/'
+    },
+    headers: {},
+    puppeteerArgs: ['--no-sandbox']
+  };
+  server = request(await rendertron.initialize(mock_config));
+  await app.listen(1237);
+  const res = await server.get(`/render/${testBase}request-header.html`);
+  console.log(res.text);
+  t.is(res.status, 200);
+  t.true(res.text.indexOf('http://example.com/') !== -1);
 });
