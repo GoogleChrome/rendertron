@@ -320,7 +320,6 @@ test('http header should be set via config', async (t) => {
     host: '0.0.0.0',
     width: 1000,
     height: 1000,
-    // In request-header.html, any headers except referer cannot be shown
     reqHeaders: {
       'Referer': 'http://example.com/'
     },
