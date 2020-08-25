@@ -330,7 +330,6 @@ test('http header should be set via config', async (t) => {
   server = request(await rendertron.initialize(mock_config));
   await app.listen(1237);
   const res = await server.get(`/render/${testBase}request-header.html`);
-  console.log(res.text);
   t.is(res.status, 200);
   t.true(res.text.indexOf('http://example.com/') !== -1);
 });
