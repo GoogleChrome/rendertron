@@ -77,6 +77,19 @@ test('sets the correct base URL for the root folder', async (t) => {
   t.is(baseUrl, `${testBase}`);
 });
 
+test('sets the correct base URL for an already defined base as /', async (t) => {
+  const res = await server.get(`/render/${testBase}include-base.html`);
+  const matches = res.text.match('<base href="([^"]+)">');
+  const baseUrl = matches ? matches[1] : '';
+  t.is(baseUrl, `${testBase.slice(0, -1)}`);
+});
+
+test('sets the correct base URL for an already defined base as directory', async (t) => {
+  const res = await server.get(`/render/${testBase}include-base-as-directory.html`);
+  const matches = res.text.match('<base href="([^"]+)">');
+  const baseUrl = matches ? matches[1] : '';
+  t.is(baseUrl, `${testBase}dir1`);
+});
 
 // This test is failing as the polyfills (shady polyfill & scoping shim) are not
 // yet injected properly.

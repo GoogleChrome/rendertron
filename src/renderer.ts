@@ -49,9 +49,7 @@ export class Renderer {
      * has no effect on serialised output, but allows it to verify render
      * quality.
      */
-    function injectBaseHref(origin: string) {
-      const base = document.createElement('base');
-      base.setAttribute('href', origin);
+    function injectBaseHref(origin: string, directory: string) {
 
       const bases = document.head.querySelectorAll('base');
       if (bases.length) {
@@ -67,6 +65,9 @@ export class Renderer {
         }
       } else {
         // Only inject <base> if it doesn't already exist.
+        const base = document.createElement('base');
+        // Base url is the current directory
+        base.setAttribute('href', origin + directory);
         document.head.insertAdjacentElement('afterbegin', base);
       }
     }
@@ -164,8 +165,7 @@ export class Renderer {
     await page.evaluate(stripPage);
     // Inject <base> tag with the origin of the request (ie. no path).
     const parsedUrl = url.parse(requestUrl);
-    await page.evaluate(
-      injectBaseHref, `${parsedUrl.protocol}//${parsedUrl.host}${dirname(parsedUrl.pathname || '')}`);
+    await page.evaluate(injectBaseHref, `${parsedUrl.protocol}//${parsedUrl.host}`, `${dirname(parsedUrl.pathname || '')}`);
 
     // Serialize page.
     const result = await page.content() as string;
