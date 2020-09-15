@@ -82,6 +82,8 @@ export class Renderer {
       page.setUserAgent(MOBILE_USERAGENT);
     }
 
+    await page.setExtraHTTPHeaders(this.config.reqHeaders);
+
     page.evaluateOnNewDocument('customElements.forcePolyfill = true');
     page.evaluateOnNewDocument('ShadyDOM = {force: true}');
     page.evaluateOnNewDocument('ShadyCSS = {shimcssproperties: true}');

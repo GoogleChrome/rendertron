@@ -34,6 +34,7 @@ export type Config = {
     host: string
     width: number;
     height: number;
+    reqHeaders: { [key: string]: string };
     headers: { [key: string]: string };
     puppeteerArgs: Array<string>;
 };
@@ -51,6 +52,7 @@ export class ConfigManager {
         host: '0.0.0.0',
         width: 1000,
         height: 1000,
+        reqHeaders: {},
         headers: {},
         puppeteerArgs: ['--no-sandbox']
     };
