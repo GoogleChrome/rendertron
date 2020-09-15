@@ -50,7 +50,7 @@
     "@types/koa-send": "^4.1.2",
     "@types/koa-static": "^4.0.1",
     "@types/node": "^14.0.27",
-    "@types/puppeteer": "^2.0.0",
+    "@types/puppeteer": "^3.0.2",
     "@types/supertest": "^2.0.10",
     "ava": "1.0.0-beta.6",
     "nodemon": "^2.0.4",
