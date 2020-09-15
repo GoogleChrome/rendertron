@@ -27,7 +27,7 @@ to be used as a production endpoint. You can use it, but there are no uptime gua
   - [Invalidate cache](#invalidate-cache)
 - [FAQ](#faq)
   - [Query parameters](#query-parameters)
-  - [Auto detecting loading function](#auto-detecting-loading-function)
+  - [Page render timing](#page-render-timing)
   - [Rendering budget timeout](#rendering-budget-timeout)
   - [Web components](#web-components)
   - [Status codes](#status-codes)
@@ -103,8 +103,8 @@ this would be `encodeURIComponent(myURLWithParams)`. For example to specify `pag
 https://render-tron.appspot.com/render/http://my.domain/%3Fpage%3Dhome
 ```
 
-### Auto detecting loading function
-The service detects when a page has loaded by looking at the page load event, ensuring there
+### Page render timing
+The service attempts to detect when a page has loaded by looking at the page load event, ensuring there
 are no outstanding network requests and that the page has had ample time to render.
 
 ### Rendering budget timeout
