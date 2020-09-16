@@ -210,8 +210,19 @@ export class FilesystemCache {
           ctx.set(response.header);
           ctx.set('x-rendertron-cached', content.saved.toUTCString());
           ctx.status = response.status;
+          let payload: any = content.payload;
           try {
-            ctx.body = content.payload;
+            payload = JSON.parse(content.payload);
+          } catch (e) {
+            // swallow this.
+          }
+          try {
+            if (payload && typeof (payload) === 'object' &&
+              payload.type === 'Buffer') {
+              ctx.body = new Buffer(payload);
+            } else {
+              ctx.body = payload;
+            }
             return;
           } catch (error) {
             console.log(
