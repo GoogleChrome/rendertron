@@ -16,7 +16,7 @@
 
 'use strict';
 
-import {test} from 'ava';
+import test from 'ava';
 import * as Koa from 'koa';
 import * as koaCompress from 'koa-compress';
 import * as request from 'supertest';

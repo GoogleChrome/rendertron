@@ -14,7 +14,7 @@
  * the License.
  */
 
-import { test } from 'ava';
+import test from 'ava';
 import * as Koa from 'koa';
 import * as koaStatic from 'koa-static';
 import * as path from 'path';
@@ -101,8 +101,7 @@ test.failing('renders shadow DOM - no polyfill', async (t) => {
 });
 
 test('renders shadow DOM - polyfill loader', async (t) => {
-  const res = await server.get(`/render/${
-    testBase}shadow-dom-polyfill-loader.html?wc-inject-shadydom=true`);
+  const res = await server.get(`/render/${testBase}shadow-dom-polyfill-loader.html?wc-inject-shadydom=true`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('shadow-root-text') !== -1);
 });
@@ -115,8 +114,7 @@ test('renders shadow DOM - polyfill loader - different flag', async (t) => {
 });
 
 test('renders shadow DOM - webcomponents-lite.js polyfill', async (t) => {
-  const res = await server.get(`/render/${
-    testBase}shadow-dom-polyfill-all.html?wc-inject-shadydom=true`);
+  const res = await server.get(`/render/${testBase}shadow-dom-polyfill-all.html?wc-inject-shadydom=true`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('shadow-root-text') !== -1);
 });
