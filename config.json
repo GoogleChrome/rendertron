@@ -1,0 +1,9 @@
+{
+  "cache": "memory",
+  "port": 4000,
+  "timeout": 22000,
+  "cacheConfig": {
+    "cacheDurationMinutes": 240,
+    "cacheMaxEntries": 1000
+  }
+}
