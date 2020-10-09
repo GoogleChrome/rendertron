@@ -1,31 +1,30 @@
-###  Deploying Rendertron to Google Cloud Platform
+# Deploying Rendertron to Google Cloud Platform
 
 Rendertron runs a server that takes a URL and returns static HTML for the URL by using headless Chromium. This guide follows
 `https://github.com/GoogleChrome/rendertron#deploying-to-google-cloud-platform`
 
-* To clone the Rendertron repository from GitHub, run the following command:
-`git clone https://github.com/GoogleChrome/rendertron.git`
+- To clone the Rendertron repository from GitHub, run the following command:
+  `git clone https://github.com/GoogleChrome/rendertron.git`
 
-* Change directories:
-`cd rendertron`
+- Change directories:
+  `cd rendertron`
 
-*To install dependencies and build Rendertron on your computer, run the following command:
-`npm install && npm run build`
+- To install dependencies and build Rendertron on your computer, run the following command:
+  `npm install && npm run build`
 
-* Create a new file called config.json in the rendertron directory with the following content to enable Rendertron's cache:
-`{ "datastoreCache": true }`
+- Create a new file called config.json in the rendertron directory with the following content to enable Rendertron's cache:
+  `{ "datastoreCache": true }`
 
-* From the rendertron directory, run the following command. Replace YOUR_PROJECT_ID with your project ID that you set in Google Cloud Platform.
-`gcloud app deploy app.yaml --project YOUR_PROJECT_ID`
+- From the rendertron directory, run the following command. Replace YOUR_PROJECT_ID with your project ID that you set in Google Cloud Platform.
+  `gcloud app deploy app.yaml --project YOUR_PROJECT_ID`
 
-* Select a region of your choice and confirm the deployment. Wait for the command to finish.
+- Select a region of your choice and confirm the deployment. Wait for the command to finish.
 
-* Enter YOUR_PROJECT_ID.appspot.com in your browser. Replace YOUR_PROJECT_ID with your actual project ID that you set in Google Cloud Platform. You should see Rendertron's interface with an input field and a few buttons.
+- Enter YOUR_PROJECT_ID.appspot.com in your browser. Replace YOUR_PROJECT_ID with your actual project ID that you set in Google Cloud Platform. You should see Rendertron's interface with an input field and a few buttons.
 
-* When you see the Rendertron web interface, you have successfully deployed your own Rendertron instance. Take note of your project's URL (YOUR_PROJECT_ID.appspot.com) as you will need it later.
+- When you see the Rendertron web interface, you have successfully deployed your own Rendertron instance. Take note of your project's URL (YOUR_PROJECT_ID.appspot.com) as you will need it later.
 
-
-###  Deploying Rendertron to Heroku
+# Deploying Rendertron to Heroku
 
 Setup Herokuapp and Heroku CLI
 `https://devcenter.heroku.com/articles/heroku-cli`
@@ -76,3 +75,60 @@ Finally, add a `Procfile` to your project with the following:
 web: node bin/rendertron
 ```
 
+# Deploying Rendertron in a docker container
+
+Based on Puppeteer instructions we can create a docker image that bundles a headless chrome and rendertron. We can start from node 14 base image.
+
+For more information about chrome installation please see the pupeteer page: https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#running-puppeteer-in-docker
+
+Before creating the docker file you must create the config.json used by rendertron.
+
+```
+{
+    "cache": "filesystem",
+    "cacheConfig": {
+        "cacheDurationMinutes": 7200,
+        "cacheMaxEntries": 1000,
+        "snapshotDir": "/cache"
+    }
+}
+```
+
+Then we can define the Dockerfile like this:
+
+```
+FROM node:14.11.0-stretch
+
+RUN apt-get update \
+    && apt-get install -y wget gnupg \
+    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable fonts-ipafont-gothic fonts-wqy-zenhei fonts-thai-tlwg fonts-kacst fonts-freefont-ttf libxss1 \
+    --no-install-recommends \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir /cache
+
+RUN git clone https://github.com/GoogleChrome/rendertron.git
+
+WORKDIR /rendertron
+
+RUN npm install && npm run build
+
+ADD config.json .
+
+EXPOSE 3000
+
+CMD ["npm", "run", "start"]
+
+```
+
+And we can build an image using the previous Dockerfile:
+
+```
+docker build . -t rendertron:3.0
+docker run -d --log-opt max-size=100m --log-opt max-file=3 --name rendertron -p 3000:3000 rendertron:3.0
+```
+
+The rendertron api will be avaiable at localhost:3000
