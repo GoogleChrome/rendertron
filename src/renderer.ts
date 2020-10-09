@@ -40,7 +40,7 @@ export class Renderer {
     return false;
   }
 
-  async serialize(requestUrl: string, isMobile: boolean):
+  async serialize(requestUrl: string, isMobile: boolean, timezoneId?: string):
     Promise<SerializedResponse> {
     /**
      * Executed on the page after the page has loaded. Strips script and
@@ -90,6 +90,16 @@ export class Renderer {
 
     if (isMobile) {
       page.setUserAgent(MOBILE_USERAGENT);
+    }
+
+    if (timezoneId) {
+      try {
+        await page.emulateTimezone(timezoneId);
+      } catch (e) {
+        if (e.message.includes('Invalid timezone')) {
+          return { status: 400, customHeaders: new Map(), content: 'Invalid timezone id' };
+        }
+      }
     }
 
     await page.setExtraHTTPHeaders(this.config.reqHeaders);
@@ -200,7 +210,8 @@ export class Renderer {
     url: string,
     isMobile: boolean,
     dimensions: ViewportDimensions,
-    options?: object): Promise<Buffer> {
+    options?: object,
+    timezoneId?: string): Promise<Buffer> {
     const page = await this.browser.newPage();
 
     // Page may reload when setting isMobile
@@ -221,6 +232,10 @@ export class Renderer {
         interceptedRequest.continue();
       }
     });
+
+    if (timezoneId) {
+      await page.emulateTimezone(timezoneId);
+    }
 
     let response: puppeteer.Response | null = null;
 

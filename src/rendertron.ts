@@ -125,7 +125,7 @@ export class Rendertron {
 
     const mobileVersion = 'mobile' in ctx.query ? true : false;
 
-    const serialized = await this.renderer.serialize(url, mobileVersion);
+    const serialized = await this.renderer.serialize(url, mobileVersion, ctx.query.timezoneId);
 
     for (const key in this.config.headers) {
       ctx.set(key, this.config.headers[key]);
@@ -163,7 +163,7 @@ export class Rendertron {
 
     try {
       const img = await this.renderer.screenshot(
-        url, mobileVersion, dimensions, options);
+        url, mobileVersion, dimensions, options, ctx.query.timezoneId);
 
       for (const key in this.config.headers) {
         ctx.set(key, this.config.headers[key]);
