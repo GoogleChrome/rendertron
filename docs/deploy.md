@@ -81,7 +81,7 @@ Based on Puppeteer instructions we can create a docker image that bundles a head
 
 For more information about chrome installation please see the pupeteer page: https://github.com/puppeteer/puppeteer/blob/main/docs/troubleshooting.md#running-puppeteer-in-docker
 
-Before creating the docker file you must create the config.json used by rendertron.
+If you don't want to use rendertron default configurations you can create a config.json file. This file must be created at the project root level, in the same directory as the Dockerfile.
 
 ```
 {
@@ -108,6 +108,8 @@ RUN apt-get update \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
+# This directoty will store cached files as specified in the config.json. 
+# If you haven't defined the cacheConfig.snapshotDir property you can remove the following line
 RUN mkdir /cache
 
 RUN git clone https://github.com/GoogleChrome/rendertron.git
@@ -116,6 +118,7 @@ WORKDIR /rendertron
 
 RUN npm install && npm run build
 
+# If you aren't using a custom config.json file you must remove the following line
 ADD config.json .
 
 EXPOSE 3000
