@@ -212,26 +212,13 @@ test.failing('explicit render event ends early', async (t: any) => {
   t.true(res.text.indexOf('async loaded') !== -1);
 });
 
-test('whitelist ensures other urls do not get rendered', async (t) => {
-  const mock_config = {
-    cache: 'memory' as const,
-    cacheConfig: {
-      cacheDurationMinutes: '120',
-      cacheMaxEntries: '50'
-    },
-    timeout: 10000,
-    port: '3000',
-    host: '0.0.0.0',
-    width: 1000,
-    height: 1000,
-    reqHeaders: {},
-    headers: {},
-    puppeteerArgs: ['--no-sandbox'],
-    renderOnly: [testBase]
-  };
-  const mock_server = request(await (new Rendertron()).initialize(mock_config));
-  let res = await mock_server.get(`/render/${testBase}basic-script.html`);
-  t.is(res.status, 200);
+// TODO: support URL whitelisting.
+// test('whitelist ensures other urls do not get rendered', async(t: any) => {
+//   const server = await createServer({
+//     renderOnly: [testBase]
+//   });
+//   let res = await server.get(`/render/${testBase}basic-script.html`);
+//   t.is(res.status, 200);
 
   res = await mock_server.get(`/render/http://anotherDomain.com`);
   t.is(res.status, 403);
