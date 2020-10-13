@@ -30,6 +30,16 @@ export class Renderer {
     this.config = config;
   }
 
+  private restrictRequest(requestUrl: string): boolean {
+    const parsedUrl = url.parse(requestUrl);
+
+    if (parsedUrl.hostname && parsedUrl.hostname.match(/\.internal$/)) {
+      return true;
+    }
+
+    return false;
+  }
+
   async serialize(requestUrl: string, isMobile: boolean):
     Promise<SerializedResponse> {
     /**
@@ -87,6 +97,16 @@ export class Renderer {
     page.evaluateOnNewDocument('customElements.forcePolyfill = true');
     page.evaluateOnNewDocument('ShadyDOM = {force: true}');
     page.evaluateOnNewDocument('ShadyCSS = {shimcssproperties: true}');
+
+    await page.setRequestInterception(true);
+
+    page.addListener('request', (interceptedRequest: puppeteer.Request) => {
+      if (this.restrictRequest(interceptedRequest.url())) {
+        interceptedRequest.abort();
+      } else {
+        interceptedRequest.continue();
+      }
+    });
 
     let response: puppeteer.Response | null = null;
     // Capture main frame response. This is used in the case that rendering
@@ -191,6 +211,16 @@ export class Renderer {
     if (isMobile) {
       page.setUserAgent(MOBILE_USERAGENT);
     }
+
+    await page.setRequestInterception(true);
+
+    page.addListener('request', (interceptedRequest: puppeteer.Request) => {
+      if (this.restrictRequest(interceptedRequest.url())) {
+        interceptedRequest.abort();
+      } else {
+        interceptedRequest.continue();
+      }
+    });
 
     let response: puppeteer.Response | null = null;
 
