@@ -81,6 +81,7 @@ Both endpoints support the following query parameters:
  * `height` defaults to `1000` - specifies viewport height.
  * `mobile` defaults to `false`. Enable by passing `?mobile` to request the
   mobile version of your site.
+ * `timezoneId` - specifies rendering for timezone.
 
 Additional options are available as a JSON string in the `POST` body. See
 [Puppeteer documentation](https://github.com/GoogleChrome/puppeteer/blob/v1.6.0/docs/api.md#pagescreenshotoptions)
