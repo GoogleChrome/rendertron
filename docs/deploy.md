@@ -27,6 +27,8 @@ Rendertron runs a server that takes a URL and returns static HTML for the URL by
 
 ###  Deploying Rendertron to Heroku
 
+[![Deploy](https://www.herokucdn.com/deploy/button.png)](https://dashboard.heroku.com/new?button-url=https://github.com/GoogleChrome/rendertron/tree/main&template=https://github.com/GoogleChrome/rendertron/tree/main)
+
 Setup Herokuapp and Heroku CLI
 `https://devcenter.heroku.com/articles/heroku-cli`
 
@@ -39,7 +41,7 @@ $ heroku buildpacks:set https://github.com/heroku/heroku-buildpack-google-chrome
 Next, add the `heroku/nodejs` buildpack to your project:
 
 ```
-$ heroku buildpacks:add heroku/nodejs -a <app-name>
+$ heroku buildpacks:add --index 2 heroku/nodejs -a <app-name>
 ```
 
 Then, update the `package.json` entry for `engines` to specific node and npm versions. I used:

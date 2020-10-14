@@ -1,0 +1,19 @@
+{
+  "name": "Rendertron",
+  "description": "Rendertron is a headless Chrome rendering solution designed to render & serialise web pages on the fly.",
+  "keywords": [
+    "rendertron",
+    "render",
+    "web",
+    "chrome"
+  ],
+  "website": "https://github.com/GoogleChrome/rendertron",
+  "buildpacks": [
+    {
+      "url": "heroku/google-chrome"
+    },
+    {
+      "url": "heroku/nodejs"
+    }
+  ]
+}
