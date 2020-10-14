@@ -187,7 +187,7 @@ test('refreshCache refreshes cache', async (t) => {
 test.serial('clear all filesystem cache entries', async (t) => {
 
   app.use(route.get('/clear-all-cache', (ctx: Koa.Context) => {
-    ctx.body = "Foo";
+    ctx.body = 'Foo';
   }));
 
   await server.get('/clear-all-cache?cachedResult1');
