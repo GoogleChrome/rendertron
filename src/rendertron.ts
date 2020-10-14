@@ -103,7 +103,17 @@ export class Rendertron {
       return true;
     }
 
-    return false;
+    if (!this.config.renderOnly.length) {
+      return false;
+    }
+
+    for (let i = 0; i < this.config.renderOnly.length; i++) {
+      if (href.startsWith(this.config.renderOnly[i])) {
+        return false;
+      }
+    }
+
+    return true;
   }
 
   async handleRenderRequest(ctx: Koa.Context, url: string) {

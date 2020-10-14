@@ -30,6 +30,16 @@ export class Renderer {
     this.config = config;
   }
 
+  private restrictRequest(requestUrl: string): boolean {
+    const parsedUrl = url.parse(requestUrl);
+
+    if (parsedUrl.hostname && parsedUrl.hostname.match(/\.internal$/)) {
+      return true;
+    }
+
+    return false;
+  }
+
   async serialize(requestUrl: string, isMobile: boolean):
     Promise<SerializedResponse> {
     /**
@@ -49,9 +59,7 @@ export class Renderer {
      * has no effect on serialised output, but allows it to verify render
      * quality.
      */
-    function injectBaseHref(origin: string) {
-      const base = document.createElement('base');
-      base.setAttribute('href', origin);
+    function injectBaseHref(origin: string, directory: string) {
 
       const bases = document.head.querySelectorAll('base');
       if (bases.length) {
@@ -67,6 +75,9 @@ export class Renderer {
         }
       } else {
         // Only inject <base> if it doesn't already exist.
+        const base = document.createElement('base');
+        // Base url is the current directory
+        base.setAttribute('href', origin + directory);
         document.head.insertAdjacentElement('afterbegin', base);
       }
     }
@@ -81,9 +92,21 @@ export class Renderer {
       page.setUserAgent(MOBILE_USERAGENT);
     }
 
+    await page.setExtraHTTPHeaders(this.config.reqHeaders);
+
     page.evaluateOnNewDocument('customElements.forcePolyfill = true');
     page.evaluateOnNewDocument('ShadyDOM = {force: true}');
     page.evaluateOnNewDocument('ShadyCSS = {shimcssproperties: true}');
+
+    await page.setRequestInterception(true);
+
+    page.addListener('request', (interceptedRequest: puppeteer.Request) => {
+      if (this.restrictRequest(interceptedRequest.url())) {
+        interceptedRequest.abort();
+      } else {
+        interceptedRequest.continue();
+      }
+    });
 
     let response: puppeteer.Response | null = null;
     // Capture main frame response. This is used in the case that rendering
@@ -164,8 +187,7 @@ export class Renderer {
     await page.evaluate(stripPage);
     // Inject <base> tag with the origin of the request (ie. no path).
     const parsedUrl = url.parse(requestUrl);
-    await page.evaluate(
-      injectBaseHref, `${parsedUrl.protocol}//${parsedUrl.host}${dirname(parsedUrl.pathname || '')}`);
+    await page.evaluate(injectBaseHref, `${parsedUrl.protocol}//${parsedUrl.host}`, `${dirname(parsedUrl.pathname || '')}`);
 
     // Serialize page.
     const result = await page.content() as string;
@@ -189,6 +211,16 @@ export class Renderer {
     if (isMobile) {
       page.setUserAgent(MOBILE_USERAGENT);
     }
+
+    await page.setRequestInterception(true);
+
+    page.addListener('request', (interceptedRequest: puppeteer.Request) => {
+      if (this.restrictRequest(interceptedRequest.url())) {
+        interceptedRequest.abort();
+      } else {
+        interceptedRequest.continue();
+      }
+    });
 
     let response: puppeteer.Response | null = null;
 
