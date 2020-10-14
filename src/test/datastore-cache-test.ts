@@ -16,13 +16,13 @@
 
 'use strict';
 
-import {test} from 'ava';
+import { test } from 'ava';
 import * as Koa from 'koa';
 import * as koaCompress from 'koa-compress';
 import * as request from 'supertest';
 import * as route from 'koa-route';
 
-import {DatastoreCache} from '../datastore-cache';
+import { DatastoreCache } from '../datastore-cache';
 
 const app = new Koa();
 const server = request(app.listen());
@@ -43,7 +43,7 @@ app.use(route.get('/', (ctx: Koa.Context) => {
   ctx.body = `Called ${handlerCalledCount} times`;
 }));
 
-const promiseTimeout = function(timeout: number) {
+const promiseTimeout = function (timeout: number) {
   return new Promise((resolve) => {
     setTimeout(resolve, timeout);
   });
@@ -101,7 +101,7 @@ app.use(route.get('/compressed', (ctx: Koa.Context) => {
 test('compression preserved', async (t) => {
   const expectedBody = new Array(1025).join('x');
   let res = await server.get('/compressed')
-                .set('Accept-Encoding', 'gzip, deflate, br');
+    .set('Accept-Encoding', 'gzip, deflate, br');
   t.is(res.status, 200);
   t.is(res.header['content-encoding'], 'gzip');
   t.is(res.text, expectedBody);
@@ -110,7 +110,7 @@ test('compression preserved', async (t) => {
   await promiseTimeout(500);
 
   res = await server.get('/compressed')
-            .set('Accept-Encoding', 'gzip, deflate, br');
+    .set('Accept-Encoding', 'gzip, deflate, br');
   t.is(res.status, 200);
   t.is(res.header['content-encoding'], 'gzip');
   t.is(res.text, expectedBody);
@@ -159,4 +159,36 @@ test('refreshCache refreshes cache', async (t) => {
   t.is(res.status, 200);
   t.is(res.text, 'updated content');
   t.is(res.header['x-rendertron-cached'], undefined);
+});
+
+test.serial('clear all datastore cache entries', async (t) => {
+  app.use(route.get('/clear-all-cache', (ctx: Koa.Context) => {
+    ctx.body = "Foo";
+  }));
+
+  await server.get('/clear-all-cache?cachedResult1');
+  await server.get('/clear-all-cache?cachedResult2');
+
+  // Workaround for race condition with writing to datastore.
+  await promiseTimeout(500);
+
+  let res = await server.get('/clear-all-cache?cachedResult1');
+  t.is(res.status, 200);
+  t.truthy(res.header['x-rendertron-cached']);
+  t.true(new Date(res.header['x-rendertron-cached']) <= new Date());
+  res = await server.get('/clear-all-cache?cachedResult2');
+  t.is(res.status, 200);
+  t.truthy(res.header['x-rendertron-cached']);
+  t.true(new Date(res.header['x-rendertron-cached']) <= new Date());
+
+  await cache.clearCache();
+
+  res = await server.get('/clear-all-cache?cachedResult1');
+  t.is(res.status, 200);
+  t.falsy(res.header['x-rendertron-cached']);
+  t.false(new Date(res.header['x-rendertron-cached']) <= new Date());
+  res = await server.get('/clear-all-cache?cachedResult2');
+  t.is(res.status, 200);
+  t.falsy(res.header['x-rendertron-cached']);
+  t.false(new Date(res.header['x-rendertron-cached']) <= new Date());
 });

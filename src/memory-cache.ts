@@ -127,4 +127,14 @@ export class MemoryCache {
       this.cacheContent(cacheKey, ctx.response.headers, ctx.body);
     }
   }
+
+  clearAllCacheHandler() {
+    return this.handleClearAllCacheRequest.bind(this);
+  }
+
+  private async handleClearAllCacheRequest(ctx: Koa.Context) {
+    this.clearCache();
+    ctx.status = 200;
+  }
+
 }
