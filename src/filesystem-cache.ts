@@ -30,10 +30,12 @@ type CacheContent = {
   saved: Date,
   expires: Date,
   response: string,
-  payload: string,
+  payload: string
 };
 
-
+type BinaryCacheContent = {
+  type: string
+};
 
 export class FilesystemCache {
   private config: Config;
@@ -210,7 +212,7 @@ export class FilesystemCache {
           ctx.set(response.header);
           ctx.set('x-rendertron-cached', content.saved.toUTCString());
           ctx.status = response.status;
-          let payload: any = content.payload;
+          let payload: string | BinaryCacheContent = content.payload;
           try {
             payload = JSON.parse(content.payload);
           } catch (e) {
@@ -219,7 +221,7 @@ export class FilesystemCache {
           try {
             if (payload && typeof (payload) === 'object' &&
               payload.type === 'Buffer') {
-              ctx.body = new Buffer(payload);
+              ctx.body = Buffer.from(payload);
             } else {
               ctx.body = payload;
             }
