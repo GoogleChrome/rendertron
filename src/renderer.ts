@@ -37,6 +37,12 @@ export class Renderer {
       return true;
     }
 
+    for (let i = 0; i < this.config.blacklist.length; i++) {
+      if (requestUrl.startsWith(this.config.blacklist[i])) {
+        return true;
+      }
+    }
+
     return false;
   }
 
