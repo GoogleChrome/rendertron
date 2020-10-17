@@ -100,17 +100,22 @@ export class Rendertron {
       return true;
     }
 
-    if (!this.config.renderOnly.length) {
-      return false;
+    if (this.config.renderOnly.length) {
+      for (let i = 0; i < this.config.renderOnly.length; i++) {
+        if (href.startsWith(this.config.renderOnly[i])) {
+          return false;
+        }
+      }
+      return true;
     }
 
-    for (let i = 0; i < this.config.renderOnly.length; i++) {
-      if (href.startsWith(this.config.renderOnly[i])) {
-        return false;
+    for (let i = 0; i < this.config.blacklist.length; i++) {
+      if (href.startsWith(this.config.blacklist[i])) {
+        return true;
       }
     }
 
-    return true;
+    return false;
   }
 
   async handleRenderRequest(ctx: Koa.Context, url: string) {

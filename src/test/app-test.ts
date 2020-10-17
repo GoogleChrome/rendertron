@@ -214,7 +214,7 @@ test.failing('explicit render event ends early', async (t) => {
   t.true(res.text.indexOf('async loaded') !== -1);
 });
 
-test('whitelist ensures other urls do not get rendered', async(t) => {
+test('whitelist ensures other urls do not get rendered', async (t) => {
   const mock_config = {
     cache: 'memory' as const,
     cacheConfig: {
@@ -229,13 +229,63 @@ test('whitelist ensures other urls do not get rendered', async(t) => {
     reqHeaders: {},
     headers: {},
     puppeteerArgs: ['--no-sandbox'],
-    renderOnly: [testBase]
+    renderOnly: [testBase],
+    blacklist: []
   };
   const mock_server = request(await (new Rendertron()).initialize(mock_config));
   let res = await mock_server.get(`/render/${testBase}basic-script.html`);
   t.is(res.status, 200);
 
   res = await mock_server.get(`/render/http://anotherDomain.com`);
+  t.is(res.status, 403);
+});
+
+test('blacklisted urls do not get rendered', async (t) => {
+  const mock_config = {
+    cache: 'memory' as const,
+    cacheConfig: {
+      cacheDurationMinutes: '120',
+      cacheMaxEntries: '50'
+    },
+    timeout: 10000,
+    port: '3000',
+    host: '0.0.0.0',
+    width: 1000,
+    height: 1000,
+    reqHeaders: {},
+    headers: {},
+    puppeteerArgs: ['--no-sandbox'],
+    renderOnly: [],
+    blacklist: [testBase]
+  };
+  const mock_server = request(await (new Rendertron()).initialize(mock_config));
+  let res = await mock_server.get(`/render/${testBase}basic-script.html`);
+  t.is(res.status, 403);
+});
+
+test('whitelist works correctly if blacklist is configured', async (t) => {
+  const mock_config = {
+    cache: 'memory' as const,
+    cacheConfig: {
+      cacheDurationMinutes: '120',
+      cacheMaxEntries: '50'
+    },
+    timeout: 10000,
+    port: '3000',
+    host: '0.0.0.0',
+    width: 1000,
+    height: 1000,
+    reqHeaders: {},
+    headers: {},
+    puppeteerArgs: ['--no-sandbox'],
+    renderOnly: [testBase],
+    blacklist: ['http://www.example.com']
+  };
+  const mock_server = request(await (new Rendertron()).initialize(mock_config));
+  let res = await mock_server.get(`/render/${testBase}basic-script.html`);
+  t.is(res.status, 200);
+
+  res = await mock_server.get(`/render/http://www.example.com`);
   t.is(res.status, 403);
 });
 
@@ -259,7 +309,8 @@ test('endpont for invalidating memory cache works if configured', async (t) => {
     reqHeaders: {},
     headers: {},
     puppeteerArgs: ['--no-sandbox'],
-    renderOnly: []
+    renderOnly: [],
+    blacklist: []
   };
   const cached_server = request(await (new Rendertron()).initialize(mock_config));
   const test_url = `/render/${testBase}basic-script.html`;
@@ -304,7 +355,8 @@ test('endpont for invalidating filesystem cache works if configured', async (t) 
     reqHeaders: {},
     headers: {},
     puppeteerArgs: ['--no-sandbox'],
-    renderOnly: []
+    renderOnly: [],
+    blacklist: []
   };
   const cached_server = request(await (new Rendertron()).initialize(mock_config));
   const test_url = `/render/${testBase}basic-script.html`;
@@ -353,7 +405,8 @@ test('http header should be set via config', async (t) => {
     },
     headers: {},
     puppeteerArgs: ['--no-sandbox'],
-    renderOnly: []
+    renderOnly: [],
+    blacklist: []
   };
   server = request(await rendertron.initialize(mock_config));
   await app.listen(1237);
