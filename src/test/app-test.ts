@@ -259,7 +259,7 @@ test('blacklisted urls do not get rendered', async (t) => {
     blacklist: [testBase]
   };
   const mock_server = request(await (new Rendertron()).initialize(mock_config));
-  let res = await mock_server.get(`/render/${testBase}basic-script.html`);
+  const res = await mock_server.get(`/render/${testBase}basic-script.html`);
   t.is(res.status, 403);
 });
 
