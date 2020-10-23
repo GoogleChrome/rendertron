@@ -160,3 +160,35 @@ test('refreshCache refreshes cache', async (t: any) => {
   t.is(res.text, 'updated content');
   t.is(res.header['x-rendertron-cached'], undefined);
 });
+
+test.serial('clear all datastore cache entries', async (t) => {
+  app.use(route.get('/clear-all-cache', (ctx: Koa.Context) => {
+    ctx.body = 'Foo';
+  }));
+
+  await server.get('/clear-all-cache?cachedResult1');
+  await server.get('/clear-all-cache?cachedResult2');
+
+  // Workaround for race condition with writing to datastore.
+  await promiseTimeout(500);
+
+  let res = await server.get('/clear-all-cache?cachedResult1');
+  t.is(res.status, 200);
+  t.truthy(res.header['x-rendertron-cached']);
+  t.true(new Date(res.header['x-rendertron-cached']) <= new Date());
+  res = await server.get('/clear-all-cache?cachedResult2');
+  t.is(res.status, 200);
+  t.truthy(res.header['x-rendertron-cached']);
+  t.true(new Date(res.header['x-rendertron-cached']) <= new Date());
+
+  await cache.clearCache();
+
+  res = await server.get('/clear-all-cache?cachedResult1');
+  t.is(res.status, 200);
+  t.falsy(res.header['x-rendertron-cached']);
+  t.false(new Date(res.header['x-rendertron-cached']) <= new Date());
+  res = await server.get('/clear-all-cache?cachedResult2');
+  t.is(res.status, 200);
+  t.falsy(res.header['x-rendertron-cached']);
+  t.false(new Date(res.header['x-rendertron-cached']) <= new Date());
+});

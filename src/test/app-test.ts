@@ -212,7 +212,7 @@ test.failing('explicit render event ends early', async (t: any) => {
   t.true(res.text.indexOf('async loaded') !== -1);
 });
 
-test('whitelist ensures other urls do not get rendered', async(t) => {
+test('whitelist ensures other urls do not get rendered', async (t) => {
   const mock_config = {
     cache: 'memory' as const,
     cacheConfig: {
@@ -358,4 +358,101 @@ test('http header should be set via config', async (t: any) => {
   const res = await server.get(`/render/${testBase}request-header.html`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('http://example.com/') !== -1);
+});
+
+test.serial('endpoint for invalidating all memory cache works if configured', async (t) => {
+  const mock_config = {
+    cache: 'memory' as const,
+    cacheConfig: {
+      cacheDurationMinutes: '120',
+      cacheMaxEntries: '50'
+    },
+    timeout: 10000,
+    port: '3000',
+    host: '0.0.0.0',
+    width: 1000,
+    height: 1000,
+    reqHeaders: {
+      'Referer': 'http://example.com/'
+    },
+    headers: {},
+    puppeteerArgs: ['--no-sandbox'],
+    renderOnly: []
+  };
+  const cached_server = request(await (new Rendertron()).initialize(mock_config));
+  const test_url = `/render/${testBase}basic-script.html`;
+  await app.listen(1238);
+  // Make a request which is not in cache
+  let res = await cached_server.get(test_url);
+  t.is(res.status, 200);
+  t.true(res.text.indexOf('document-title') !== -1);
+  t.is(res.header['x-renderer'], 'rendertron');
+  t.true(res.header['x-rendertron-cached'] == null);
+
+  // Ensure that it is cached
+  res = await cached_server.get(test_url);
+  t.is(res.status, 200);
+  t.true(res.text.indexOf('document-title') !== -1);
+  t.is(res.header['x-renderer'], 'rendertron');
+  t.true(res.header['x-rendertron-cached'] != null);
+
+  // Invalidate cache and ensure it is not cached
+  res = await cached_server.get(`/invalidate`);
+  res = await cached_server.get(test_url);
+  t.is(res.status, 200);
+  t.true(res.text.indexOf('document-title') !== -1);
+  t.is(res.header['x-renderer'], 'rendertron');
+  t.true(res.header['x-rendertron-cached'] == null);
+
+});
+
+test.serial('endpoint for invalidating all filesystem cache works if configured', async (t) => {
+  const mock_config = {
+    cache: 'filesystem' as const,
+    cacheConfig: {
+      cacheDurationMinutes: '120',
+      cacheMaxEntries: '50',
+      snapshotDir: path.join(os.tmpdir(), 'rendertron-test-cache')
+    },
+    timeout: 10000,
+    port: '3000',
+    host: '0.0.0.0',
+    width: 1000,
+    height: 1000,
+    headers: {},
+    reqHeaders: {
+      'Referer': 'http://example.com/'
+    },
+    puppeteerArgs: ['--no-sandbox'],
+    renderOnly: []
+  };
+  const cached_server = request(await (new Rendertron()).initialize(mock_config));
+  const test_url = `/render/${testBase}basic-script.html`;
+  await app.listen(1239);
+  // Make a request which is not in cache
+  let res = await cached_server.get(test_url);
+  t.is(res.status, 200);
+  t.true(res.text.indexOf('document-title') !== -1);
+  t.is(res.header['x-renderer'], 'rendertron');
+  t.true(res.header['x-rendertron-cached'] == null);
+
+  // Ensure that it is cached
+  res = await cached_server.get(test_url);
+  t.is(res.status, 200);
+  t.true(res.text.indexOf('document-title') !== -1);
+  t.is(res.header['x-renderer'], 'rendertron');
+  t.true(res.header['x-rendertron-cached'] != null);
+
+  // Invalidate cache and ensure it is not cached
+  res = await cached_server.get(`/invalidate`);
+  res = await cached_server.get(test_url);
+  t.is(res.status, 200);
+  t.true(res.text.indexOf('document-title') !== -1);
+  t.is(res.header['x-renderer'], 'rendertron');
+  t.true(res.header['x-rendertron-cached'] == null);
+
+  await cached_server.get(`/invalidate`);
+  // cleanup cache to prevent future tests failing
+  await cached_server.get(`/invalidate/`);
+  fs.rmdirSync(path.join(os.tmpdir(), 'rendertron-test-cache'));
 });
