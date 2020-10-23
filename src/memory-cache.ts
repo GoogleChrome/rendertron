@@ -111,7 +111,7 @@ export class MemoryCache {
         let payload = JSON.parse(cachedContent.payload);
         if (payload && typeof (payload) === 'object' &&
           payload.type === 'Buffer') {
-          payload = new Buffer(payload);
+          payload = Buffer.from(payload);
         }
         ctx.body = payload;
         return;

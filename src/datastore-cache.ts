@@ -139,7 +139,7 @@ export class DatastoreCache {
             let payload = JSON.parse(content.payload);
             if (payload && typeof (payload) === 'object' &&
               payload.type === 'Buffer') {
-              payload = new Buffer(payload);
+              payload = Buffer.from(payload);
             }
             ctx.body = payload;
             return;
