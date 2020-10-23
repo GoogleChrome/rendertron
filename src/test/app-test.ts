@@ -212,7 +212,6 @@ test.failing('explicit render event ends early', async (t: ExecutionContext) => 
   t.true(res.text.indexOf('async loaded') !== -1);
 });
 
-// TODO: support URL whitelisting.
 test('whitelist ensures other urls do not get rendered', async (t: ExecutionContext) => {
   const mockConfig = {
     cache: 'memory' as const,

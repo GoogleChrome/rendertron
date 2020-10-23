@@ -185,7 +185,6 @@ test('refreshCache refreshes cache', async (t: ExecutionContext) => {
 });
 
 test.serial('clear all filesystem cache entries', async (t: ExecutionContext) => {
-
   app.use(route.get('/clear-all-cache', (ctx: Koa.Context) => {
     ctx.body = 'Foo';
   }));
