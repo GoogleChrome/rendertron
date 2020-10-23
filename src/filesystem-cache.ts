@@ -79,6 +79,15 @@ export class FilesystemCache {
     }
   }
 
+  clearAllCacheHandler() {
+    return this.handleClearAllCacheRequest.bind(this);
+  }
+
+  private async handleClearAllCacheRequest(ctx: Koa.Context) {
+    this.clearAllCache();
+    ctx.status = 200;
+  }
+
   async clearAllCache() {
     fs.readdir(this.getDir(''), (err, files) => {
       if (err) throw err;
