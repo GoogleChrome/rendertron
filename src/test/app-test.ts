@@ -14,7 +14,7 @@
  * the License.
  */
 
-const test = require('ava').default;
+import test, { ExecutionContext } from 'ava';
 import * as Koa from 'koa';
 import * as koaStatic from 'koa-static';
 import * as path from 'path';
@@ -38,53 +38,53 @@ test.before(async () => {
   await app.listen(1234);
 });
 
-test('health check responds correctly', async (t: any) => {
+test('health check responds correctly', async (t: ExecutionContext) => {
   const res = await server.get('/_ah/health');
   t.is(res.status, 200);
 });
 
-test('renders basic script', async (t: any) => {
+test('renders basic script', async (t: ExecutionContext) => {
   const res = await server.get(`/render/${testBase}basic-script.html`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('document-title') !== -1);
   t.is(res.header['x-renderer'], 'rendertron');
 });
 
-test('renders script after page load event', async (t: any) => {
+test('renders script after page load event', async (t: ExecutionContext) => {
   const res = await server.get(`/render/${testBase}script-after-load.html`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('injectedElement') !== -1);
 });
 
-test('renders HTML docType declaration', async (t: any) => {
+test('renders HTML docType declaration', async (t: ExecutionContext) => {
   const res = await server.get(
     `/render/${testBase}include-doctype.html`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('<!DOCTYPE html>') !== -1);
 });
 
-test('sets the correct base URL for a subfolder', async (t: any) => {
+test('sets the correct base URL for a subfolder', async (t: ExecutionContext) => {
   const res = await server.get(`/render/${testBase}subfolder/index.html`);
   const matches = res.text.match('<base href="([^"]+)">');
   const baseUrl = matches ? matches[1] : '';
   t.is(baseUrl, `${testBase}subfolder`);
 });
 
-test('sets the correct base URL for the root folder', async (t: any) => {
+test('sets the correct base URL for the root folder', async (t: ExecutionContext) => {
   const res = await server.get(`/render/${testBase}basic-script.html`);
   const matches = res.text.match('<base href="([^"]+)">');
   const baseUrl = matches ? matches[1] : '';
   t.is(baseUrl, `${testBase}`);
 });
 
-test('sets the correct base URL for an already defined base as /', async (t: any) => {
+test('sets the correct base URL for an already defined base as /', async (t: ExecutionContext) => {
   const res = await server.get(`/render/${testBase}include-base.html`);
   const matches = res.text.match('<base href="([^"]+)">');
   const baseUrl = matches ? matches[1] : '';
   t.is(baseUrl, `${testBase.slice(0, -1)}`);
 });
 
-test('sets the correct base URL for an already defined base as directory', async (t: any) => {
+test('sets the correct base URL for an already defined base as directory', async (t: ExecutionContext) => {
   const res = await server.get(`/render/${testBase}include-base-as-directory.html`);
   const matches = res.text.match('<base href="([^"]+)">');
   const baseUrl = matches ? matches[1] : '';
@@ -93,33 +93,33 @@ test('sets the correct base URL for an already defined base as directory', async
 
 // This test is failing as the polyfills (shady polyfill & scoping shim) are not
 // yet injected properly.
-test.failing('renders shadow DOM - no polyfill', async (t: any) => {
+test.failing('renders shadow DOM - no polyfill', async (t: ExecutionContext) => {
   const res = await server.get(
     `/render/${testBase}shadow-dom-no-polyfill.html?wc-inject-shadydom=true`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('shadow-root-text') !== -1);
 });
 
-test('renders shadow DOM - polyfill loader', async (t: any) => {
+test('renders shadow DOM - polyfill loader', async (t: ExecutionContext) => {
   const res = await server.get(`/render/${testBase}shadow-dom-polyfill-loader.html?wc-inject-shadydom=true`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('shadow-root-text') !== -1);
 });
 
-test('renders shadow DOM - polyfill loader - different flag', async (t: any) => {
+test('renders shadow DOM - polyfill loader - different flag', async (t: ExecutionContext) => {
   const res = await server.get(
     `/render/${testBase}shadow-dom-polyfill-loader.html?wc-inject-shadydom`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('shadow-root-text') !== -1);
 });
 
-test('renders shadow DOM - webcomponents-lite.js polyfill', async (t: any) => {
+test('renders shadow DOM - webcomponents-lite.js polyfill', async (t: ExecutionContext) => {
   const res = await server.get(`/render/${testBase}shadow-dom-polyfill-all.html?wc-inject-shadydom=true`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('shadow-root-text') !== -1);
 });
 
-test('script tags and link[rel=import] tags are stripped', async (t: any) => {
+test('script tags and link[rel=import] tags are stripped', async (t: ExecutionContext) => {
   const res = await server.get(`/render/${testBase}include-script.html`);
   t.is(res.status, 200);
   t.false(res.text.indexOf('script src') !== -1);
@@ -128,7 +128,7 @@ test('script tags and link[rel=import] tags are stripped', async (t: any) => {
   t.true(res.text.indexOf('element-text') !== -1);
 });
 
-test('script tags for JSON-LD are not stripped', async (t: any) => {
+test('script tags for JSON-LD are not stripped', async (t: ExecutionContext) => {
   const res = await server.get(`/render/${testBase}include-json-ld.html`);
   t.is(res.status, 200);
   t.false(res.text.indexOf('script src') !== -1);
@@ -136,27 +136,27 @@ test('script tags for JSON-LD are not stripped', async (t: any) => {
   t.false(res.text.indexOf('javascript') !== -1);
 });
 
-test('server status code should be forwarded', async (t: any) => {
+test('server status code should be forwarded', async (t: ExecutionContext) => {
   const res = await server.get('/render/http://httpstat.us/404');
   t.is(res.status, 404);
   t.true(res.text.indexOf('404 Not Found') !== -1);
 });
 
-test('http status code should be able to be set via a meta tag', async (t: any) => {
+test('http status code should be able to be set via a meta tag', async (t: ExecutionContext) => {
   const testFile = 'http-meta-status-code.html';
   const res = await server.get(
     `/render/${testBase}${testFile}?wc-inject-shadydom=true`);
   t.is(res.status, 400);
 });
 
-test('http status codes need to be respected from top to bottom', async (t: any) => {
+test('http status codes need to be respected from top to bottom', async (t: ExecutionContext) => {
   const testFile = 'http-meta-status-code-multiple.html';
   const res = await server.get(
     `/render/${testBase}${testFile}?wc-inject-shadydom=true`);
   t.is(res.status, 401);
 });
 
-test('screenshot is an image', async (t: any) => {
+test('screenshot is an image', async (t: ExecutionContext) => {
   const res = await server.post(`/screenshot/${testBase}basic-script.html`);
   t.is(res.status, 200);
   t.is(res.header['content-type'], 'image/jpeg');
@@ -164,7 +164,7 @@ test('screenshot is an image', async (t: any) => {
   t.is(res.body.length, parseInt(res.header['content-length']));
 });
 
-test('screenshot accepts options', async (t: any) => {
+test('screenshot accepts options', async (t: ExecutionContext) => {
   const res =
     await server.post(`/screenshot/${testBase}basic-script.html`).send({
       clip: { x: 100, y: 100, width: 100, height: 100 },
@@ -176,61 +176,76 @@ test('screenshot accepts options', async (t: any) => {
   t.is(res.body.length, parseInt(res.header['content-length']));
 });
 
-test('invalid url fails', async (t: any) => {
+test('invalid url fails', async (t: ExecutionContext) => {
   const res = await server.get(`/render/abc`);
   t.is(res.status, 403);
 });
 
-test('unknown url fails', async (t: any) => {
+test('unknown url fails', async (t: ExecutionContext) => {
   const res = await server.get(`/render/http://unknown.blah.com`);
   t.is(res.status, 400);
 });
 
-test('file url fails', async (t: any) => {
+test('file url fails', async (t: ExecutionContext) => {
   const res = await server.get(`/render/file:///dev/fd/0`);
   t.is(res.status, 403);
 });
 
-test('file url fails for screenshot', async (t: any) => {
+test('file url fails for screenshot', async (t: ExecutionContext) => {
   const res = await server.get(`/screenshot/file:///dev/fd/0`);
   t.is(res.status, 403);
 });
 
-test('appengine internal url fails', async (t: any) => {
+test('appengine internal url fails', async (t: ExecutionContext) => {
   const res = await server.get(`/render/http://metadata.google.internal/computeMetadata/v1beta1/instance/service-accounts/default/token`);
   t.is(res.status, 403);
 });
 
-test('appengine internal url fails for screenshot', async (t: any) => {
+test('appengine internal url fails for screenshot', async (t: ExecutionContext) => {
   const res = await server.get(`/screenshot/http://metadata.google.internal/computeMetadata/v1beta1/instance/service-accounts/default/token`);
   t.is(res.status, 403);
 });
 
-test.failing('explicit render event ends early', async (t: any) => {
+test.failing('explicit render event ends early', async (t: ExecutionContext) => {
   const res = await server.get(`/render/${testBase}explicit-render-event.html`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('async loaded') !== -1);
 });
 
 // TODO: support URL whitelisting.
-// test('whitelist ensures other urls do not get rendered', async(t: any) => {
-//   const server = await createServer({
-//     renderOnly: [testBase]
-//   });
-//   let res = await server.get(`/render/${testBase}basic-script.html`);
-//   t.is(res.status, 200);
+test('whitelist ensures other urls do not get rendered', async (t: ExecutionContext) => {
+  const mockConfig = {
+    cache: 'memory' as const,
+    cacheConfig: {
+      cacheDurationMinutes: '120',
+      cacheMaxEntries: '50'
+    },
+    timeout: 10000,
+    port: '3000',
+    host: '0.0.0.0',
+    width: 1000,
+    height: 1000,
+    reqHeaders: {},
+    headers: {},
+    puppeteerArgs: ['--no-sandbox'],
+    renderOnly: [testBase]
+  };
+  const server = request(await (new Rendertron()).initialize(mockConfig));
 
-  res = await mock_server.get(`/render/http://anotherDomain.com`);
+  let res = await server.get(`/render/${testBase}basic-script.html`);
+  t.is(res.status, 200);
+
+  res = await server.get(`/render/http://anotherDomain.com`);
   t.is(res.status, 403);
 });
 
-test('unknown url fails safely on screenshot', async (t: any) => {
+test('unknown url fails safely on screenshot', async (t: ExecutionContext) => {
   const res = await server.get(`/render/http://unknown.blah.com`);
   t.is(res.status, 400);
 });
 
-test('endpont for invalidating memory cache works if configured', async (t: any) => {
-  const mock_config = {
+test('endpont for invalidating memory cache works if configured', async (t: ExecutionContext) => {
+  const mockConfig = {
     cache: 'memory' as const,
     cacheConfig: {
       cacheDurationMinutes: '120',
@@ -246,7 +261,7 @@ test('endpont for invalidating memory cache works if configured', async (t: any)
     puppeteerArgs: ['--no-sandbox'],
     renderOnly: []
   };
-  const cached_server = request(await (new Rendertron()).initialize(mock_config));
+  const cached_server = request(await (new Rendertron()).initialize(mockConfig));
   const test_url = `/render/${testBase}basic-script.html`;
   await app.listen(1235);
   // Make a request which is not in cache
@@ -273,7 +288,7 @@ test('endpont for invalidating memory cache works if configured', async (t: any)
 
 });
 
-test('endpont for invalidating filesystem cache works if configured', async (t: any) => {
+test('endpont for invalidating filesystem cache works if configured', async (t: ExecutionContext) => {
   const mock_config = {
     cache: 'filesystem' as const,
     cacheConfig: {
@@ -321,7 +336,7 @@ test('endpont for invalidating filesystem cache works if configured', async (t: 
   fs.rmdirSync(path.join(os.tmpdir(), 'rendertron-test-cache'));
 });
 
-test('http header should be set via config', async (t: any) => {
+test('http header should be set via config', async (t: ExecutionContext) => {
   const mock_config = {
     cache: 'memory' as const,
     cacheConfig: {
@@ -347,7 +362,7 @@ test('http header should be set via config', async (t: any) => {
   t.true(res.text.indexOf('http://example.com/') !== -1);
 });
 
-test.serial('endpoint for invalidating all memory cache works if configured', async (t) => {
+test.serial('endpoint for invalidating all memory cache works if configured', async (t: ExecutionContext) => {
   const mock_config = {
     cache: 'memory' as const,
     cacheConfig: {
@@ -393,7 +408,7 @@ test.serial('endpoint for invalidating all memory cache works if configured', as
 
 });
 
-test.serial('endpoint for invalidating all filesystem cache works if configured', async (t) => {
+test.serial('endpoint for invalidating all filesystem cache works if configured', async (t: ExecutionContext) => {
   const mock_config = {
     cache: 'filesystem' as const,
     cacheConfig: {

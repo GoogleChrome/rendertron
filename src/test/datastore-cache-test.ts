@@ -16,7 +16,7 @@
 
 'use strict';
 
-const test = require('ava').default;
+import test, { ExecutionContext } from 'ava';
 import * as Koa from 'koa';
 import * as koaCompress from 'koa-compress';
 import * as request from 'supertest';
@@ -49,7 +49,7 @@ const promiseTimeout = function (timeout: number) {
   });
 };
 
-test('caches content and serves same content on cache hit', async (t: any) => {
+test('caches content and serves same content on cache hit', async (t: ExecutionContext) => {
   let res = await server.get('/?basictest');
   const previousCount = handlerCalledCount;
   t.is(res.status, 200);
@@ -78,7 +78,7 @@ app.use(route.get('/set-header', (ctx: Koa.Context) => {
   ctx.body = 'set-header-payload';
 }));
 
-test('caches headers', async (t: any) => {
+test('caches headers', async (t: ExecutionContext) => {
   let res = await server.get('/set-header');
   t.is(res.status, 200);
   t.is(res.header['my-header'], 'header-value');
@@ -98,7 +98,7 @@ app.use(route.get('/compressed', (ctx: Koa.Context) => {
   ctx.body = new Array(1025).join('x');
 }));
 
-test('compression preserved', async (t: any) => {
+test('compression preserved', async (t: ExecutionContext) => {
   const expectedBody = new Array(1025).join('x');
   let res = await server.get('/compressed')
     .set('Accept-Encoding', 'gzip, deflate, br');
@@ -127,7 +127,7 @@ app.use(route.get('/status/:status', (ctx: Koa.Context, status: string) => {
   statusCallCount++;
 }));
 
-test('original status is preserved', async (t: any) => {
+test('original status is preserved', async (t: ExecutionContext) => {
   let res = await server.get('/status/400');
   t.is(res.status, 400);
 
@@ -136,7 +136,7 @@ test('original status is preserved', async (t: any) => {
   t.is(res.status, 401);
 });
 
-test('refreshCache refreshes cache', async (t: any) => {
+test('refreshCache refreshes cache', async (t: ExecutionContext) => {
   let content = 'content';
   app.use(route.get('/refreshTest', (ctx: Koa.Context) => {
     ctx.body = content;
@@ -161,7 +161,7 @@ test('refreshCache refreshes cache', async (t: any) => {
   t.is(res.header['x-rendertron-cached'], undefined);
 });
 
-test.serial('clear all datastore cache entries', async (t) => {
+test.serial('clear all datastore cache entries', async (t: ExecutionContext) => {
   app.use(route.get('/clear-all-cache', (ctx: Koa.Context) => {
     ctx.body = 'Foo';
   }));
