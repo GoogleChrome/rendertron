@@ -114,7 +114,7 @@ export class DatastoreCache {
   middleware() {
     const cacheContent = this.cacheContent.bind(this);
 
-    return async function(
+    return async function (
       this: DatastoreCache,
       ctx: Koa.Context,
       next: () => Promise<unknown>) {
@@ -139,7 +139,7 @@ export class DatastoreCache {
             let payload = JSON.parse(content.payload);
             if (payload && typeof (payload) === 'object' &&
               payload.type === 'Buffer') {
-              payload = new Buffer(payload);
+              payload = Buffer.from(payload);
             }
             ctx.body = payload;
             return;
@@ -164,6 +164,15 @@ export class DatastoreCache {
 
   private async handleInvalidateRequest(ctx: Koa.Context, url: string) {
     this.removeEntry(url);
+    ctx.status = 200;
+  }
+
+  clearAllCacheHandler() {
+    return this.handleClearAllCacheRequest.bind(this);
+  }
+
+  private async handleClearAllCacheRequest(ctx: Koa.Context) {
+    this.clearCache();
     ctx.status = 200;
   }
 
