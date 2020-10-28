@@ -84,7 +84,7 @@ export class FilesystemCache {
   }
 
   private async handleClearAllCacheRequest(ctx: Koa.Context) {
-    this.clearAllCache();
+    await this.clearAllCache();
     ctx.status = 200;
   }
 
@@ -222,7 +222,7 @@ export class FilesystemCache {
           ctx.set(response.header);
           ctx.set('x-rendertron-cached', content.saved.toUTCString());
           ctx.status = response.status;
-          let payload: any = content.payload;
+          let payload: string | {type?: string} = content.payload;
           try {
             payload = JSON.parse(content.payload);
           } catch (e) {
@@ -231,7 +231,7 @@ export class FilesystemCache {
           try {
             if (payload && typeof (payload) === 'object' &&
               payload.type === 'Buffer') {
-              ctx.body = new Buffer(payload);
+              ctx.body = Buffer.from(payload);
             } else {
               ctx.body = payload;
             }
