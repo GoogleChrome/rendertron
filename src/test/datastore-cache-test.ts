@@ -17,10 +17,10 @@
 'use strict';
 
 import test, { ExecutionContext } from 'ava';
-import * as Koa from 'koa';
-import * as koaCompress from 'koa-compress';
-import * as request from 'supertest';
-import * as route from 'koa-route';
+import Koa from 'koa';
+import koaCompress from 'koa-compress';
+import request from 'supertest';
+import route from 'koa-route';
 
 import { DatastoreCache } from '../datastore-cache';
 

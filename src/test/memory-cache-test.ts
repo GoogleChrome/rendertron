@@ -16,10 +16,10 @@
 
 'use strict';
 
-import * as Koa from 'koa';
-import * as koaCompress from 'koa-compress';
-import * as request from 'supertest';
-import * as route from 'koa-route';
+import Koa from 'koa';
+import koaCompress from 'koa-compress';
+import request from 'supertest';
+import route from 'koa-route';
 
 import { MemoryCache } from '../memory-cache';
 import test, { ExecutionContext } from 'ava';

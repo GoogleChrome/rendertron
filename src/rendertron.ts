@@ -1,12 +1,12 @@
-import * as Koa from 'koa';
-import * as bodyParser from 'koa-bodyparser';
-import * as koaCompress from 'koa-compress';
-import * as route from 'koa-route';
-import * as koaSend from 'koa-send';
-import * as koaLogger from 'koa-logger';
-import * as path from 'path';
-import * as puppeteer from 'puppeteer';
-import * as url from 'url';
+import Koa from 'koa';
+import bodyParser from 'koa-bodyparser';
+import koaCompress from 'koa-compress';
+import route from 'koa-route';
+import koaSend from 'koa-send';
+import koaLogger from 'koa-logger';
+import path from 'path';
+import puppeteer from 'puppeteer';
+import url from 'url';
 
 import { Renderer, ScreenshotError } from './renderer';
 import { Config, ConfigManager } from './config';

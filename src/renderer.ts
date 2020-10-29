@@ -1,5 +1,5 @@
-import * as puppeteer from 'puppeteer';
-import * as url from 'url';
+import puppeteer from 'puppeteer';
+import url from 'url';
 import { dirname } from 'path';
 
 import { Config } from './config';

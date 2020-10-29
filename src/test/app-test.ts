@@ -15,12 +15,12 @@
  */
 
 import test, { ExecutionContext } from 'ava';
-import * as Koa from 'koa';
-import * as koaStatic from 'koa-static';
-import * as path from 'path';
-import * as request from 'supertest';
-import * as fs from 'fs';
-import * as os from 'os';
+import Koa from 'koa';
+import koaStatic from 'koa-static';
+import path from 'path';
+import request from 'supertest';
+import fs from 'fs';
+import os from 'os';
 
 import { Rendertron } from '../rendertron';
 
