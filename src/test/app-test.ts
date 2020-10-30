@@ -457,3 +457,20 @@ test.serial('endpoint for invalidating all filesystem cache works if configured'
   await cached_server.get(`/invalidate/`);
   fs.rmdirSync(path.join(os.tmpdir(), 'rendertron-test-cache'));
 });
+
+test('unknown timezone fails', async (t) => {
+  const res = await server.get(`/render/${testBase}include-date.html?timezoneId=invalid/timezone`);
+  t.is(res.status, 400);
+});
+
+test('known timezone applies', async (t) => {
+  // Atlantic/Reykjavik is a timezone where GMT+0 is all-year round without Daylight Saving Time
+  const res = await server.get(`/render/${testBase}include-date.html?timezoneId=Atlantic/Reykjavik`);
+  t.is(res.status, 200);
+  t.true(res.text.indexOf('00:00:00') !== -1);
+
+  const res2 = await server.get(`/render/${testBase}include-date.html?timezoneId=Australia/Perth`);
+  t.is(res2.status, 200);
+  // Australia/Perth is a timezone where GMT+8 is all-year round without Daylight Saving Time
+  t.true(res2.text.indexOf('08:00:00') !== -1);
+});
