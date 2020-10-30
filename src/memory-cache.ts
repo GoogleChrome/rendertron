@@ -19,7 +19,7 @@
 
 'use strict';
 
-import * as Koa from 'koa';
+import Koa from 'koa';
 import { Config, ConfigManager } from './config';
 
 type CacheEntry = {

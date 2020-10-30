@@ -84,18 +84,21 @@ export class FilesystemCache {
   }
 
   private async handleClearAllCacheRequest(ctx: Koa.Context) {
-    this.clearAllCache();
+    await this.clearAllCache();
     ctx.status = 200;
   }
 
   async clearAllCache() {
-    fs.readdir(this.getDir(''), (err, files) => {
-      if (err) throw err;
-      for (const file of files) {
-        fs.unlink(path.join(this.getDir(''), file), (err) => {
-          if (err) throw err;
-        });
-      }
+    return new Promise((resolve) => {
+      fs.readdir(this.getDir(''), (err, files) => {
+        if (err) throw err;
+        for (const file of files) {
+          fs.unlink(path.join(this.getDir(''), file), (err) => {
+            if (err) throw err;
+          });
+        }
+        resolve();
+      });
     });
   }
 
@@ -219,8 +222,19 @@ export class FilesystemCache {
           ctx.set(response.header);
           ctx.set('x-rendertron-cached', content.saved.toUTCString());
           ctx.status = response.status;
+          let payload: string | {type?: string} = content.payload;
           try {
-            ctx.body = content.payload;
+            payload = JSON.parse(content.payload);
+          } catch (e) {
+            // swallow this.
+          }
+          try {
+            if (payload && typeof (payload) === 'object' &&
+              payload.type === 'Buffer') {
+              ctx.body = Buffer.from(payload);
+            } else {
+              ctx.body = payload;
+            }
             return;
           } catch (error) {
             console.log(
