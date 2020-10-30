@@ -27,6 +27,6 @@
     "express": "^4.17.1",
     "supertest": "^4.0.2",
     "tslint": "^6.1.3",
-    "typescript": "~4.0.2"
+    "typescript": "~4.0.5"
   }
 }
