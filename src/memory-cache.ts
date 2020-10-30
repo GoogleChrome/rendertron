@@ -19,7 +19,7 @@
 
 'use strict';
 
-import * as Koa from 'koa';
+import Koa from 'koa';
 import { Config, ConfigManager } from './config';
 
 type CacheEntry = {
@@ -111,7 +111,7 @@ export class MemoryCache {
         let payload = JSON.parse(cachedContent.payload);
         if (payload && typeof (payload) === 'object' &&
           payload.type === 'Buffer') {
-          payload = new Buffer(payload);
+          payload = Buffer.from(payload);
         }
         ctx.body = payload;
         return;
@@ -127,4 +127,14 @@ export class MemoryCache {
       this.cacheContent(cacheKey, ctx.response.headers, ctx.body);
     }
   }
+
+  clearAllCacheHandler() {
+    return this.handleClearAllCacheRequest.bind(this);
+  }
+
+  private async handleClearAllCacheRequest(ctx: Koa.Context) {
+    this.clearCache();
+    ctx.status = 200;
+  }
+
 }

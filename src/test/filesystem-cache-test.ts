@@ -16,14 +16,14 @@
 
 'use strict';
 
-import { test } from 'ava';
-import * as Koa from 'koa';
-import * as koaCompress from 'koa-compress';
-import * as request from 'supertest';
-import * as route from 'koa-route';
+import Koa from 'koa';
+import koaCompress from 'koa-compress';
+import request from 'supertest';
+import route from 'koa-route';
 
 import { FilesystemCache } from '../filesystem-cache';
 import { ConfigManager } from '../config';
+import test, { ExecutionContext } from 'ava';
 
 const config = ConfigManager.config;
 const app = new Koa();
@@ -51,7 +51,7 @@ const promiseTimeout = function (timeout: number) {
   });
 };
 
-test('caches content and serves same content on cache hit', async (t) => {
+test('caches content and serves same content on cache hit', async (t: ExecutionContext) => {
   const previousCount = handlerCalledCount;
   let res = await server.get('/?basictest');
   t.is(res.status, 200);
@@ -76,7 +76,7 @@ app.use(route.get('/set-header', (ctx: Koa.Context) => {
   ctx.body = 'set-header-payload';
 }));
 
-test('caches headers', async (t) => {
+test('caches headers', async (t: ExecutionContext) => {
   let res = await server.get('/set-header');
   t.is(res.status, 200);
   t.is(res.header['my-header'], 'header-value');
@@ -96,7 +96,7 @@ app.use(route.get('/compressed', (ctx: Koa.Context) => {
   ctx.body = new Array(1025).join('x');
 }));
 
-test('compression preserved', async (t) => {
+test('compression preserved', async (t: ExecutionContext) => {
   const expectedBody = new Array(1025).join('x');
   let res = await server.get('/compressed')
     .set('Accept-Encoding', 'gzip, deflate, br');
@@ -125,7 +125,7 @@ app.use(route.get('/status/:status', (ctx: Koa.Context, status: string) => {
   statusCallCount++;
 }));
 
-test('original status is preserved', async (t) => {
+test('original status is preserved', async (t: ExecutionContext) => {
   let res = await server.get('/status/400');
   t.is(res.status, 400);
 
@@ -134,7 +134,7 @@ test('original status is preserved', async (t) => {
   t.is(res.status, 401);
 });
 
-test('cache entry can be removed', async (t) => {
+test('cache entry can be removed', async (t: ExecutionContext) => {
   let res = await server.get('/?cacheremovetest');
   t.is(res.status, 200);
   t.falsy(res.header['x-rendertron-cached']);
@@ -159,7 +159,7 @@ test('cache entry can be removed', async (t) => {
 });
 
 
-test('refreshCache refreshes cache', async (t) => {
+test('refreshCache refreshes cache', async (t: ExecutionContext) => {
   let content = 'content';
   app.use(route.get('/refreshTest', (ctx: Koa.Context) => {
     ctx.body = content;
@@ -182,4 +182,33 @@ test('refreshCache refreshes cache', async (t) => {
   t.is(res.status, 200);
   t.is(res.text, 'updated content');
   t.is(res.header['x-rendertron-cached'], undefined);
+});
+
+test.serial('clear all filesystem cache entries', async (t: ExecutionContext) => {
+  app.use(route.get('/clear-all-cache', (ctx: Koa.Context) => {
+    ctx.body = 'Foo';
+  }));
+
+  await server.get('/clear-all-cache?cachedResult1');
+  await server.get('/clear-all-cache?cachedResult2');
+
+  let res = await server.get('/clear-all-cache?cachedResult1');
+  t.is(res.status, 200);
+  t.truthy(res.header['x-rendertron-cached']);
+  t.true(new Date(res.header['x-rendertron-cached']) <= new Date());
+  res = await server.get('/clear-all-cache?cachedResult2');
+  t.is(res.status, 200);
+  t.truthy(res.header['x-rendertron-cached']);
+  t.true(new Date(res.header['x-rendertron-cached']) <= new Date());
+
+  cache.clearAllCache();
+
+  res = await server.get('/clear-all-cache?cachedResult1');
+  t.is(res.status, 200);
+  t.falsy(res.header['x-rendertron-cached']);
+  t.false(new Date(res.header['x-rendertron-cached']) <= new Date());
+  res = await server.get('/clear-all-cache?cachedResult2');
+  t.is(res.status, 200);
+  t.falsy(res.header['x-rendertron-cached']);
+  t.false(new Date(res.header['x-rendertron-cached']) <= new Date());
 });

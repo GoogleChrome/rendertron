@@ -1,12 +1,12 @@
-import * as Koa from 'koa';
-import * as bodyParser from 'koa-bodyparser';
-import * as koaCompress from 'koa-compress';
-import * as route from 'koa-route';
-import * as koaSend from 'koa-send';
-import * as koaLogger from 'koa-logger';
-import * as path from 'path';
-import * as puppeteer from 'puppeteer';
-import * as url from 'url';
+import Koa from 'koa';
+import bodyParser from 'koa-bodyparser';
+import koaCompress from 'koa-compress';
+import route from 'koa-route';
+import koaSend from 'koa-send';
+import koaLogger from 'koa-logger';
+import path from 'path';
+import puppeteer from 'puppeteer';
+import url from 'url';
 
 import { Renderer, ScreenshotError } from './renderer';
 import { Config, ConfigManager } from './config';
@@ -59,16 +59,19 @@ export class Rendertron {
       const { DatastoreCache } = await import('./datastore-cache');
       const datastoreCache = new DatastoreCache();
       this.app.use(route.get('/invalidate/:url(.*)', datastoreCache.invalidateHandler()));
+      this.app.use(route.get('/invalidate/', datastoreCache.clearAllCacheHandler()));
       this.app.use(datastoreCache.middleware());
     } else if (this.config.cache === 'memory') {
       const { MemoryCache } = await import('./memory-cache');
       const memoryCache = new MemoryCache();
       this.app.use(route.get('/invalidate/:url(.*)', memoryCache.invalidateHandler()));
+      this.app.use(route.get('/invalidate/', memoryCache.clearAllCacheHandler()));
       this.app.use(memoryCache.middleware());
     } else if (this.config.cache === 'filesystem') {
       const { FilesystemCache } = await import('./filesystem-cache');
       const filesystemCache = new FilesystemCache(this.config);
       this.app.use(route.get('/invalidate/:url(.*)', filesystemCache.invalidateHandler()));
+      this.app.use(route.get('/invalidate/', filesystemCache.clearAllCacheHandler()));
       this.app.use(new FilesystemCache(this.config).middleware());
     }
 
@@ -130,7 +133,7 @@ export class Rendertron {
 
     const mobileVersion = 'mobile' in ctx.query ? true : false;
 
-    const serialized = await this.renderer.serialize(url, mobileVersion);
+    const serialized = await this.renderer.serialize(url, mobileVersion, ctx.query.timezoneId);
 
     for (const key in this.config.headers) {
       ctx.set(key, this.config.headers[key]);
@@ -168,7 +171,7 @@ export class Rendertron {
 
     try {
       const img = await this.renderer.screenshot(
-        url, mobileVersion, dimensions, options);
+        url, mobileVersion, dimensions, options, ctx.query.timezoneId);
 
       for (const key in this.config.headers) {
         ctx.set(key, this.config.headers[key]);

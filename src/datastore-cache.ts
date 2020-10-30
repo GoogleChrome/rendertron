@@ -19,11 +19,11 @@
 
 'use strict';
 
-import { DatastoreKey } from '@google-cloud/datastore/entity';
-import * as Koa from 'koa';
+import Koa from 'koa';
 import { Config, ConfigManager } from './config';
 
-import Datastore = require('@google-cloud/datastore');
+import { Datastore } from '@google-cloud/datastore';
+import { entity } from '@google-cloud/datastore/build/src/entity';
 
 type CacheContent = {
   saved: Date,
@@ -33,11 +33,11 @@ type CacheContent = {
 };
 
 type DatastoreObject = {
-  [Datastore.KEY]: DatastoreKey
+  [Datastore.KEY]: object
 };
 
 export class DatastoreCache {
-  datastore: Datastore = new Datastore();
+  private datastore: Datastore = new Datastore();
   private config: Config = ConfigManager.config;
 
   async clearCache() {
@@ -45,14 +45,14 @@ export class DatastoreCache {
     const data = await query.run();
     const entities = data[0];
     const entityKeys = entities.map(
-      (entity) => (entity as DatastoreObject)[this.datastore.KEY]);
+      (entity: object) => (entity as DatastoreObject)[Datastore.KEY]);
     console.log(`Removing ${entities.length} items from the cache`);
     await this.datastore.delete(entityKeys);
     // TODO(samli): check info (data[1]) and loop through pages of entities to
     // delete.
   }
 
-  async cacheContent(key: DatastoreKey, headers: {}, payload: Buffer) {
+  async cacheContent(key: object, headers: {}, payload: Buffer) {
     const now = new Date();
     // query datastore to see if we are over the max number of allowed entries, and max entries isn't disabled with a value of -1 and remove over quota, removes oldest first
     if (parseInt(this.config.cacheConfig.cacheMaxEntries) !== -1) {
@@ -62,8 +62,8 @@ export class DatastoreCache {
         if (err) {
           console.log(`datastore err: ${err} reported`);
         }
-        const dataStoreCache = entities.map(
-          (entity) => (entity as DatastoreObject)[self.datastore.KEY]);
+        const dataStoreCache = (entities || []).map(
+          (entity: object) => (entity as DatastoreObject)[Datastore.KEY]);
         if (dataStoreCache.length >= parseInt(self.config.cacheConfig.cacheMaxEntries)) {
           const toRemove = dataStoreCache.length - parseInt(self.config.cacheConfig.cacheMaxEntries) + 1;
           const toDelete = dataStoreCache.slice(0, toRemove);
@@ -100,7 +100,7 @@ export class DatastoreCache {
     await this.datastore.delete(datastoreKey);
   }
 
-  async getCachedContent(ctx: Koa.Context, key: DatastoreKey) {
+  async getCachedContent(ctx: Koa.Context, key: entity.Key) {
     if (ctx.query.refreshCache) {
       return null;
     } else {
@@ -114,7 +114,7 @@ export class DatastoreCache {
   middleware() {
     const cacheContent = this.cacheContent.bind(this);
 
-    return async function(
+    return async function (
       this: DatastoreCache,
       ctx: Koa.Context,
       next: () => Promise<unknown>) {
@@ -139,7 +139,7 @@ export class DatastoreCache {
             let payload = JSON.parse(content.payload);
             if (payload && typeof (payload) === 'object' &&
               payload.type === 'Buffer') {
-              payload = new Buffer(payload);
+              payload = Buffer.from(payload);
             }
             ctx.body = payload;
             return;
@@ -164,6 +164,15 @@ export class DatastoreCache {
 
   private async handleInvalidateRequest(ctx: Koa.Context, url: string) {
     this.removeEntry(url);
+    ctx.status = 200;
+  }
+
+  clearAllCacheHandler() {
+    return this.handleClearAllCacheRequest.bind(this);
+  }
+
+  private async handleClearAllCacheRequest(ctx: Koa.Context) {
+    this.clearCache();
     ctx.status = 200;
   }
 
