@@ -15,9 +15,9 @@
  */
 
 import test from 'ava';
-import * as express from 'express';
-import * as net from 'net';
-import * as supertest from 'supertest';
+import express from 'express';
+import net from 'net';
+import supertest from 'supertest';
 
 import * as rendertron from '../middleware';
 

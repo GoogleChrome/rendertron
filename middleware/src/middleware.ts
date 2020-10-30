@@ -14,8 +14,8 @@
  * the License.
  */
 
-import * as express from 'express';
-import * as request from 'request';
+import express from 'express';
+import request from 'request';
 
 /**
  * A default set of user agent patterns for bots/crawlers that do not perform
