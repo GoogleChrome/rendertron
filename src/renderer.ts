@@ -1,4 +1,4 @@
-import puppeteer from 'puppeteer';
+import puppeteer, { ScreenshotOptions } from 'puppeteer';
 import url from 'url';
 import { dirname } from 'path';
 
@@ -210,7 +210,7 @@ export class Renderer {
     url: string,
     isMobile: boolean,
     dimensions: ViewportDimensions,
-    options?: object,
+    options?: ScreenshotOptions,
     timezoneId?: string): Promise<Buffer> {
     const page = await this.browser.newPage();
 
@@ -260,8 +260,7 @@ export class Renderer {
     }
 
     // Must be jpeg & binary format.
-    const screenshotOptions =
-      Object.assign({}, options, { type: 'jpeg', encoding: 'binary' });
+    const screenshotOptions: ScreenshotOptions = { type: options?.type || 'jpeg', encoding: options?.encoding || 'binary' };
     // Screenshot returns a buffer based on specified encoding above.
     // https://github.com/GoogleChrome/puppeteer/blob/v1.8.0/docs/api.md#pagescreenshotoptions
     const buffer = await page.screenshot(screenshotOptions) as Buffer;
