@@ -125,7 +125,8 @@ test('script tags and link[rel=import] tags are stripped', async (t: ExecutionCo
   t.false(res.text.indexOf('script src') !== -1);
   t.true(res.text.indexOf('injectedElement') !== -1);
   t.false(res.text.indexOf('link rel') !== -1);
-  //t.true(res.text.indexOf('element-text') !== -1); //TODO: Find a solution for the web component issue in newer Chrome versions.
+  // TODO: Fix the webcomponent behaviour in newer chrome releases
+  //t.true(res.text.indexOf('element-text') !== -1);
 });
 
 test('script tags for JSON-LD are not stripped', async (t: ExecutionContext) => {
