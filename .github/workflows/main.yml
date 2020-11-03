@@ -26,7 +26,7 @@ jobs:
         run: |
           npm install
           export CLOUDSDK_CORE_DISABLE_PROMPTS=1
-          gcloud components install beta cloud-datastore-emulator
+          sudo apt-get install google-cloud-sdk google-cloud-sdk-datastore-emulator
           cd ./middleware && npm install
           mkdir ./tmp
           echo '{"cacheConfig": { "snapshotDir": "./tmp/rendertron" } }' > ./config.json
