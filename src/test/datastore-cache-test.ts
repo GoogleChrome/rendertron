@@ -101,7 +101,7 @@ app.use(route.get('/compressed', (ctx: Koa.Context) => {
 test('compression preserved', async (t: ExecutionContext) => {
   const expectedBody = new Array(1025).join('x');
   let res = await server.get('/compressed')
-    .set('Accept-Encoding', 'gzip, deflate, br');
+    .set('Accept-Encoding', 'gzip, deflate');
   t.is(res.status, 200);
   t.is(res.header['content-encoding'], 'gzip');
   t.is(res.text, expectedBody);
@@ -110,7 +110,7 @@ test('compression preserved', async (t: ExecutionContext) => {
   await promiseTimeout(500);
 
   res = await server.get('/compressed')
-    .set('Accept-Encoding', 'gzip, deflate, br');
+    .set('Accept-Encoding', 'gzip, deflate');
   t.is(res.status, 200);
   t.is(res.header['content-encoding'], 'gzip');
   t.is(res.text, expectedBody);
