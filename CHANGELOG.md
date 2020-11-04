@@ -2,6 +2,27 @@
 
 <!-- ## Unreleased -->
 
+## [3.1.0] 2020-11-04
+
+### Security improvements
+* Prevents rendering of *.internal URLs, patching an issue with GCE.
+* Adds allow-listing option to restrict rendering to a given list of domains or URL patterns.
+
+### Features
+* Include Heroku deploy documentation and an interactive "Click to deploy" for Heroku
+* Introduces an API endpoint to clear all cache
+* Adds timezone support
+* Adds optional forced browser restart between renders
+* Adds documentation to deploy Rendertron via Docker
+* Adds option to add request headers to the rendered pages in Rendertron
+
+### Improvements
+* Fixes a bug in the filesystem cache
+* Fixes issue with the injected base tag
+* Updates all dependencies
+* Increased the required node.js version to Node.js 10+
+* Updates to the FaQ
+
 ## [3.0.0] 2020-07-02
  * Introduces new configuration file format for the `config.json` options (see [README.md](./README.md))
  * Introduces new cache providers:
