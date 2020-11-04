@@ -120,7 +120,7 @@ test('renders shadow DOM - webcomponents-lite.js polyfill', async (t: ExecutionC
 });
 
 test('script tags and link[rel=import] tags are stripped', async (t: ExecutionContext) => {
-  const res = await server.get(`/render/${testBase}include-script.html`);
+  const res = await server.get(`/render/${testBase}include-script.html?wc-inject-polyfills=true`);
   t.is(res.status, 200);
   t.false(res.text.indexOf('script src') !== -1);
   t.true(res.text.indexOf('injectedElement') !== -1);

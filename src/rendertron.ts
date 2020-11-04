@@ -152,11 +152,6 @@ export class Rendertron {
       return;
     }
 
-    let options = undefined;
-    if (ctx.method === 'POST' && ctx.request.body) {
-      options = ctx.request.body;
-    }
-
     const dimensions = {
       width: Number(ctx.query['width']) || this.config.width,
       height: Number(ctx.query['height']) || this.config.height
@@ -166,7 +161,7 @@ export class Rendertron {
 
     try {
       const img = await this.renderer.screenshot(
-        url, mobileVersion, dimensions, options, ctx.query.timezoneId);
+        url, mobileVersion, dimensions, ctx.query.timezoneId);
 
       for (const key in this.config.headers) {
         ctx.set(key, this.config.headers[key]);
