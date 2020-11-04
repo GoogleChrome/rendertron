@@ -228,7 +228,8 @@ test('whitelist ensures other urls do not get rendered', async (t: ExecutionCont
     reqHeaders: {},
     headers: {},
     puppeteerArgs: ['--no-sandbox'],
-    renderOnly: [testBase]
+    renderOnly: [testBase],
+    closeBrowser: false
   };
   const server = request(await (new Rendertron()).initialize(mockConfig));
 
@@ -259,7 +260,8 @@ test('endpont for invalidating memory cache works if configured', async (t: Exec
     reqHeaders: {},
     headers: {},
     puppeteerArgs: ['--no-sandbox'],
-    renderOnly: []
+    renderOnly: [],
+    closeBrowser: false
   };
   const cached_server = request(await (new Rendertron()).initialize(mockConfig));
   const test_url = `/render/${testBase}basic-script.html`;
@@ -304,7 +306,8 @@ test('endpont for invalidating filesystem cache works if configured', async (t: 
     reqHeaders: {},
     headers: {},
     puppeteerArgs: ['--no-sandbox'],
-    renderOnly: []
+    renderOnly: [],
+    closeBrowser: false
   };
   const cached_server = request(await (new Rendertron()).initialize(mock_config));
   const test_url = `/render/${testBase}basic-script.html`;
@@ -353,7 +356,8 @@ test('http header should be set via config', async (t: ExecutionContext) => {
     },
     headers: {},
     puppeteerArgs: ['--no-sandbox'],
-    renderOnly: []
+    renderOnly: [],
+    closeBrowser: false
   };
   server = request(await rendertron.initialize(mock_config));
   await app.listen(1237);
@@ -379,7 +383,8 @@ test.serial('endpoint for invalidating all memory cache works if configured', as
     },
     headers: {},
     puppeteerArgs: ['--no-sandbox'],
-    renderOnly: []
+    renderOnly: [],
+    closeBrowser: false
   };
   const cached_server = request(await (new Rendertron()).initialize(mock_config));
   const test_url = `/render/${testBase}basic-script.html`;
@@ -426,7 +431,8 @@ test.serial('endpoint for invalidating all filesystem cache works if configured'
       'Referer': 'http://example.com/'
     },
     puppeteerArgs: ['--no-sandbox'],
-    renderOnly: []
+    renderOnly: [],
+    closeBrowser: false
   };
   const cached_server = request(await (new Rendertron()).initialize(mock_config));
   const test_url = `/render/${testBase}basic-script.html`;
