@@ -40,7 +40,7 @@
   },
   "devDependencies": {
     "@google-cloud/datastore": "^6.2.0",
-    "@types/fs-extra": "^9.0.2",
+    "@types/fs-extra": "^9.0.3",
     "@types/koa": "^2.11.6",
     "@types/koa-bodyparser": "^4.3.0",
     "@types/koa-compress": "^4.0.1",
