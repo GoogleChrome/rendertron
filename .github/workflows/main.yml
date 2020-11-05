@@ -54,5 +54,22 @@ jobs:
       - name: Run the e2e cache tests
         run: npm run test-cache
 
-      - name: Run tests for the middleware
-        run: (cd middleware && npm run lint && npm run test)
+  test-middleware:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node: ['10', '12', '14']
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - run: cd middleware/
+
+      - run: npm ci
+
+      - run: npm run test
