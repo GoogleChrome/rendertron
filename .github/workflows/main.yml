@@ -13,6 +13,8 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   lint:
+    name: Lint
+
     runs-on: ubuntu-latest
 
     steps:
@@ -27,6 +29,8 @@ jobs:
       - run: npm run lint
 
   test:
+    name: Integration tests
+
     runs-on: ubuntu-latest
 
     strategy:
@@ -42,10 +46,11 @@ jobs:
 
       - run: npm ci
 
-      - name: Run the integration tests
-        run: npm test
+      - run: npm test
 
   test-cache:
+    name: e2e cache tests
+
     runs-on: ubuntu-latest
 
     strategy:
@@ -71,6 +76,8 @@ jobs:
         run: npm run test-cache
 
   test-middleware:
+    name: Middleware tests
+
     runs-on: ubuntu-latest
 
     strategy:
