@@ -13,252 +13,296 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
 -->
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes"
+    />
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+    <title>Rendertron</title>
+    <meta
+      name="description"
+      content="Rendertron - headless rendering service"
+    />
 
-  <title>Rendertron</title>
-  <meta name="description" content="Rendertron - headless rendering service">
+    <link
+      href="https://fonts.googleapis.com/css?family=Orbitron"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
 
-  <link href="https://fonts.googleapis.com/css?family=Orbitron" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script>
+      (function (i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r;
+        (i[r] =
+          i[r] ||
+          function () {
+            (i[r].q = i[r].q || []).push(arguments);
+          }),
+          (i[r].l = 1 * new Date());
+        (a = s.createElement(o)), (m = s.getElementsByTagName(o)[0]);
+        a.async = 1;
+        a.src = g;
+        m.parentNode.insertBefore(a, m);
+      })(
+        window,
+        document,
+        'script',
+        'https://www.google-analytics.com/analytics.js',
+        'ga'
+      );
 
-  <script>
-    (function (i, s, o, g, r, a, m) {
-      i['GoogleAnalyticsObject'] = r; i[r] = i[r] || function () {
-        (i[r].q = i[r].q || []).push(arguments)
-      }, i[r].l = 1 * new Date(); a = s.createElement(o),
-        m = s.getElementsByTagName(o)[0]; a.async = 1; a.src = g; m.parentNode.insertBefore(a, m)
-    })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+      ga('create', 'UA-104508854-1', 'auto');
+      ga('send', 'pageview');
+    </script>
 
-    ga('create', 'UA-104508854-1', 'auto');
-    ga('send', 'pageview');
-  </script>
-
-  <style>
-    body {
-      background: black;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Orbitron', sans-serif;
-      margin: 0;
-      min-height: calc(100vh - 40px);
-      padding: 20px 0;
-    }
-
-    h1 {
-      font-size: 60px;
-      color: white;
-      border-bottom: 1px solid #99f3ff;
-      margin: 64px 32px;
-    }
-
-    #search-bar {
-      min-width: 300px;
-      width: calc(100% - 40px);
-      max-width: 664px;
-      position: relative;
-      box-sizing: border-box;
-    }
-
-    input[type=url] {
-      width: 100%;
-      padding: 30px;
-      box-sizing: border-box;
-      border: none;
-      font-size: 24px;
-      background: black;
-      border-radius: 10px;
-      border: 2px solid #99f3ff;
-      color: white;
-      font-family: 'Orbitron', sans-serif;
-      text-align: center;
-    }
-
-    .loading-bar {
-      background-color: #fff;
-      border: 1px solid #ffffff;
-      height: 20px;
-      position: absolute;
-      margin-top: 10px;
-      border-radius: 5px;
-      width: 100%;
-    }
-
-    .loading-bar span {
-      display: block;
-      width: 100%;
-      height: 100%;
-      border-radius: 5px;
-      background-size: 30px 30px;
-      background-image: linear-gradient(135deg, rgba(0, 0, 0, 1) 25%,
-          transparent 25%,
-          transparent 50%, rgba(0, 0, 0, 1) 50%, rgba(0, 0, 0, 1) 75%,
-          transparent 75%, transparent);
-      animation: animate-stripes 3s linear infinite;
-    }
-
-    #options {
-      margin-top: 32px;
-      display: flex;
-      flex-wrap: wrap;
-      max-width: 800px;
-      justify-content: center;
-    }
-
-    #options>* {
-      margin: 32px;
-    }
-
-    #options button {
-      display: block;
-      width: 300px;
-      height: 300px;
-      border: 1px solid #99f3ff;
-      color: white;
-      background: none;
-      display: flex;
-      flex-direction: column;
-      font-size: 18px;
-      font-family: 'Orbitron', sans-serif;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-    }
-
-    .loading {
-      box-shadow: #99f3ff 0px 0px 7px 4px;
-      animation: pulse 1s infinite alternate cubic-bezier(0.4, 0, 0.2, 1)
-    }
-
-    .error {
-      border-color: #FF9999 !important;
-    }
-
-    @keyframes pulse {
-      from {
-        filter: blur(0px);
-        transform: none;
+    <style>
+      body {
+        background: black;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Orbitron', sans-serif;
+        margin: 0;
+        min-height: calc(100vh - 40px);
+        padding: 20px 0;
       }
 
-      to {
-        filter: blur(1px);
-        transform: scale(1.05);
-      }
-    }
-
-    #options button i {
-      font-size: 96px;
-    }
-
-    #options button span {
-      margin-top: 24px;
-      max-width: 200px;
-      line-height: 24px;
-    }
-
-    a {
-      text-decoration: none;
-      color: inherit;
-    }
-
-    :focus,
-    #url:focus,
-    #options button:hover {
-      transition: 100ms box-shadow cubic-bezier(0, 0, 0.2, 1);
-      box-shadow: #99f3ff 0px 0px 7px 4px;
-    }
-
-    @media (max-width: 500px) {
       h1 {
-        font-size: 40px;
-      }
-    }
-
-    @keyframes animate-stripes {
-      0% {
-        background-position: 0 0;
+        font-size: 60px;
+        color: white;
+        border-bottom: 1px solid #99f3ff;
+        margin: 64px 32px;
       }
 
-      100% {
-        background-position: 60px 0;
+      #search-bar {
+        min-width: 300px;
+        width: calc(100% - 40px);
+        max-width: 664px;
+        position: relative;
+        box-sizing: border-box;
       }
-    }
-  </style>
-</head>
 
-<body>
-  <h1>Rendertron</h1>
+      input[type='url'] {
+        width: 100%;
+        padding: 30px;
+        box-sizing: border-box;
+        border: none;
+        font-size: 24px;
+        background: black;
+        border-radius: 10px;
+        border: 2px solid #99f3ff;
+        color: white;
+        font-family: 'Orbitron', sans-serif;
+        text-align: center;
+      }
 
-  <div id="search-bar">
-    <input id="url" type="url" placeholder="Enter a URL" autocapitalize="off" spellcheck="false">
-    <div class="loading-bar" hidden><span></span></div>
-  </div>
+      .loading-bar {
+        background-color: #fff;
+        border: 1px solid #ffffff;
+        height: 20px;
+        position: absolute;
+        margin-top: 10px;
+        border-radius: 5px;
+        width: 100%;
+      }
 
-  <div id="options">
-    <button onclick="takeScreenshot(this)">
-      <i class="material-icons">photo_camera</i>
-      <span>Take screenshot</span>
-    </button>
-    <button onclick="render(this, false)">
-      <i class="material-icons">cloud_upload</i>
-      <span>Render &amp; serialize</span>
-    </button>
-    <button onclick="render(this, true)">
-      <i class="material-icons">mobile_friendly</i>
-      <span>Render as mobile &amp; serialize</span>
-    </button>
-    <a href="https://github.com/GoogleChrome/rendertron" target="_blank">
-      <button tabindex="-1">
-        <i class="material-icons">insert_drive_file</i>
-        <span>View documentation</span>
+      .loading-bar span {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border-radius: 5px;
+        background-size: 30px 30px;
+        background-image: linear-gradient(
+          135deg,
+          rgba(0, 0, 0, 1) 25%,
+          transparent 25%,
+          transparent 50%,
+          rgba(0, 0, 0, 1) 50%,
+          rgba(0, 0, 0, 1) 75%,
+          transparent 75%,
+          transparent
+        );
+        animation: animate-stripes 3s linear infinite;
+      }
+
+      #options {
+        margin-top: 32px;
+        display: flex;
+        flex-wrap: wrap;
+        max-width: 800px;
+        justify-content: center;
+      }
+
+      #options > * {
+        margin: 32px;
+      }
+
+      #options button {
+        display: block;
+        width: 300px;
+        height: 300px;
+        border: 1px solid #99f3ff;
+        color: white;
+        background: none;
+        display: flex;
+        flex-direction: column;
+        font-size: 18px;
+        font-family: 'Orbitron', sans-serif;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
+
+      .loading {
+        box-shadow: #99f3ff 0px 0px 7px 4px;
+        animation: pulse 1s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .error {
+        border-color: #ff9999 !important;
+      }
+
+      @keyframes pulse {
+        from {
+          filter: blur(0px);
+          transform: none;
+        }
+
+        to {
+          filter: blur(1px);
+          transform: scale(1.05);
+        }
+      }
+
+      #options button i {
+        font-size: 96px;
+      }
+
+      #options button span {
+        margin-top: 24px;
+        max-width: 200px;
+        line-height: 24px;
+      }
+
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      :focus,
+      #url:focus,
+      #options button:hover {
+        transition: 100ms box-shadow cubic-bezier(0, 0, 0.2, 1);
+        box-shadow: #99f3ff 0px 0px 7px 4px;
+      }
+
+      @media (max-width: 500px) {
+        h1 {
+          font-size: 40px;
+        }
+      }
+
+      @keyframes animate-stripes {
+        0% {
+          background-position: 0 0;
+        }
+
+        100% {
+          background-position: 60px 0;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Rendertron</h1>
+
+    <div id="search-bar">
+      <input
+        id="url"
+        type="url"
+        placeholder="Enter a URL"
+        autocapitalize="off"
+        spellcheck="false"
+      />
+      <div class="loading-bar" hidden><span></span></div>
+    </div>
+
+    <div id="options">
+      <button onclick="takeScreenshot(this)">
+        <i class="material-icons">photo_camera</i>
+        <span>Take screenshot</span>
       </button>
-    </a>
-  </div>
+      <button onclick="render(this, false)">
+        <i class="material-icons">cloud_upload</i>
+        <span>Render &amp; serialize</span>
+      </button>
+      <button onclick="render(this, true)">
+        <i class="material-icons">mobile_friendly</i>
+        <span>Render as mobile &amp; serialize</span>
+      </button>
+      <a href="https://github.com/GoogleChrome/rendertron" target="_blank">
+        <button tabindex="-1">
+          <i class="material-icons">insert_drive_file</i>
+          <span>View documentation</span>
+        </button>
+      </a>
+    </div>
 
-  <script>
-    function encodeUrl(fullUrl) {
-      var url = new URL(fullUrl);
-      return url.origin + url.pathname + encodeURIComponent(url.search) + encodeURIComponent(url.hash);
-    }
-
-    function render(element, isMobile) {
-      if (!url.value) {
-        onEmptyUrl();
-        return;
+    <script>
+      function encodeUrl(fullUrl) {
+        var url = new URL(fullUrl);
+        return (
+          url.origin +
+          url.pathname +
+          encodeURIComponent(url.search) +
+          encodeURIComponent(url.hash)
+        );
       }
 
-      element.classList.add('loading');
-      document.querySelector('.loading-bar').removeAttribute('hidden');
-      window.location.href += `render/${encodeUrl(url.value)}${isMobile ? '?mobile' : ''}`;
-    }
+      function render(element, isMobile) {
+        if (!url.value) {
+          onEmptyUrl();
+          return;
+        }
 
-    function takeScreenshot(element) {
-      if (!url.value) {
-        onEmptyUrl();
-        return;
+        element.classList.add('loading');
+        document.querySelector('.loading-bar').removeAttribute('hidden');
+        window.location.href += `render/${encodeUrl(url.value)}${
+          isMobile ? '?mobile' : ''
+        }`;
       }
 
-      var httpRegex = /(http(s?))\:\/\//gi;
+      function takeScreenshot(element) {
+        if (!url.value) {
+          onEmptyUrl();
+          return;
+        }
 
-      if (!httpRegex.test(url.value)) {
-        url.value = 'https://' + url.value;
+        var httpRegex = /(http(s?))\:\/\//gi;
+
+        if (!httpRegex.test(url.value)) {
+          url.value = 'https://' + url.value;
+        }
+
+        element.classList.add('loading');
+        document.querySelector('.loading-bar').removeAttribute('hidden');
+        window.location.href += `screenshot/${encodeUrl(url.value)}?width=${
+          window.innerWidth
+        }&height=${window.innerHeight}`;
       }
 
-      element.classList.add('loading');
-      document.querySelector('.loading-bar').removeAttribute('hidden');
-      window.location.href += `screenshot/${encodeUrl(url.value)}?width=${window.innerWidth}&height=${window.innerHeight}`;
-    }
-
-    function onEmptyUrl() {
-      url.classList.add('error');
-    }
-  </script>
-</body>
-
+      function onEmptyUrl() {
+        url.classList.add('error');
+      }
+    </script>
+  </body>
 </html>

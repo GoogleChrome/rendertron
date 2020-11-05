@@ -11,7 +11,8 @@ type SerializedResponse = {
 };
 
 type ViewportDimensions = {
-  width: number; height: number;
+  width: number;
+  height: number;
 };
 
 const MOBILE_USERAGENT =
@@ -40,15 +41,20 @@ export class Renderer {
     return false;
   }
 
-  async serialize(requestUrl: string, isMobile: boolean, timezoneId?: string):
-    Promise<SerializedResponse> {
+  async serialize(
+    requestUrl: string,
+    isMobile: boolean,
+    timezoneId?: string
+  ): Promise<SerializedResponse> {
     /**
      * Executed on the page after the page has loaded. Strips script and
      * import tags to prevent further loading of resources.
      */
     function stripPage() {
       // Strip only script tags that contain JavaScript (either no type attribute or one that contains "javascript")
-      const elements = document.querySelectorAll('script:not([type]), script[type*="javascript"], script[type="module"], link[rel=import]');
+      const elements = document.querySelectorAll(
+        'script:not([type]), script[type*="javascript"], script[type="module"], link[rel=import]'
+      );
       for (const e of Array.from(elements)) {
         e.remove();
       }
@@ -60,7 +66,6 @@ export class Renderer {
      * quality.
      */
     function injectBaseHref(origin: string, directory: string) {
-
       const bases = document.head.querySelectorAll('base');
       if (bases.length) {
         // Patch existing <base> if it is relative.
@@ -86,7 +91,11 @@ export class Renderer {
 
     // Page may reload when setting isMobile
     // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
-    await page.setViewport({ width: this.config.width, height: this.config.height, isMobile });
+    await page.setViewport({
+      width: this.config.width,
+      height: this.config.height,
+      isMobile,
+    });
 
     if (isMobile) {
       page.setUserAgent(MOBILE_USERAGENT);
@@ -97,7 +106,11 @@ export class Renderer {
         await page.emulateTimezone(timezoneId);
       } catch (e) {
         if (e.message.includes('Invalid timezone')) {
-          return { status: 400, customHeaders: new Map(), content: 'Invalid timezone id' };
+          return {
+            status: 400,
+            customHeaders: new Map(),
+            content: 'Invalid timezone id',
+          };
         }
       }
     }
@@ -131,8 +144,10 @@ export class Renderer {
 
     try {
       // Navigate to page. Wait until there are no oustanding network requests.
-      response = await page.goto(
-        requestUrl, { timeout: this.config.timeout, waitUntil: 'networkidle0' });
+      response = await page.goto(requestUrl, {
+        timeout: this.config.timeout,
+        waitUntil: 'networkidle0',
+      });
     } catch (e) {
       console.error(e);
     }
@@ -162,12 +177,11 @@ export class Renderer {
     // name="render:status_code" content="4xx" /> tag which overrides the status
     // code.
     let statusCode = response.status();
-    const newStatusCode =
-      await page
-        .$eval(
-          'meta[name="render:status_code"]',
-          (element) => parseInt(element.getAttribute('content') || ''))
-        .catch(() => undefined);
+    const newStatusCode = await page
+      .$eval('meta[name="render:status_code"]', (element) =>
+        parseInt(element.getAttribute('content') || '')
+      )
+      .catch(() => undefined);
     // On a repeat visit to the same origin, browser cache is enabled, so we may
     // encounter a 304 Not Modified. Instead we'll treat this as a 200 OK.
     if (statusCode === 304) {
@@ -182,37 +196,46 @@ export class Renderer {
     // Check for <meta name="render:header" content="key:value" /> tag to allow a custom header in the response
     // to the crawlers.
     const customHeaders = await page
-      .$eval(
-        'meta[name="render:header"]',
-        (element) => {
-          const result = new Map<string, string>();
-          const header = element.getAttribute('content');
-          if (header) {
-            const i = header.indexOf(':');
-            if (i !== -1) {
-              result.set(
-                header.substr(0, i).trim(),
-                header.substring(i + 1).trim());
-            }
+      .$eval('meta[name="render:header"]', (element) => {
+        const result = new Map<string, string>();
+        const header = element.getAttribute('content');
+        if (header) {
+          const i = header.indexOf(':');
+          if (i !== -1) {
+            result.set(
+              header.substr(0, i).trim(),
+              header.substring(i + 1).trim()
+            );
           }
-          return JSON.stringify([...result]);
-        })
+        }
+        return JSON.stringify([...result]);
+      })
       .catch(() => undefined);
 
     // Remove script & import tags.
     await page.evaluate(stripPage);
     // Inject <base> tag with the origin of the request (ie. no path).
     const parsedUrl = url.parse(requestUrl);
-    await page.evaluate(injectBaseHref, `${parsedUrl.protocol}//${parsedUrl.host}`, `${dirname(parsedUrl.pathname || '')}`);
+    await page.evaluate(
+      injectBaseHref,
+      `${parsedUrl.protocol}//${parsedUrl.host}`,
+      `${dirname(parsedUrl.pathname || '')}`
+    );
 
     // Serialize page.
-    const result = await page.content() as string;
+    const result = (await page.content()) as string;
 
     await page.close();
     if (this.config.closeBrowser) {
       await this.browser.close();
     }
-    return { status: statusCode, customHeaders: customHeaders ? new Map(JSON.parse(customHeaders)) : new Map(), content: result };
+    return {
+      status: statusCode,
+      customHeaders: customHeaders
+        ? new Map(JSON.parse(customHeaders))
+        : new Map(),
+      content: result,
+    };
   }
 
   async screenshot(
@@ -220,13 +243,17 @@ export class Renderer {
     isMobile: boolean,
     dimensions: ViewportDimensions,
     options?: ScreenshotOptions,
-    timezoneId?: string): Promise<Buffer> {
+    timezoneId?: string
+  ): Promise<Buffer> {
     const page = await this.browser.newPage();
 
     // Page may reload when setting isMobile
     // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
-    await page.setViewport(
-      { width: dimensions.width, height: dimensions.height, isMobile });
+    await page.setViewport({
+      width: dimensions.width,
+      height: dimensions.height,
+      isMobile,
+    });
 
     if (isMobile) {
       page.setUserAgent(MOBILE_USERAGENT);
@@ -250,8 +277,10 @@ export class Renderer {
 
     try {
       // Navigate to page. Wait until there are no oustanding network requests.
-      response =
-        await page.goto(url, { timeout: this.config.timeout, waitUntil: 'networkidle0' });
+      response = await page.goto(url, {
+        timeout: this.config.timeout,
+        waitUntil: 'networkidle0',
+      });
     } catch (e) {
       console.error(e);
     }
@@ -275,10 +304,13 @@ export class Renderer {
     }
 
     // Must be jpeg & binary format.
-    const screenshotOptions: ScreenshotOptions = { type: options?.type || 'jpeg', encoding: options?.encoding || 'binary' };
+    const screenshotOptions: ScreenshotOptions = {
+      type: options?.type || 'jpeg',
+      encoding: options?.encoding || 'binary',
+    };
     // Screenshot returns a buffer based on specified encoding above.
     // https://github.com/GoogleChrome/puppeteer/blob/v1.8.0/docs/api.md#pagescreenshotoptions
-    const buffer = await page.screenshot(screenshotOptions) as Buffer;
+    const buffer = (await page.screenshot(screenshotOptions)) as Buffer;
     await page.close();
     if (this.config.closeBrowser) {
       await this.browser.close();

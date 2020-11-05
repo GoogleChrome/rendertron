@@ -23,10 +23,10 @@ import Koa from 'koa';
 import { Config, ConfigManager } from './config';
 
 type CacheEntry = {
-  saved: Date,
-  expires: Date,
-  headers: string,
-  payload: string,
+  saved: Date;
+  expires: Date;
+  headers: string;
+  payload: string;
 };
 
 // implements a cache that uses the "least-recently used" strategy to clear unused elements.
@@ -38,16 +38,22 @@ export class MemoryCache {
     this.store.clear();
   }
 
-  cacheContent(key: string, headers: { [key: string]: string }, payload: Buffer) {
+  cacheContent(
+    key: string,
+    headers: { [key: string]: string },
+    payload: Buffer
+  ) {
     // if the cache gets too big, we evict the least recently used entry (i.e. the first value in the map)
-    if (this.store.size >= parseInt(this.config.cacheConfig.cacheMaxEntries) && parseInt(this.config.cacheConfig.cacheMaxEntries) !== -1) {
+    if (
+      this.store.size >= parseInt(this.config.cacheConfig.cacheMaxEntries) &&
+      parseInt(this.config.cacheConfig.cacheMaxEntries) !== -1
+    ) {
       const keyToDelete = this.store.keys().next().value;
       this.store.delete(keyToDelete);
     }
 
     //remove refreshCache from URL
-    let cacheKey = key
-      .replace(/&?refreshCache=(?:true|false)&?/i, '');
+    let cacheKey = key.replace(/&?refreshCache=(?:true|false)&?/i, '');
 
     if (cacheKey.charAt(cacheKey.length - 1) === '?') {
       cacheKey = cacheKey.slice(0, -1);
@@ -55,9 +61,12 @@ export class MemoryCache {
     const now = new Date();
     this.store.set(cacheKey, {
       saved: new Date(),
-      expires: new Date(now.getTime() + parseInt(this.config.cacheConfig.cacheDurationMinutes) * 60 * 1000),
+      expires: new Date(
+        now.getTime() +
+          parseInt(this.config.cacheConfig.cacheDurationMinutes) * 60 * 1000
+      ),
       headers: JSON.stringify(headers),
-      payload: JSON.stringify(payload)
+      payload: JSON.stringify(payload),
     });
   }
 
@@ -70,7 +79,10 @@ export class MemoryCache {
     // we need to re-insert this key to mark it as "most recently read", will remove the cache if expired
     if (entry) {
       // if the cache is expired, delete and recreate
-      if (entry.expires.getTime() <= now.getTime() && parseInt(this.config.cacheConfig.cacheDurationMinutes) !== -1) {
+      if (
+        entry.expires.getTime() <= now.getTime() &&
+        parseInt(this.config.cacheConfig.cacheDurationMinutes) !== -1
+      ) {
         this.store.delete(key);
         entry = undefined;
       } else {
@@ -109,15 +121,19 @@ export class MemoryCache {
       ctx.set('x-rendertron-cached', cachedContent.saved.toUTCString());
       try {
         let payload = JSON.parse(cachedContent.payload);
-        if (payload && typeof (payload) === 'object' &&
-          payload.type === 'Buffer') {
+        if (
+          payload &&
+          typeof payload === 'object' &&
+          payload.type === 'Buffer'
+        ) {
           payload = Buffer.from(payload);
         }
         ctx.body = payload;
         return;
       } catch (error) {
         console.log(
-          'Erroring parsing cache contents, falling back to normal render');
+          'Erroring parsing cache contents, falling back to normal render'
+        );
       }
     }
 
@@ -136,5 +152,4 @@ export class MemoryCache {
     this.clearCache();
     ctx.status = 200;
   }
-
 }

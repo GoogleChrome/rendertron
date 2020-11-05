@@ -13,6 +13,7 @@ sudo service apache2 restart
 ```
 
 ### Basic configuration
+
 Use the following configuration to send all requests from user agents containing `bot` to Rendertron:
 
 ```

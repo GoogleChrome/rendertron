@@ -1,12 +1,13 @@
 <!-- gen:toc -->
+
 - [How to Contribute](#how-to-contribute)
-  * [Contributor License Agreement](#contributor-license-agreement)
-  * [Getting Code](#getting-code)
-  * [Code reviews](#code-reviews)
-  * [Code Style](#code-style)
-  * [Adding New Dependencies](#adding-new-dependencies)
-  * [Running & Writing Tests](#running--writing-tests)
-<!-- gen:stop -->
+  - [Contributor License Agreement](#contributor-license-agreement)
+  - [Getting Code](#getting-code)
+  - [Code reviews](#code-reviews)
+  - [Code Style](#code-style)
+  - [Adding New Dependencies](#adding-new-dependencies)
+  - [Running & Writing Tests](#running--writing-tests)
+  <!-- gen:stop -->
 
 # How to Contribute
 
@@ -47,9 +48,9 @@ npm test
 ```
 
 4. (Optional) when developing cache related stuff you will need `npm run test-cache` commands for tests.
-    - This requires the Google Cloud SDK, follow the steps described [here](https://cloud.google.com/sdk/docs/#install_the_latest_cloud_tools_version_cloudsdk_current_version) to install
-    - run `gcloud components install beta cloud-datastore-emulator`
-    - if you do not have Java 8+ JRE installed, you should install it too, as the Google Cloud Datastore emulator requires it
+   - This requires the Google Cloud SDK, follow the steps described [here](https://cloud.google.com/sdk/docs/#install_the_latest_cloud_tools_version_cloudsdk_current_version) to install
+   - run `gcloud components install beta cloud-datastore-emulator`
+   - if you do not have Java 8+ JRE installed, you should install it too, as the Google Cloud Datastore emulator requires it
 
 ## Code reviews
 
@@ -72,16 +73,18 @@ npm run lint
 ## Adding New Dependencies
 
 For all dependencies (both installation and development):
+
 - **Do not add** a dependency if the desired functionality is easily implementable.
 - If adding a dependency, it should be well-maintained and trustworthy.
 
 A barrier for introducing new installation dependencies is especially high:
+
 - **Do not add** installation dependency unless it's critical to project success.
 
 ## Running & Writing Tests
 
 - Every feature should be accompanied by a test.
-- Tests should be *hermetic*. Tests should not depend on external services unless absolutely needed.
+- Tests should be _hermetic_. Tests should not depend on external services unless absolutely needed.
 - Tests should work on all three platforms: Mac, Linux and Windows.
 
 - To run all tests:
