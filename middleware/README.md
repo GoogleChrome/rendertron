@@ -1,7 +1,7 @@
-[![Build status](https://img.shields.io/travis/samuelli/bot-render.svg?style=flat-square)](https://travis-ci.org/samuelli/bot-render)
-[![NPM version](http://img.shields.io/npm/v/rendertron-middleware.svg)](https://www.npmjs.com/package/rendertron-middleware)
-
 # rendertron-middleware
+
+[![CI](https://github.com/GoogleChrome/rendertron/workflows/CI/badge.svg)](https://github.com/GoogleChrome/rendertron/actions)
+[![NPM version](http://img.shields.io/npm/v/rendertron-middleware.svg)](https://www.npmjs.com/package/rendertron-middleware)
 
 An Express middleware for [Rendertron](https://github.com/samuelli/bot-render).
 
