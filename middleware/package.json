@@ -14,6 +14,10 @@
     "format": "find src -name '*.ts' | xargs clang-format --style=file -i",
     "test": "npm run build && ava build/*/*-test.js"
   },
+  "files": [
+    "build/",
+    "!build/test/"
+  ],
   "license": "Apache-2.0",
   "dependencies": {
     "request": "^2.88.2"
