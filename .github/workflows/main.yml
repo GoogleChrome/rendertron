@@ -12,36 +12,87 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  lint:
+    name: Lint
+
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+
+      - run: npm ci
+
+      - run: npm run lint
+
+  test:
+    name: Integration tests
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node: ['10', '12', '14']
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - run: npm ci
+
+      - run: npm test
+
+  test-cache:
+    name: e2e cache tests
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node: ['10', '12', '14']
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
 
       - name: Install dependencies
         run: |
-          npm install
+          npm ci
           export CLOUDSDK_CORE_DISABLE_PROMPTS=1
           sudo apt-get update && sudo apt-get install google-cloud-sdk google-cloud-sdk-datastore-emulator
-          cd ./middleware && npm install
           mkdir ./tmp
           echo '{"cacheConfig": { "snapshotDir": "./tmp/rendertron" } }' > ./config.json
-
-      - name: Lint the source
-        run: npm run lint
-
-      - name: Build Rendertron
-        run: npm run build
-
-      - name: Run the integration tests
-        run: npm test
 
       - name: Run the e2e cache tests
         run: npm run test-cache
 
-      - name: Run tests for the middleware
-        run: (cd middleware && npm run lint && npm run test)
+  test-middleware:
+    name: Middleware tests
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node: ['10', '12', '14']
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - run: cd middleware/
+
+      - run: npm ci
+
+      - run: npm run test
