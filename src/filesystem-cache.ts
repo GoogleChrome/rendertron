@@ -27,13 +27,11 @@ import * as Koa from 'koa';
 import { Config } from './config';
 
 type CacheContent = {
-  saved: Date,
-  expires: Date,
-  response: string,
-  payload: string,
+  saved: Date;
+  expires: Date;
+  response: string;
+  payload: string;
 };
-
-
 
 export class FilesystemCache {
   private config: Config;
@@ -49,7 +47,7 @@ export class FilesystemCache {
     if (s.length === 0) return hash.toString();
 
     return createHash('md5').update(s).digest('hex');
-  }
+  }; // tslint:disable-line: semicolon
 
   getDir = (key: string) => {
     const dir = this.cacheConfig.snapshotDir;
@@ -62,7 +60,7 @@ export class FilesystemCache {
     }
 
     return dir;
-  }
+  }; // tslint:disable-line: semicolon
 
   async clearCache(key: string) {
     let cleanKey = key;
@@ -111,7 +109,7 @@ export class FilesystemCache {
         dirsDate.push({ fileName: numCache[i], age: mtime.getTime() });
       }
     }
-    dirsDate.sort((a, b) => (a.age > b.age) ? 1 : -1);
+    dirsDate.sort((a, b) => (a.age > b.age ? 1 : -1));
     return dirsDate;
   }
 
@@ -122,19 +120,29 @@ export class FilesystemCache {
     // check size of stored cache to see if we are over the max number of allowed entries, and max entries isn't disabled with a value of -1 and remove over quota, removes oldest first
     if (parseInt(this.config.cacheConfig.cacheMaxEntries) !== -1) {
       const numCache = fs.readdirSync(this.getDir(''));
-      if (numCache.length >= parseInt(this.config.cacheConfig.cacheMaxEntries)) {
-        const toRemove = numCache.length - parseInt(this.config.cacheConfig.cacheMaxEntries) + 1;
+      if (
+        numCache.length >= parseInt(this.config.cacheConfig.cacheMaxEntries)
+      ) {
+        const toRemove =
+          numCache.length -
+          parseInt(this.config.cacheConfig.cacheMaxEntries) +
+          1;
         let dirsDate = this.sortFilesByModDate(numCache);
         dirsDate = dirsDate.slice(0, toRemove);
         dirsDate.forEach((rmDir) => {
           if (rmDir.fileName !== key + '.json') {
-            console.log(`max cache entries reached - removing: ${rmDir.fileName}`);
+            console.log(
+              `max cache entries reached - removing: ${rmDir.fileName}`
+            );
             this.clearCache(rmDir.fileName);
           }
         });
       }
     }
-    fs.writeFileSync(path.join(this.getDir(''), key + '.json'), JSON.stringify({ responseBody, responseHeaders, request }));
+    fs.writeFileSync(
+      path.join(this.getDir(''), key + '.json'),
+      JSON.stringify({ responseBody, responseHeaders, request })
+    );
   }
 
   getCachedContent(ctx: Koa.Context, key: string): CacheContent | null {
@@ -142,7 +150,9 @@ export class FilesystemCache {
       return null;
     } else {
       try {
-        const cacheFile = JSON.parse(fs.readFileSync(path.join(this.getDir(''), key + '.json'), 'utf8'));
+        const cacheFile = JSON.parse(
+          fs.readFileSync(path.join(this.getDir(''), key + '.json'), 'utf8')
+        );
         const payload = cacheFile.responseBody;
         const response = JSON.stringify(cacheFile.responseHeaders);
         if (!payload) {
@@ -152,7 +162,10 @@ export class FilesystemCache {
         const stats = fs.fstatSync(fd);
         // use modification time as the saved time
         const saved = stats.mtime;
-        const expires = new Date(saved.getTime() + parseInt(this.cacheConfig.cacheDurationMinutes) * 60 * 1000);
+        const expires = new Date(
+          saved.getTime() +
+            parseInt(this.cacheConfig.cacheDurationMinutes) * 60 * 1000
+        );
         return {
           saved,
           expires,
@@ -169,8 +182,7 @@ export class FilesystemCache {
   }
 
   private async handleInvalidateRequest(ctx: Koa.Context, url: string) {
-    let cacheKey = url
-      .replace(/&?refreshCache=(?:true|false)&?/i, '');
+    let cacheKey = url.replace(/&?refreshCache=(?:true|false)&?/i, '');
 
     if (cacheKey.charAt(cacheKey.length - 1) === '?') {
       cacheKey = cacheKey.slice(0, -1);
@@ -196,11 +208,11 @@ export class FilesystemCache {
     return async function (
       this: FilesystemCache,
       ctx: Koa.Context,
-      next: () => Promise<unknown>) {
+      next: () => Promise<unknown>
+    ) {
       // Cache based on full URL. This means requests with different params are
       // cached separately (except for refreshCache parameter)
-      let cacheKey = ctx.url
-        .replace(/&?refreshCache=(?:true|false)&?/i, '');
+      let cacheKey = ctx.url.replace(/&?refreshCache=(?:true|false)&?/i, '');
 
       if (cacheKey.charAt(cacheKey.length - 1) === '?') {
         cacheKey = cacheKey.slice(0, -1);
@@ -217,20 +229,26 @@ export class FilesystemCache {
       const content = await this.getCachedContent(ctx, key);
       if (content) {
         // Serve cached content if its not expired.
-        if (content.expires.getTime() >= new Date().getTime() || parseInt(this.config.cacheConfig.cacheDurationMinutes) === -1) {
+        if (
+          content.expires.getTime() >= new Date().getTime() ||
+          parseInt(this.config.cacheConfig.cacheDurationMinutes) === -1
+        ) {
           const response = JSON.parse(content.response);
           ctx.set(response.header);
           ctx.set('x-rendertron-cached', content.saved.toUTCString());
           ctx.status = response.status;
-          let payload: string | {type?: string} = content.payload;
+          let payload: string | { type?: string } = content.payload;
           try {
             payload = JSON.parse(content.payload);
           } catch (e) {
             // swallow this.
           }
           try {
-            if (payload && typeof (payload) === 'object' &&
-              payload.type === 'Buffer') {
+            if (
+              payload &&
+              typeof payload === 'object' &&
+              payload.type === 'Buffer'
+            ) {
               ctx.body = Buffer.from(payload);
             } else {
               ctx.body = payload;
@@ -238,7 +256,8 @@ export class FilesystemCache {
             return;
           } catch (error) {
             console.log(
-              'Erroring parsing cache contents, falling back to normal render');
+              'Erroring parsing cache contents, falling back to normal render'
+            );
           }
         }
       }

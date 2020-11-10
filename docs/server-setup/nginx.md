@@ -23,7 +23,7 @@ server {
 		proxy_set_header X-Real-IP  $remote_addr;
     proxy_set_header X-Forwarded-For $remote_addr;
     # replace PUT-YOUR-RENDERTRON-URL-HERE with your rendertron server address below
-    proxy_pass http://PUT-YOUR-RENDERTRON-URL-HERE/render/$scheme://$host:$server_port$request_uri; 
+    proxy_pass http://PUT-YOUR-RENDERTRON-URL-HERE/render/$scheme://$host:$server_port$request_uri;
   }
 }
 ```
@@ -41,6 +41,7 @@ To enable Rendertron for a list of (bot) user agents, you can map the `$http_use
     # add more lines for other user agents here
   }
 ```
+
 In your site configuration, you can use the following to send requests where `$is_bot` is 1 to Rendertron:
 
 ```
@@ -57,7 +58,7 @@ server {
 		proxy_set_header X-Real-IP  $remote_addr;
     proxy_set_header X-Forwarded-For $remote_addr;
     # replace PUT-YOUR-RENDERTRON-URL-HERE with your rendertron server address below
-    proxy_pass http://PUT-YOUR-RENDERTRON-URL-HERE/render/$scheme://$host:$server_port$request_uri; 
+    proxy_pass http://PUT-YOUR-RENDERTRON-URL-HERE/render/$scheme://$host:$server_port$request_uri;
   }
 }
 ```

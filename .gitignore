@@ -1,5 +1,5 @@
-node_modules/
-yarn.lock
 build/
+node_modules/
 test.jpeg
+yarn.lock
 *.tgz

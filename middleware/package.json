@@ -11,7 +11,6 @@
     "build": "tsc",
     "prepack": "npm run build",
     "lint": "tslint --project . --format stylish",
-    "format": "find src -name '*.ts' | xargs clang-format --style=file -i",
     "test": "npm run build && ava build/*/*-test.js"
   },
   "files": [
@@ -27,7 +26,6 @@
     "@types/request": "^2.48.5",
     "@types/supertest": "^2.0.10",
     "ava": "^3.13.0",
-    "clang-format": "^1.4.0",
     "express": "^4.17.1",
     "supertest": "^6.0.1",
     "tslint": "^6.1.3",

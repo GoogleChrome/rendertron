@@ -9,15 +9,9 @@
     "pretty": true,
     "declaration": true,
     "sourceMap": true,
-    "lib": [
-      "es2017",
-      "esnext.asynciterable",
-      "dom"
-    ],
+    "lib": ["es2017", "esnext.asynciterable", "dom"],
     "rootDir": "./src",
     "outDir": "./build"
   },
-  "include": [
-    "./src/**/*.ts"
-  ]
+  "include": ["./src/**/*.ts"]
 }

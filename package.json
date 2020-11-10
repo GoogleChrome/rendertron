@@ -14,7 +14,8 @@
     "build": "tsc",
     "prepack": "npm run build",
     "start": "node build/rendertron.js",
-    "format": "find src -name '*.ts' | xargs clang-format --style=file -i",
+    "format": "npm run format:prettier",
+    "format:prettier": "prettier \"**/*.{html,js,json,md,ts}\" --ignore-path .gitignore --write",
     "lint": "tslint --project . --format stylish",
     "monitor": "nodemon",
     "monitor-inspect": "nodemon --inspect src/main.js",
@@ -59,8 +60,12 @@
     "@types/supertest": "^2.0.10",
     "ava": "^3.13.0",
     "nodemon": "^2.0.6",
+    "prettier": "^2.1.2",
     "supertest": "^6.0.1",
     "tslint": "^6.1.3",
     "typescript": "4.0.5"
+  },
+  "prettier": {
+    "singleQuote": true
   }
 }

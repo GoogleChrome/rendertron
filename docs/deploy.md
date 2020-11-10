@@ -110,7 +110,7 @@ RUN apt-get update \
     --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-# This directoty will store cached files as specified in the config.json. 
+# This directoty will store cached files as specified in the config.json.
 # If you haven't defined the cacheConfig.snapshotDir property you can remove the following line
 RUN mkdir /cache
 
