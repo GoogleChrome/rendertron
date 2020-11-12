@@ -183,7 +183,7 @@ root. Available configuration options:
  * `cache` _default `null`_ - set to `datastore` to enable caching on Google Cloud using datastore _only use if deploying to google cloud_, `memory` to enable in-memory caching or `filesystem` to enable disk based caching
  * `cacheConfig` - an object array to specify caching options
  * `renderOnly` - restrict the endpoint to only service requests for certain domains. Specified as an array of strings. eg. `['http://render.only.this.domain']`. This is a strict prefix match, so ensure you specify the exact protocols that will be used (eg. http, https).
- * `blacklist` - reject requests to a certain domain. Specified as an array of strings. eg. `['http://render.only.this.domain']`. This is a strict prefix match, so ensure you specify the exact protocols that will be used (eg. http, https).
+ * `blacklist` - reject requests to a certain domain. Specified as an array of strings. eg. `['http://dont.render.this.domain']`. This is a strict prefix match, so ensure you specify the exact protocols that will be used (eg. http, https).
 
 #### cacheConfig
 * `cacheDurationMinutes` _default `1440`_ - set an expiry time in minues, defaults to 24 hours. Set to -1 to disable cache Expiration
