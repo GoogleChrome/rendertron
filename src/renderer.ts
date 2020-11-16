@@ -295,7 +295,7 @@ export class Renderer {
 
     // Disable access to compute metadata. See
     // https://cloud.google.com/compute/docs/storing-retrieving-metadata.
-    if (response!.headers()['metadata-flavor'] === 'Google') {
+    if (response.headers()['metadata-flavor'] === 'Google') {
       await page.close();
       if (this.config.closeBrowser) {
         await this.browser.close();

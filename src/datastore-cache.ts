@@ -33,7 +33,7 @@ type CacheContent = {
 };
 
 type DatastoreObject = {
-  [Datastore.KEY]: object;
+  [Datastore.KEY]: Record<string, unknown>;
 };
 
 export class DatastoreCache {
@@ -45,7 +45,8 @@ export class DatastoreCache {
     const data = await query.run();
     const entities = data[0];
     const entityKeys = entities.map(
-      (entity: object) => (entity as DatastoreObject)[Datastore.KEY]
+      (entity: Record<string, unknown>) =>
+        (entity as DatastoreObject)[Datastore.KEY]
     );
     console.log(`Removing ${entities.length} items from the cache`);
     await this.datastore.delete(entityKeys);
@@ -53,7 +54,12 @@ export class DatastoreCache {
     // delete.
   }
 
-  async cacheContent(key: object, headers: {}, payload: Buffer) {
+  async cacheContent(
+    // eslint-disable-next-line @typescript-eslint/ban-types
+    key: object,
+    headers: Record<string, string>,
+    payload: Buffer
+  ) {
     const now = new Date();
     // query datastore to see if we are over the max number of allowed entries, and max entries isn't disabled with a value of -1 and remove over quota, removes oldest first
     if (parseInt(this.config.cacheConfig.cacheMaxEntries) !== -1) {
@@ -61,13 +67,15 @@ export class DatastoreCache {
         .createQuery('Page')
         .select('__key__')
         .order('expires');
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       const self = this;
       this.datastore.runQuery(query, function (err, entities) {
         if (err) {
           console.log(`datastore err: ${err} reported`);
         }
         const dataStoreCache = (entities || []).map(
-          (entity: object) => (entity as DatastoreObject)[Datastore.KEY]
+          (entity: Record<string, unknown>) =>
+            (entity as DatastoreObject)[Datastore.KEY]
         );
         if (
           dataStoreCache.length >=

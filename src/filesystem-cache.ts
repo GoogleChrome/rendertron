@@ -47,7 +47,7 @@ export class FilesystemCache {
     if (s.length === 0) return hash.toString();
 
     return createHash('md5').update(s).digest('hex');
-  }; // tslint:disable-line: semicolon
+  };
 
   getDir = (key: string) => {
     const dir = this.cacheConfig.snapshotDir;
@@ -60,7 +60,7 @@ export class FilesystemCache {
     }
 
     return dir;
-  }; // tslint:disable-line: semicolon
+  };
 
   async clearCache(key: string) {
     let cleanKey = key;
