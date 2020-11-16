@@ -38,6 +38,10 @@ export class Renderer {
       return true;
     }
 
+    if (this.config.restrictedUrlPattern && requestUrl.match(new RegExp(this.config.restrictedUrlPattern))) {
+      return true;
+    }
+
     return false;
   }
 

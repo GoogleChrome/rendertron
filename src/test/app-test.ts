@@ -254,6 +254,7 @@ test('whitelist ensures other urls do not get rendered', async (t: ExecutionCont
     puppeteerArgs: ['--no-sandbox'],
     renderOnly: [testBase],
     closeBrowser: false,
+    restrictedUrlPattern: null,
   };
   const server = request(await new Rendertron().initialize(mockConfig));
 
@@ -286,6 +287,7 @@ test('endpont for invalidating memory cache works if configured', async (t: Exec
     puppeteerArgs: ['--no-sandbox'],
     renderOnly: [],
     closeBrowser: false,
+    restrictedUrlPattern: null,
   };
   const cached_server = request(await new Rendertron().initialize(mockConfig));
   const test_url = `/render/${testBase}basic-script.html`;
@@ -331,6 +333,7 @@ test('endpont for invalidating filesystem cache works if configured', async (t: 
     puppeteerArgs: ['--no-sandbox'],
     renderOnly: [],
     closeBrowser: false,
+    restrictedUrlPattern: null,
   };
   const cached_server = request(await new Rendertron().initialize(mock_config));
   const test_url = `/render/${testBase}basic-script.html`;
@@ -381,6 +384,7 @@ test('http header should be set via config', async (t: ExecutionContext) => {
     puppeteerArgs: ['--no-sandbox'],
     renderOnly: [],
     closeBrowser: false,
+    restrictedUrlPattern: null,
   };
   server = request(await rendertron.initialize(mock_config));
   await app.listen(1237);
@@ -410,6 +414,7 @@ test.serial(
       puppeteerArgs: ['--no-sandbox'],
       renderOnly: [],
       closeBrowser: false,
+      restrictedUrlPattern: null,
     };
     const cached_server = request(
       await new Rendertron().initialize(mock_config)
@@ -462,6 +467,7 @@ test.serial(
       puppeteerArgs: ['--no-sandbox'],
       renderOnly: [],
       closeBrowser: false,
+      restrictedUrlPattern: null,
     };
     const cached_server = request(
       await new Rendertron().initialize(mock_config)
@@ -519,3 +525,52 @@ test('known timezone applies', async (t) => {
   // Australia/Perth is a timezone where GMT+8 is all-year round without Daylight Saving Time
   t.true(res2.text.indexOf('08:00:00') !== -1);
 });
+
+test('urls mathing pattern are restricted', async (t) => {
+  const mock_config = {
+    cache: 'filesystem' as const,
+    cacheConfig: {
+      cacheDurationMinutes: '120',
+      cacheMaxEntries: '50',
+      snapshotDir: path.join(os.tmpdir(), 'rendertron-test-cache'),
+    },
+    timeout: 10000,
+    port: '3000',
+    host: '0.0.0.0',
+    width: 1000,
+    height: 1000,
+    headers: {},
+    reqHeaders: {
+      Referer: 'http://example.com/',
+    },
+    puppeteerArgs: ['--no-sandbox'],
+    renderOnly: [],
+    closeBrowser: false,
+    restrictedUrlPattern: '.*(\\.test.html)($|\\?)',
+  };
+  const cached_server = request(
+    await new Rendertron().initialize(mock_config)
+  );
+  await app.listen(1240);
+  // Make a restriced request
+  let res = await cached_server.get(`/render/${testBase}restrict-test.test.html`);
+  t.is(res.status, 400);
+  t.is(res.header['x-renderer'], 'rendertron');
+
+  res = await cached_server.get(`/render/${testBase}restrict-test.test.html?hello=world`);
+  t.is(res.status, 400);
+  t.is(res.header['x-renderer'], 'rendertron');
+
+  // Non restricted calls should pass through
+  res = await cached_server.get(`/render/${testBase}basic-script.html`);
+  t.is(res.status, 200);
+  t.true(res.text.indexOf('document-title') !== -1);
+  t.is(res.header['x-renderer'], 'rendertron');
+  t.true(res.header['x-rendertron-cached'] == null);
+
+  await cached_server.get(`/invalidate`);
+  // cleanup cache to prevent future tests failing
+  await cached_server.get(`/invalidate/`);
+  fs.rmdirSync(path.join(os.tmpdir(), 'rendertron-test-cache'));
+});
+
