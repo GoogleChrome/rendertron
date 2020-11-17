@@ -60,7 +60,7 @@
     "@types/puppeteer": "^5.4.0",
     "@types/supertest": "^2.0.10",
     "@typescript-eslint/eslint-plugin": "^4.7.0",
-    "@typescript-eslint/parser": "^4.7.0",
+    "@typescript-eslint/parser": "^4.8.0",
     "ava": "^3.13.0",
     "eslint": "^7.13.0",
     "nodemon": "^2.0.6",
