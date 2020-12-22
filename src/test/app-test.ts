@@ -290,17 +290,17 @@ test('endpont for invalidating memory cache works if configured', async (t: Exec
     restrictedUrlPattern: null,
   };
   const cached_server = request(await new Rendertron().initialize(mockConfig));
-  const test_url = `/render/${testBase}basic-script.html`;
+  const test_url = `${testBase}basic-script.html`;
   await app.listen(1235);
   // Make a request which is not in cache
-  let res = await cached_server.get(test_url);
+  let res = await cached_server.get(`/render/${test_url}`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('document-title') !== -1);
   t.is(res.header['x-renderer'], 'rendertron');
   t.true(res.header['x-rendertron-cached'] == null);
 
   // Ensure that it is cached
-  res = await cached_server.get(test_url);
+  res = await cached_server.get(`/render/${test_url}`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('document-title') !== -1);
   t.is(res.header['x-renderer'], 'rendertron');
@@ -308,7 +308,7 @@ test('endpont for invalidating memory cache works if configured', async (t: Exec
 
   // Invalidate cache and ensure it is not cached
   res = await cached_server.get(`/invalidate/${test_url}`);
-  res = await cached_server.get(test_url);
+  res = await cached_server.get(`/render/${test_url}`);
   t.is(res.status, 200);
   t.true(res.text.indexOf('document-title') !== -1);
   t.is(res.header['x-renderer'], 'rendertron');
