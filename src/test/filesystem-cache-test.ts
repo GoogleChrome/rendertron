@@ -214,7 +214,7 @@ test.serial(
     t.true(new Date(res.header['x-rendertron-cached']) <= new Date());
 
     cache.clearAllCache();
-
+    await promiseTimeout(500);
     res = await server.get('/clear-all-cache?cachedResult1');
     t.is(res.status, 200);
     t.falsy(res.header['x-rendertron-cached']);
