@@ -52,18 +52,12 @@ export class MemoryCache {
       this.store.delete(keyToDelete);
     }
 
-    //remove refreshCache from URL
-    let cacheKey = key.replace(/&?refreshCache=(?:true|false)&?/i, '');
-
-    if (cacheKey.charAt(cacheKey.length - 1) === '?') {
-      cacheKey = cacheKey.slice(0, -1);
-    }
     const now = new Date();
-    this.store.set(cacheKey, {
+    this.store.set(key, {
       saved: new Date(),
       expires: new Date(
         now.getTime() +
-          parseInt(this.config.cacheConfig.cacheDurationMinutes) * 60 * 1000
+        parseInt(this.config.cacheConfig.cacheDurationMinutes) * 60 * 1000
       ),
       headers: JSON.stringify(headers),
       payload: JSON.stringify(payload),
@@ -97,6 +91,25 @@ export class MemoryCache {
     this.store.delete(key);
   }
 
+  sanitizeKey(key: string) {
+    // Cache based on full URL. This means requests with different params are
+    // cached separately (except for refreshCache parameter
+    let cacheKey = key.replace(/&?refreshCache=(?:true|false)&?/i, '');
+
+    if (cacheKey.charAt(cacheKey.length - 1) === '?') {
+      cacheKey = cacheKey.slice(0, -1);
+    }
+
+    // remove /render/ from key, only at the start
+    if (cacheKey.startsWith('/render/')) {
+      cacheKey = cacheKey.substring(8);
+    }
+
+    // remove trailing slash from key
+    cacheKey = cacheKey.replace(/\/$/, '');
+    return cacheKey
+  }
+
   middleware() {
     return this.handleRequest.bind(this);
   }
@@ -113,7 +126,8 @@ export class MemoryCache {
   private async handleRequest(ctx: Koa.Context, next: () => Promise<unknown>) {
     // Cache based on full URL. This means requests with different params are
     // cached separately.
-    const cacheKey = ctx.url;
+
+    const cacheKey = this.sanitizeKey(ctx.url);
     const cachedContent = this.getCachedContent(ctx, cacheKey);
     if (cachedContent) {
       const headers = JSON.parse(cachedContent.headers);
