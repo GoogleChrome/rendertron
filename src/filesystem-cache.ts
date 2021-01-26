@@ -164,7 +164,7 @@ export class FilesystemCache {
         const saved = stats.mtime;
         const expires = new Date(
           saved.getTime() +
-            parseInt(this.cacheConfig.cacheDurationMinutes) * 60 * 1000
+          parseInt(this.cacheConfig.cacheDurationMinutes) * 60 * 1000
         );
         return {
           saved,
@@ -181,24 +181,41 @@ export class FilesystemCache {
     return this.handleInvalidateRequest.bind(this);
   }
 
-  private async handleInvalidateRequest(ctx: Koa.Context, url: string) {
-    let cacheKey = url.replace(/&?refreshCache=(?:true|false)&?/i, '');
+  sanitizeKey(key: string) {
+    // Cache based on full URL. This means requests with different params are
+    // cached separately (except for refreshCache parameter
+    let cacheKey = key.replace(/&?refreshCache=(?:true|false)&?/i, '');
 
     if (cacheKey.charAt(cacheKey.length - 1) === '?') {
       cacheKey = cacheKey.slice(0, -1);
     }
 
-    // remove /invalidate/ from key
-    cacheKey = cacheKey.replace(/^\/invalidate\//, '');
+    // remove /render/ from key, only at the start
+    if (cacheKey.startsWith('/render/')) {
+      cacheKey = cacheKey.substring(8);
+    }
 
     // remove trailing slash from key
     cacheKey = cacheKey.replace(/\/$/, '');
+    return cacheKey
+  }
+
+  private async handleInvalidateRequest(ctx: Koa.Context, url: string) {
+    let cacheKey = this.sanitizeKey(url);
+
+    // remove /invalidate/ from key, only at the start
+    if (cacheKey.startsWith('/invalidate/')) {
+      cacheKey = cacheKey.substring(12);
+    }
 
     // key is hashed crudely
     const key = this.hashCode(cacheKey);
     this.clearCache(key);
     ctx.status = 200;
   }
+
+
+
   /**
    * Returns middleware function.
    */
@@ -210,20 +227,8 @@ export class FilesystemCache {
       ctx: Koa.Context,
       next: () => Promise<unknown>
     ) {
-      // Cache based on full URL. This means requests with different params are
-      // cached separately (except for refreshCache parameter)
-      let cacheKey = ctx.url.replace(/&?refreshCache=(?:true|false)&?/i, '');
 
-      if (cacheKey.charAt(cacheKey.length - 1) === '?') {
-        cacheKey = cacheKey.slice(0, -1);
-      }
-
-      // remove /render/ from key
-      cacheKey = cacheKey.replace(/^\/render\//, '');
-
-      // remove trailing slash from key
-      cacheKey = cacheKey.replace(/\/$/, '');
-
+      const cacheKey = this.sanitizeKey(ctx.url);
       // key is hashed crudely
       const key = this.hashCode(cacheKey);
       const content = await this.getCachedContent(ctx, key);
