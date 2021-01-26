@@ -253,7 +253,6 @@ test('whitelist ensures other urls do not get rendered', async (t: ExecutionCont
     headers: {},
     puppeteerArgs: ['--no-sandbox'],
     renderOnly: [testBase],
-    closeBrowser: false,
     restrictedUrlPattern: null,
   };
   const server = request(await new Rendertron().initialize(mockConfig));
@@ -286,7 +285,6 @@ test('endpont for invalidating memory cache works if configured', async (t: Exec
     headers: {},
     puppeteerArgs: ['--no-sandbox'],
     renderOnly: [],
-    closeBrowser: false,
     restrictedUrlPattern: null,
   };
   const cached_server = request(await new Rendertron().initialize(mockConfig));
@@ -332,7 +330,6 @@ test('endpont for invalidating filesystem cache works if configured', async (t: 
     headers: {},
     puppeteerArgs: ['--no-sandbox'],
     renderOnly: [],
-    closeBrowser: false,
     restrictedUrlPattern: null,
   };
   const cached_server = request(await new Rendertron().initialize(mock_config));
@@ -383,7 +380,6 @@ test('http header should be set via config', async (t: ExecutionContext) => {
     headers: {},
     puppeteerArgs: ['--no-sandbox'],
     renderOnly: [],
-    closeBrowser: false,
     restrictedUrlPattern: null,
   };
   server = request(await rendertron.initialize(mock_config));
@@ -413,7 +409,6 @@ test.serial(
       headers: {},
       puppeteerArgs: ['--no-sandbox'],
       renderOnly: [],
-      closeBrowser: false,
       restrictedUrlPattern: null,
     };
     const cached_server = request(
@@ -466,7 +461,6 @@ test.serial(
       },
       puppeteerArgs: ['--no-sandbox'],
       renderOnly: [],
-      closeBrowser: false,
       restrictedUrlPattern: null,
     };
     const cached_server = request(
@@ -545,7 +539,6 @@ test('urls mathing pattern are restricted', async (t) => {
     },
     puppeteerArgs: ['--no-sandbox'],
     renderOnly: [],
-    closeBrowser: false,
     restrictedUrlPattern: '.*(\\.test.html)($|\\?)',
   };
   const cached_server = request(
