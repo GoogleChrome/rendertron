@@ -44,7 +44,7 @@ Removes the cached response for a given URL from the cache.
 
 `/_ah/health`
 
-Returns with HTTP 200 and text "OK", if the Rendertron server is healthy.
+Returns HTTP 200 and text "OK", if the Rendertron server is healthy.
 
 ### Rendertron internal API
 
