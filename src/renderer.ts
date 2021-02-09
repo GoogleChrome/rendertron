@@ -151,6 +151,7 @@ export class Renderer {
       const parsedUrl = url.parse(requestUrl);
       await client.send('ServiceWorker.enable');
       await client.send('ServiceWorker.unregister', { scopeURL: `${parsedUrl.protocol}//${parsedUrl.hostname}` });
+      await client.send('Network.clearBrowserCookies')
       response = await page.goto(requestUrl, {
         timeout: this.config.timeout,
         waitUntil: 'networkidle0',
@@ -286,6 +287,7 @@ export class Renderer {
       const parsedUrl = url.parse(screenshotUrl);
       await client.send('ServiceWorker.enable');
       await client.send('ServiceWorker.unregister', { scopeURL: `${parsedUrl.protocol}//${parsedUrl.hostname}` });
+      await client.send('Network.clearBrowserCookies')
       // Navigate to page. Wait until there are no oustanding network requests.
       response = await page.goto(screenshotUrl, {
         timeout: this.config.timeout,
