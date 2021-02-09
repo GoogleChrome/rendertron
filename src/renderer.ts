@@ -92,6 +92,7 @@ export class Renderer {
     }
 
     const page = await this.browser.newPage();
+    const client = await page.target().createCDPSession();
 
     // Page may reload when setting isMobile
     // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
@@ -124,7 +125,6 @@ export class Renderer {
     page.evaluateOnNewDocument('customElements.forcePolyfill = true');
     page.evaluateOnNewDocument('ShadyDOM = {force: true}');
     page.evaluateOnNewDocument('ShadyCSS = {shimcssproperties: true}');
-
     await page.setRequestInterception(true);
 
     page.addListener('request', (interceptedRequest: puppeteer.Request) => {
@@ -148,6 +148,9 @@ export class Renderer {
 
     try {
       // Navigate to page. Wait until there are no oustanding network requests.
+      const parsedUrl = url.parse(requestUrl);
+      await client.send('ServiceWorker.enable');
+      await client.send('ServiceWorker.unregister', { scopeURL: `${parsedUrl.protocol}//${parsedUrl.hostname}` });
       response = await page.goto(requestUrl, {
         timeout: this.config.timeout,
         waitUntil: 'networkidle0',
@@ -243,13 +246,14 @@ export class Renderer {
   }
 
   async screenshot(
-    url: string,
+    screenshotUrl: string,
     isMobile: boolean,
     dimensions: ViewportDimensions,
     options?: ScreenshotOptions,
     timezoneId?: string
   ): Promise<Buffer> {
     const page = await this.browser.newPage();
+    const client = await page.target().createCDPSession();
 
     // Page may reload when setting isMobile
     // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
@@ -262,7 +266,6 @@ export class Renderer {
     if (isMobile) {
       page.setUserAgent(MOBILE_USERAGENT);
     }
-
     await page.setRequestInterception(true);
 
     page.addListener('request', (interceptedRequest: puppeteer.Request) => {
@@ -280,8 +283,11 @@ export class Renderer {
     let response: puppeteer.Response | null = null;
 
     try {
+      const parsedUrl = url.parse(screenshotUrl);
+      await client.send('ServiceWorker.enable');
+      await client.send('ServiceWorker.unregister', { scopeURL: `${parsedUrl.protocol}//${parsedUrl.hostname}` });
       // Navigate to page. Wait until there are no oustanding network requests.
-      response = await page.goto(url, {
+      response = await page.goto(screenshotUrl, {
         timeout: this.config.timeout,
         waitUntil: 'networkidle0',
       });
