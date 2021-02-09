@@ -150,9 +150,8 @@ test('script tags for JSON-LD are not stripped', async (t: ExecutionContext) => 
 });
 
 test('server status code should be forwarded', async (t: ExecutionContext) => {
-  const res = await server.get('/render/http://httpstat.us/404');
+  const res = await server.get(`/render/${testBase}404`);
   t.is(res.status, 404);
-  t.true(res.text.indexOf('404 Not Found') !== -1);
 });
 
 test('http status code should be able to be set via a meta tag', async (t: ExecutionContext) => {
