@@ -34,7 +34,7 @@
     "@webcomponents/webcomponentsjs": "^2.5.0",
     "chrome-launcher": "^0.13.4",
     "chrome-remote-interface": "^0.29.0",
-    "fs-extra": "^9.0.1",
+    "fs-extra": "^9.1.0",
     "koa": "^2.13.1",
     "koa-bodyparser": "^4.3.0",
     "koa-compress": "^5.0.1",
