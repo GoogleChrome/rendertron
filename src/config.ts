@@ -32,7 +32,10 @@ export type Config = {
   port: string;
   host: string;
   width: number;
+  widthMobile: number;
   height: number;
+  heightMobile: number;
+  setUserAgentMobile: boolean;
   reqHeaders: { [key: string]: string };
   headers: { [key: string]: string };
   puppeteerArgs: Array<string>;
@@ -53,8 +56,11 @@ export class ConfigManager {
     timeout: 10000,
     port: '3000',
     host: '0.0.0.0',
-    width: 1000,
-    height: 1000,
+    width: 1280,
+    widthMobile: 768,
+    height: 1280,
+    heightMobile: 768,
+    setUserAgentMobile: true,
     reqHeaders: {},
     headers: {},
     puppeteerArgs: ['--no-sandbox'],
