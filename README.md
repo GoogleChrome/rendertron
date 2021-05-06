@@ -239,7 +239,7 @@ An example config file specifying a memory cache, with a 2 hour expiration, and 
 ```
 
 #### puppeteer config ####
-Currently only supports:
+Note, this currently only supports:
   - `evaluateOnNewDocument` - inline script/function that is invoked after the document was created but before any of its scripts were run. You can use this as a hook to initialize/bootstrap any custom logic/state needed by the page. See [puppeteer.evaluateOnNewDocument](https://pptr.dev/#?product=Puppeteer&version=v8.0.0&show=api-pageevaluateonnewdocumentpagefunction-args)
   - `beforeSerialize` - path to a custom JS script that will be executed before the page is serialized by rendertron. The path is relative to rendertron root folder or can be absolute path.
 
