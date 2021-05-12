@@ -44,9 +44,8 @@ Removes the cached response for a given URL from the cache.
 
 `/invalidate`
 
-| param | type     | description                          |
-| ----- | -------- | ------------------------------------ |
-| `url` | `String` | A valid URL to remove from the cache |
+Removes all cached responses from the cache.
+
 
 `/_ah/health`
 
