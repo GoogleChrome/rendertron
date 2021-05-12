@@ -108,6 +108,11 @@ GET /invalidate/<url>
 
 The `invalidate` endpoint will remove cache entried for `<url>` from the configured cache (in-memory, filesystem or cloud datastore).
 
+If you want to clear the entire cache, omit the `/<url>` i.e.
+```
+GET /invalidate
+```
+
 ## FAQ
 
 ### Query parameters

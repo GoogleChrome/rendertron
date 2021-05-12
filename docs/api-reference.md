@@ -42,6 +42,12 @@ Removes the cached response for a given URL from the cache.
 | ----- | -------- | ------------------------------------ |
 | `url` | `String` | A valid URL to remove from the cache |
 
+`/invalidate`
+
+| param | type     | description                          |
+| ----- | -------- | ------------------------------------ |
+| `url` | `String` | A valid URL to remove from the cache |
+
 `/_ah/health`
 
 Returns HTTP 200 and text "OK", if the Rendertron server is healthy.
