@@ -1,0 +1,95 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Manual
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the main branch
+on: 
+  workflow_dispatch
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  lint:
+    name: Lint
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+
+      - run: npm ci
+
+      - run: npm run lint
+
+  test:
+    name: Integration tests
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node: ['10', '12', '14']
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - run: npm ci
+
+      - run: npm test
+
+  test-cache:
+    name: e2e cache tests
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node: ['10', '12', '14']
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          export CLOUDSDK_CORE_DISABLE_PROMPTS=1
+          sudo apt-get update && sudo apt-get install google-cloud-sdk google-cloud-sdk-datastore-emulator
+          mkdir ./tmp
+          echo '{"cacheConfig": { "snapshotDir": "./tmp/rendertron" } }' > ./config.json
+
+      - name: Run the e2e cache tests
+        run: npm run test-cache
+
+  test-middleware:
+    name: Middleware tests
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node: ['10', '12', '14']
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node }}
+
+      - run: cd middleware/
+
+      - run: npm ci
+
+      - run: npm run test
