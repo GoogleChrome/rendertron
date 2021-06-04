@@ -43,6 +43,7 @@ export class MongoCache {
     this.cacheConfig = this.config.cacheConfig;
     this.client = new MongoClient(this.cacheConfig.mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
     this.logDebug(`Using Mongodb cache with ${this.cacheConfig.mongoURI}`);
+    this.ensurePagesCollectionExists();
   }
 
   hashCode = (s: string) => {
@@ -54,6 +55,29 @@ export class MongoCache {
 
   logDebug(msg: string) {
     console.debug(`MongoCache: ${msg}`);
+  }
+
+  async ensurePagesCollectionExists() {
+    const db = await this.getDatabase();
+    const collections = await db.collections();
+    const exists = collections.some(collection => collection.collectionName === 'Pages');
+    if (exists) {
+      this.logDebug('Confirmed Pages collection exists');
+    } else {
+      this.logDebug('Pages collection was missing, created a empty Pages collection');
+      await db.createCollection('Pages');
+    }
+    await this.checkPagesIndexes();
+  }
+  async checkPagesIndexes() {
+    const indexNames = ['keyIndex', 'savedIndex', 'expiresIndex'];
+    const Pages = await this.getPagesCollection();
+    const exists = await Pages.indexExists(indexNames);
+    if (exists) {
+      this.logDebug(`Confirmed [${indexNames}] on Pages collection exists`);
+    } else {
+      this.logDebug(`[WARNING] We recommend creating indexes [${indexNames}] on Pages collection`);
+    }
   }
 
   async clearCache() {
