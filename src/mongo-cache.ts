@@ -254,33 +254,39 @@ export class MongoCache {
   sanitizeURL(key: string) {
     // Cache based on full URL. This means requests with different params are
     // cached separately (except for refreshCache parameter
-    let cacheKey = key.replace(/&?refreshCache=(?:true|false)&?/i, '');
+    let cacheKey = key;
 
-    if (cacheKey.charAt(cacheKey.length - 1) === '?') {
-      cacheKey = cacheKey.slice(0, -1);
+    if (cacheKey) {
+      cacheKey = cacheKey.replace(/&?refreshCache=(?:true|false)&?/i, '');
+
+      if (cacheKey.charAt(cacheKey.length - 1) === '?') {
+        cacheKey = cacheKey.slice(0, -1);
+      }
+
+      // remove /render/ from key, only at the start
+      if (cacheKey.startsWith('/render/')) {
+        cacheKey = cacheKey.substring(8);
+      }
+
+      // remove trailing slash from key
+      cacheKey = cacheKey.replace(/\/$/, '');
     }
-
-    // remove /render/ from key, only at the start
-    if (cacheKey.startsWith('/render/')) {
-      cacheKey = cacheKey.substring(8);
-    }
-
-    // remove trailing slash from key
-    cacheKey = cacheKey.replace(/\/$/, '');
     return cacheKey
   }
 
   private async handleInvalidateRequest(ctx: Koa.Context, url: string) {
-    let cacheKey = this.sanitizeURL(url);
+    if (url) {
+      let cacheKey = this.sanitizeURL(url);
 
-    // remove /invalidate/ from key, only at the start
-    if (cacheKey.startsWith('/invalidate/')) {
-      cacheKey = cacheKey.substring(12);
+      // remove /invalidate/ from key, only at the start
+      if (cacheKey.startsWith('/invalidate/')) {
+        cacheKey = cacheKey.substring(12);
+      }
+
+      // key is hashed crudely
+      const key = this.hashCode(cacheKey);
+      this.removeEntry(key);
     }
-
-    // key is hashed crudely
-    const key = this.hashCode(cacheKey);
-    this.removeEntry(key);
     ctx.status = 200;
   }
 
@@ -289,7 +295,7 @@ export class MongoCache {
   }
 
   private async handleClearAllCacheRequest(ctx: Koa.Context) {
-    this.clearCache();
+    await this.clearCache();
     ctx.status = 200;
   }
 }
