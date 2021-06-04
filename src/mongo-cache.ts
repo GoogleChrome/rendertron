@@ -28,18 +28,21 @@ type CacheContent = {
   saved: Date;
   expires: Date;
   headers: string;
+  response: string;
   payload: string;
 };
 
 
 export class MongoCache {
-  private client: MongoClient = new MongoClient('mongodb://192.168.86.22:27017/render-cache', { useNewUrlParser: true, useUnifiedTopology: true });
   private config: Config = ConfigManager.config;
   private cacheConfig: { [key: string]: string };
+  private client: MongoClient;
 
   constructor(config: Config) {
     this.config = config;
     this.cacheConfig = this.config.cacheConfig;
+    this.client = new MongoClient(this.cacheConfig.mongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
+    this.logDebug(`Using Mongodb cache with ${this.cacheConfig.mongoURI}`);
   }
 
   hashCode = (s: string) => {
@@ -49,40 +52,33 @@ export class MongoCache {
     return createHash('md5').update(s).digest('hex');
   };
 
-  async clearCache() {
-    console.debug('TODO: Not implemented yet!');
-    // const query = this.datastore.createQuery('Page');
-    // const data = await query.run();
-    // const entities = data[0];
-    // const entityKeys = entities.map(
-    //   (entity: Record<string, unknown>) =>
-    //     (entity as DatastoreObject)[Datastore.KEY]
-    // );
-    // console.debug(`Removing ${entities.length} items from the cache`);
-    // await this.datastore.delete(entityKeys);
-    // // TODO(samli): check info (data[1]) and loop through pages of entities to
-    // // delete.
+  logDebug(msg: string) {
+    console.debug(`MongoCache: ${msg}`);
   }
 
-  // async find(query) {
-  //   try {
-  //     const db = await this.getDatabase();
-  //     db.
-  //   } catch (err) {
-  //     console.error(`MongoCache: ${err}`);
-  //   } finally {
-  //     // Lets make sure the client connection will be closed
-  //     await this.client.close();
-  //   }
-  // }
+  async clearCache() {
+    try {
+      this.logDebug(`Clearing the entire cache`);
+      const Pages = await this.getPagesCollection();
+      const results = await Pages.deleteMany({});
+      this.logDebug(`Deleted ${results.deletedCount} document(s)`);
+    } catch (err) {
+      console.error(`MongoCache: Error clearing the entire cache ${err}`);
+    }
+  }
 
   async getDatabase() {
     if (this.client && !this.client.isConnected()) {
-      console.debug('getDatabase: Opening Mongo client connection');
+      this.logDebug('getDatabase: Opening Mongo client connection');
       await this.client.connect();
     }
     const database = this.client.db();
     return database;
+  }
+
+  async getPagesCollection() {
+    const database = await this.getDatabase();
+    return database.collection("Pages");
   }
 
   async cacheContent(
@@ -91,80 +87,104 @@ export class MongoCache {
     headers: Record<string, string>,
     payload: Buffer
   ) {
-    console.debug('mongoCache: cacheContent');
-    const database = await this.getDatabase();
-    const Pages = database.collection("Pages");
-
-    const now = new Date();
-
-    // Step 1: query to see if we are over the max number of allowed entries, and max entries isn't disabled with a value of -1 and remove over quota, removes oldest first
-    if (parseInt(this.cacheConfig.cacheMaxEntries) !== -1) {
-      console.debug(`MongoCache: cacheMaxEntries is set to  ${this.cacheConfig.cacheMaxEntries}, so checking current number of entries`);
-      Pages.findOneAndReplace({},)
-      // const query = this.datastore
-      //   .createQuery('Page')
-      //   .select('__key__')
-      //   .order('expires');
-      // // eslint-disable-next-line @typescript-eslint/no-this-alias
-      // const self = this;
-      // this.datastore.runQuery(query, function (err, entities) {
-      //   if (err) {
-      //     console.debug(`datastore err: ${err} reported`);
-      //   }
-      //   const dataStoreCache = (entities || []).map(
-      //     (entity: Record<string, unknown>) =>
-      //       (entity as DatastoreObject)[Datastore.KEY]
-      //   );
-      //   if (
-      //     dataStoreCache.length >=
-      //     parseInt(self.config.cacheConfig.cacheMaxEntries)
-      //   ) {
-      //     const toRemove =
-      //       dataStoreCache.length -
-      //       parseInt(self.config.cacheConfig.cacheMaxEntries) +
-      //       1;
-      //     const toDelete = dataStoreCache.slice(0, toRemove);
-      //     console.debug(`Deleting: ${toRemove}`);
-      //     self.datastore.delete(toDelete);
-      //   }
-      // });
-    }
-    const entity = {
-      'key': key,
-      'url': url,
-      'saved': now,
-      'expires': new Date(
-        now.getTime() +
-        parseInt(this.cacheConfig.cacheDurationMinutes) * 60 * 1000
-      ),
-      'headers': JSON.stringify(headers),
-      'payload': JSON.stringify(payload)
-    };
+    this.logDebug(`cacheContent called with key=${key} for url=${url}`);
+    const Pages = await this.getPagesCollection();
 
     try {
-      console.debug('Saving in mongo');
-      const result = await Pages.updateOne({ 'key': key }, { $set: entity }, { upsert: true });
-      //console.debug(result);
+      const cacheMaxEntries = parseInt(this.cacheConfig.cacheMaxEntries);
+      // Step 1: Make sure we within the cache quota specified by cacheConfig.cacheMaxEntries
+      // Step 1a: query to see if we are over the max number of allowed entries, and max entries isn't disabled with a value of -1
+      if (cacheMaxEntries !== -1) {
+        const cursor = Pages.find({}).project({ 'saved': 1, _id: 0 }).sort({ saved: -1 }).skip(cacheMaxEntries - 1).limit(1);
+        const lastExpired = await cursor.toArray();
+        //step 1b: Remove over quota documents which are older than the last document in cacheMaxEntries 
+        if (lastExpired.length > 0) {
+          this.logDebug(`cacheConfig.cacheMaxEntries is set to ${cacheMaxEntries} in config. Deleting all documents with "saved" date less than ${lastExpired[0].saved}`);
+          const result = await Pages.deleteMany({ saved: { $lt: lastExpired[0].saved } });
+          if (result) {
+            this.logDebug(`Deleted ${result.deletedCount} expired document(s) older than ${lastExpired[0].saved}`);
+          }
+        }
+      }
     } catch (err) {
-      console.error(`MongoCache: ${err}`);
+      console.error(`MongoCache: Error cleaning old cache entries ${err}`);
+    }
+
+    try {
+      const now = new Date();
+
+      //step 2: Insert the new document in cache
+      const entity = {
+        'key': key,
+        'url': url,
+        'saved': now,
+        'expires': new Date(
+          now.getTime() +
+          parseInt(this.cacheConfig.cacheDurationMinutes) * 60 * 1000
+        ),
+        'headers': JSON.stringify(headers),
+        'payload': JSON.stringify(payload)
+      };
+
+      this.logDebug(`Saving key=${key} for url=${url}`);
+      const result = await Pages.updateOne({ 'key': key }, { $set: entity }, { upsert: true });
+      this.logDebug(`Upserted ${result.upsertedCount}, Modified ${result.modifiedCount} documents`);
+    } catch (err) {
+      console.error(`MongoCache: Error saving cache ${err}`);
     }
   }
 
   async removeEntry(key: string) {
-    console.debug('MongoCache.removeEntry', key);
-    // const datastoreKey = this.datastore.key(['Page', key]);
-    // await this.datastore.delete(datastoreKey);
+    try {
+      this.logDebug(`removeEntry key=${key}`);
+      const Pages = await this.getPagesCollection();
+      const result = await Pages.deleteOne({ key: key });
+      this.logDebug(`Deleted ${result.deletedCount} documents`);
+    } catch (err) {
+      console.error(`MongoCache: Error deleting cache for key=${key}. Error=${err}`);
+    }
   }
 
-  getCachedContent(ctx: Koa.Context, key: string): CacheContent | null {
+  async getCachedContent(ctx: Koa.Context, key: string) {
+    this.logDebug(`getCachedContent called with key=${key}`);
+    try {
+      if (ctx.query.refreshCache) {
+        return null;
+      } else {
+        const Pages = await this.getPagesCollection();
+        const found = await Pages.find({ key: key }).toArray();
+        if (found.length > 0) {
+          const saved = found[0].saved;
+          const payload = found[0].payload;
+          const response = found[0].response;
+          const headers = found[0].headers;
+          const url = found[0].url;
+          //const expires = found[0].expires;
+          // Rather than depending on the expires value from our database, lets calculate
+          // expires based on current cacheConfig.cacheDurationMinutes and saved datetime
+          // This allows changes in cacheConfig.cacheDurationMinutes to be reflected on 
+          // old cache entries too
+          const expires = new Date(
+            saved.getTime() +
+            parseInt(this.cacheConfig.cacheDurationMinutes) * 60 * 1000
+          );
 
-    console.debug("MongoCache.getCachedContent", key, ctx)
-    return null;
-    // if (ctx.query.refreshCache) {
-    //   return null;
-    // } else {
-    //   return await this.datastore.get(key);
-    //}
+          this.logDebug(`Found ${found.length} documents in cache matching key=${key} with url=${url}`);
+          return {
+            saved,
+            expires,
+            payload,
+            response,
+            headers
+          };
+        } else {
+          return null;
+        }
+      }
+    } catch (err) {
+      console.error(`MongoCache: Error in getCachedContent ${err}`);
+      return null;
+    }
   }
 
   /**
@@ -206,12 +226,15 @@ export class MongoCache {
               payload = Buffer.from(payload);
             }
             ctx.body = payload;
+            this.logDebug(`Served ${sanitizedUrl} from cache`);
             return;
           } catch (error) {
-            console.debug(
+            this.logDebug(
               'Erroring parsing cache contents, falling back to normal render'
             );
           }
+        } else {
+          this.logDebug(`Need to rerender ${sanitizedUrl}, as it has expired in cache with expires=${content.expires}`);
         }
       }
 
@@ -219,6 +242,7 @@ export class MongoCache {
 
       if (ctx.status === 200) {
         cacheContent(key, sanitizedUrl, ctx.response.headers, ctx.body);
+        this.logDebug(`Served ${sanitizedUrl} by rendering it new`);
       }
     }.bind(this);
   }
