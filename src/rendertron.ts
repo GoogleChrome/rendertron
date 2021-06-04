@@ -89,7 +89,19 @@ export class Rendertron {
         route.get('/invalidate/', filesystemCache.clearAllCacheHandler())
       );
       this.app.use(new FilesystemCache(this.config).middleware());
+    } else if (this.config.cache === 'mongo') {
+      console.log('Using MongoCache');
+      const { MongoCache } = await import('./mongo-cache');
+      const mongoCache = new MongoCache(this.config);
+      this.app.use(
+        route.get('/invalidate/:url(.*)', mongoCache.invalidateHandler())
+      );
+      this.app.use(
+        route.get('/invalidate/', mongoCache.clearAllCacheHandler())
+      );
+      this.app.use(new MongoCache(this.config).middleware());
     }
+
 
     this.app.use(
       route.get('/render/:url(.*)', this.handleRenderRequest.bind(this))

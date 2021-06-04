@@ -1,0 +1,12 @@
+{
+    "timeout": 60000,
+    "cache": "mongo",
+    "cacheConfig": {
+        "cacheDurationMinutes": 120,
+        "cacheMaxEntries": 2
+    },
+    "puppeteer": {
+        "evaluateOnNewDocument": "SC_DISABLE_SPEEDY = true;",
+        "beforeSerialize": "./test-resources/cssom-to-styles.js"
+    }
+}
