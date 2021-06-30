@@ -1,0 +1,7 @@
+docs/
+build/
+.vscode/
+.github/
+test-resources/
+*.md
+node_modules/
