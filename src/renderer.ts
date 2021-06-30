@@ -321,6 +321,65 @@ export class Renderer {
     }
     return buffer;
   }
+
+  async screenshotInline(
+    htmlb64: string,
+    isMobile: boolean,
+    dimensions: ViewportDimensions,
+    options?: ScreenshotOptions,
+    timezoneId?: string
+  ): Promise<Buffer> {
+    const page = await this.browser.newPage();
+
+    // Page may reload when setting isMobile
+    // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
+    await page.setViewport({
+      width: dimensions.width,
+      height: dimensions.height,
+      isMobile,
+    });
+
+    if (isMobile) {
+      page.setUserAgent(MOBILE_USERAGENT);
+    }
+
+    await page.setRequestInterception(true);
+
+    if (timezoneId) {
+      await page.emulateTimezone(timezoneId);
+    }
+
+    const buff = Buffer.from(htmlb64, 'base64');
+    const html = buff.toString('utf-8');
+
+    try {
+      await page.setContent(html, {
+        timeout: this.config.timeout,
+        waitUntil: 'networkidle0'
+      })
+    } catch (e) {
+      console.error(e)
+      await page.close();
+      if (this.config.closeBrowser) {
+        await this.browser.close();
+      }
+      throw new ScreenshotError('NoResponse');
+    }
+
+    // Must be jpeg & binary format.
+    const screenshotOptions: ScreenshotOptions = {
+      type: options?.type || 'jpeg',
+      encoding: options?.encoding || 'binary',
+    };
+    // Screenshot returns a buffer based on specified encoding above.
+    // https://github.com/GoogleChrome/puppeteer/blob/v1.8.0/docs/api.md#pagescreenshotoptions
+    const buffer = (await page.screenshot(screenshotOptions)) as Buffer;
+    await page.close();
+    if (this.config.closeBrowser) {
+      await this.browser.close();
+    }
+    return buffer;
+  }
 }
 
 type ErrorType = 'Forbidden' | 'NoResponse';

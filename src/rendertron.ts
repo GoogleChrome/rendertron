@@ -5,11 +5,12 @@ import route from 'koa-route';
 import koaSend from 'koa-send';
 import koaLogger from 'koa-logger';
 import path from 'path';
-import puppeteer from 'puppeteer';
+import puppeteer, { ScreenshotOptions } from 'puppeteer';
 import url from 'url';
 
 import { Renderer, ScreenshotError } from './renderer';
 import { Config, ConfigManager } from './config';
+import { IncomingMessage } from 'http';
 
 /**
  * Rendertron rendering service. This runs the server which routes rendering
@@ -44,6 +45,11 @@ export class Rendertron {
     this.app.use(koaLogger());
 
     this.app.use(koaCompress());
+
+    this.app.use(async (ctx: Koa.Context, next) => {
+      if (ctx.path.endsWith('/inline')) ctx.disableBodyParser = true;
+      await next();
+    });
 
     this.app.use(bodyParser());
 
@@ -94,6 +100,14 @@ export class Rendertron {
     this.app.use(
       route.get('/render/:url(.*)', this.handleRenderRequest.bind(this))
     );
+
+    this.app.use(
+      route.post(
+        '/screenshot/inline',
+        this.handleInlineScreenshot.bind(this)
+      )
+    )
+
     this.app.use(
       route.get('/screenshot/:url(.*)', this.handleScreenshotRequest.bind(this))
     );
@@ -207,6 +221,65 @@ export class Rendertron {
       ctx.status = err.type === 'Forbidden' ? 403 : 500;
     }
   }
+
+  async handleInlineScreenshot(ctx: Koa.Context) {
+    try {
+      if (!this.renderer) {
+        throw new Error('No renderer initalized yet.');
+      }
+
+      const body = await consumeBody(ctx.req)
+
+      if (!body) {
+        ctx.status = 400
+        ctx.body = 'Please provide an HTML page, encoded in base64'
+        return;
+      }
+
+      const dimensions = {
+        width: Number(ctx.query['width']) || this.config.width,
+        height: Number(ctx.query['height']) || this.config.height,
+      }
+
+      const options: ScreenshotOptions = {
+        type: ctx.query.imageType
+      }
+
+      const mobileVersion = 'mobile' in ctx.query ? true : false;
+
+      const img = await this.renderer.screenshotInline(
+        body,
+        mobileVersion,
+        dimensions,
+        options,
+        ctx.query.timezoneId,
+      );
+
+      for (const key in this.config.headers) {
+        ctx.set(key, this.config.headers[key]);
+      }
+
+      ctx.set('Content-Type', `image/${options.type || 'jpeg'}`)
+      ctx.set('Content-Length', img.length.toString())
+      ctx.body = img
+    } catch (e) {
+      ctx.status = 500
+      ctx.body = e.message
+    }
+  }
+}
+
+function consumeBody(req: IncomingMessage): Promise<string> {
+  return new Promise((resolve, reject) => {
+    let data = '';
+    req.on('data', (chunk: Buffer) => {
+      data += chunk;
+    })
+    req.on('end', () => {
+      resolve(data)
+    })
+    req.on('error', (e) => reject(e))
+  })
 }
 
 async function logUncaughtError(error: Error) {
