@@ -200,7 +200,7 @@ export class FilesystemCache {
     return cacheKey
   }
 
-  private async handleInvalidateRequest(ctx: Koa.Context, url: string) {
+  private async handleInvalidateRequest(ctx: Koa.Context) {
     let cacheKey = this.sanitizeKey(ctx.url);
 
     // remove /invalidate/ from key, only at the start
