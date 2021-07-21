@@ -1,0 +1,10 @@
+.git
+.github
+*.md
+.vscode
+Dockerfile
+.eslintrc.json
+app.yaml
+LICENSE
+.DS_Store
+k8s/

@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rendertron
+  namespace: epidemic-com
+  labels:
+    app: rendertron
+    owner: first-impression
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: rendertron
+      owner: first-impression
+  template:
+    metadata:
+      labels:
+        app: rendertron
+        owner: first-impression
+    spec:
+      serviceAccountName: rendertron
+      containers:
+        - name: rendertron
+          image: eu.gcr.io/es-platform-prod/rendertron:3.1.0
+          ports:
+            - containerPort: 8090

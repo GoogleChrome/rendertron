@@ -1,3 +1,4 @@
 {
-    "port": 6000
+    "port": 8090,
+    "cache": "datastore"
 }
