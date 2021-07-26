@@ -22,6 +22,7 @@
 import * as fse from 'fs-extra';
 import * as path from 'path';
 import * as os from 'os';
+import { PuppeteerLifeCycleEvent } from 'puppeteer';
 
 const CONFIG_PATH = path.resolve(__dirname, '../config.json');
 
@@ -39,6 +40,7 @@ export type Config = {
   renderOnly: Array<string>;
   closeBrowser: boolean;
   restrictedUrlPattern: string | null;
+  waitUntil: PuppeteerLifeCycleEvent | PuppeteerLifeCycleEvent[]
 };
 
 export class ConfigManager {
@@ -59,7 +61,8 @@ export class ConfigManager {
     puppeteerArgs: ['--no-sandbox'],
     renderOnly: [],
     closeBrowser: false,
-    restrictedUrlPattern: null
+    restrictedUrlPattern: null,
+    waitUntil: 'networkidle0'
   };
 
   static async getConfiguration(): Promise<Config> {

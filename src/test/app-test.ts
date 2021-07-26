@@ -23,6 +23,7 @@ import fs from 'fs';
 import os from 'os';
 
 import { Rendertron } from '../rendertron';
+import { Config } from '../config';
 
 const app = new Koa();
 app.use(koaStatic(path.resolve(__dirname, '../../test-resources')));
@@ -237,7 +238,7 @@ test.failing(
 );
 
 test('whitelist ensures other urls do not get rendered', async (t: ExecutionContext) => {
-  const mockConfig = {
+  const mockConfig: Config = {
     cache: 'memory' as const,
     cacheConfig: {
       cacheDurationMinutes: '120',
@@ -254,6 +255,7 @@ test('whitelist ensures other urls do not get rendered', async (t: ExecutionCont
     renderOnly: [testBase],
     closeBrowser: false,
     restrictedUrlPattern: null,
+    waitUntil: 'networkidle0',
   };
   const server = request(await new Rendertron().initialize(mockConfig));
 
@@ -270,7 +272,7 @@ test('unknown url fails safely on screenshot', async (t: ExecutionContext) => {
 });
 
 test('endpont for invalidating memory cache works if configured', async (t: ExecutionContext) => {
-  const mockConfig = {
+  const mockConfig: Config = {
     cache: 'memory' as const,
     cacheConfig: {
       cacheDurationMinutes: '120',
@@ -287,6 +289,7 @@ test('endpont for invalidating memory cache works if configured', async (t: Exec
     renderOnly: [],
     closeBrowser: false,
     restrictedUrlPattern: null,
+    waitUntil: 'networkidle0',
   };
   const cached_server = request(await new Rendertron().initialize(mockConfig));
   const test_url = `${testBase}basic-script.html`;
@@ -315,7 +318,7 @@ test('endpont for invalidating memory cache works if configured', async (t: Exec
 });
 
 test('endpont for invalidating filesystem cache works if configured', async (t: ExecutionContext) => {
-  const mock_config = {
+  const mock_config: Config = {
     cache: 'filesystem' as const,
     cacheConfig: {
       cacheDurationMinutes: '120',
@@ -333,6 +336,7 @@ test('endpont for invalidating filesystem cache works if configured', async (t: 
     renderOnly: [],
     closeBrowser: false,
     restrictedUrlPattern: null,
+    waitUntil: 'networkidle0',
   };
   const cached_server = request(await new Rendertron().initialize(mock_config));
   const test_url = `/render/${testBase}basic-script.html`;
@@ -365,7 +369,7 @@ test('endpont for invalidating filesystem cache works if configured', async (t: 
 });
 
 test('http header should be set via config', async (t: ExecutionContext) => {
-  const mock_config = {
+  const mock_config: Config = {
     cache: 'memory' as const,
     cacheConfig: {
       cacheDurationMinutes: '120',
@@ -384,6 +388,7 @@ test('http header should be set via config', async (t: ExecutionContext) => {
     renderOnly: [],
     closeBrowser: false,
     restrictedUrlPattern: null,
+    waitUntil: 'networkidle0',
   };
   server = request(await rendertron.initialize(mock_config));
   await app.listen(1237);
@@ -395,7 +400,7 @@ test('http header should be set via config', async (t: ExecutionContext) => {
 test.serial(
   'endpoint for invalidating all memory cache works if configured',
   async (t: ExecutionContext) => {
-    const mock_config = {
+    const mock_config: Config = {
       cache: 'memory' as const,
       cacheConfig: {
         cacheDurationMinutes: '120',
@@ -414,6 +419,7 @@ test.serial(
       renderOnly: [],
       closeBrowser: false,
       restrictedUrlPattern: null,
+      waitUntil: 'networkidle0',
     };
     const cached_server = request(
       await new Rendertron().initialize(mock_config)
@@ -447,7 +453,7 @@ test.serial(
 test.serial(
   'endpoint for invalidating all filesystem cache works if configured',
   async (t: ExecutionContext) => {
-    const mock_config = {
+    const mock_config: Config = {
       cache: 'filesystem' as const,
       cacheConfig: {
         cacheDurationMinutes: '120',
@@ -467,6 +473,7 @@ test.serial(
       renderOnly: [],
       closeBrowser: false,
       restrictedUrlPattern: null,
+      waitUntil: 'networkidle0',
     };
     const cached_server = request(
       await new Rendertron().initialize(mock_config)
@@ -526,7 +533,7 @@ test('known timezone applies', async (t) => {
 });
 
 test('urls mathing pattern are restricted', async (t) => {
-  const mock_config = {
+  const mock_config: Config = {
     cache: 'filesystem' as const,
     cacheConfig: {
       cacheDurationMinutes: '120',
@@ -546,6 +553,7 @@ test('urls mathing pattern are restricted', async (t) => {
     renderOnly: [],
     closeBrowser: false,
     restrictedUrlPattern: '.*(\\.test.html)($|\\?)',
+    waitUntil: 'networkidle0'
   };
   const cached_server = request(
     await new Rendertron().initialize(mock_config)

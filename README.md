@@ -216,7 +216,7 @@ root. Available configuration options:
 - `renderOnly` - restrict the endpoint to only service requests for certain domains. Specified as an array of strings. eg. `['http://render.only.this.domain']`. This is a strict prefix match, so ensure you specify the exact protocols that will be used (eg. http, https).
 - `closeBrowser`_default `false`_ - `true` forces the browser to close and reopen between each page render, some sites might need this to prevent URLs past the first one rendered returning null responses.
 - `restrictedUrlPattern`_default `null`_ - set the restrictedUrlPattern to restrict the requests matching given regex pattern.
-
+- `waitUntil`_default `networkidle0`_ - set the waitUntil to when to consider navigation succeeded
 #### cacheConfig
 
 - `cacheDurationMinutes` _default `1440`_ - set an expiry time in minues, defaults to 24 hours. Set to -1 to disable cache Expiration
