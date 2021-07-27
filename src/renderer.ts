@@ -161,6 +161,7 @@ export class Renderer {
       // This should only occur when the page is about:blank. See
       // https://github.com/GoogleChrome/puppeteer/blob/v1.5.0/docs/api.md#pagegotourl-options.
       await page.close();
+      await ctx.close();
       return { status: 400, customHeaders: new Map(), content: '' };
     }
 
@@ -168,6 +169,7 @@ export class Renderer {
     // https://cloud.google.com/compute/docs/storing-retrieving-metadata.
     if (response.headers()['metadata-flavor'] === 'Google') {
       await page.close();
+      await ctx.close();
       return { status: 403, customHeaders: new Map(), content: '' };
     }
 
@@ -224,6 +226,7 @@ export class Renderer {
     const result = (await page.content()) as string;
 
     await page.close();
+    await ctx.close();
     return {
       status: statusCode,
       customHeaders: customHeaders
@@ -240,7 +243,8 @@ export class Renderer {
     options?: ScreenshotOptions,
     timezoneId?: string
   ): Promise<Buffer> {
-    const page = await this.browser.newPage();
+    const ctx = await this.browser.createIncognitoBrowserContext();
+    const page = await ctx.newPage();
 
     // Page may reload when setting isMobile
     // https://github.com/GoogleChrome/puppeteer/blob/v1.10.0/docs/api.md#pagesetviewportviewport
@@ -282,6 +286,7 @@ export class Renderer {
 
     if (!response) {
       await page.close();
+      await ctx.close();
       throw new ScreenshotError('NoResponse');
     }
 
@@ -289,6 +294,7 @@ export class Renderer {
     // https://cloud.google.com/compute/docs/storing-retrieving-metadata.
     if (response.headers()['metadata-flavor'] === 'Google') {
       await page.close();
+      await ctx.close();
       throw new ScreenshotError('Forbidden');
     }
 
@@ -301,6 +307,7 @@ export class Renderer {
     // https://github.com/GoogleChrome/puppeteer/blob/v1.8.0/docs/api.md#pagescreenshotoptions
     const buffer = (await page.screenshot(screenshotOptions)) as Buffer;
     await page.close();
+    await ctx.close();
     return buffer;
   }
 }
