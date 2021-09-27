@@ -252,6 +252,36 @@ test('whitelist ensures other urls do not get rendered', async (t: ExecutionCont
     headers: {},
     puppeteerArgs: ['--no-sandbox'],
     renderOnly: [testBase],
+    renderOnlyPattern: null,
+    closeBrowser: false,
+    restrictedUrlPattern: null,
+  };
+  const server = request(await new Rendertron().initialize(mockConfig));
+
+  let res = await server.get(`/render/${testBase}basic-script.html`);
+  t.is(res.status, 200);
+
+  res = await server.get(`/render/http://anotherDomain.com`);
+  t.is(res.status, 403);
+});
+
+test('whitelist regex pattern ensures other urls do not get rendered', async (t: ExecutionContext) => {
+  const mockConfig = {
+    cache: 'memory' as const,
+    cacheConfig: {
+      cacheDurationMinutes: '120',
+      cacheMaxEntries: '50',
+    },
+    timeout: 10000,
+    port: '3000',
+    host: '0.0.0.0',
+    width: 1000,
+    height: 1000,
+    reqHeaders: {},
+    headers: {},
+    puppeteerArgs: ['--no-sandbox'],
+    renderOnly: [],
+    renderOnlyPattern: '.*localhost.*',
     closeBrowser: false,
     restrictedUrlPattern: null,
   };
@@ -285,6 +315,7 @@ test('endpont for invalidating memory cache works if configured', async (t: Exec
     headers: {},
     puppeteerArgs: ['--no-sandbox'],
     renderOnly: [],
+    renderOnlyPattern: null,
     closeBrowser: false,
     restrictedUrlPattern: null,
   };
@@ -331,6 +362,7 @@ test('endpont for invalidating filesystem cache works if configured', async (t: 
     headers: {},
     puppeteerArgs: ['--no-sandbox'],
     renderOnly: [],
+    renderOnlyPattern: null,
     closeBrowser: false,
     restrictedUrlPattern: null,
   };
@@ -382,6 +414,7 @@ test('http header should be set via config', async (t: ExecutionContext) => {
     headers: {},
     puppeteerArgs: ['--no-sandbox'],
     renderOnly: [],
+    renderOnlyPattern: null,
     closeBrowser: false,
     restrictedUrlPattern: null,
   };
@@ -412,6 +445,7 @@ test.serial(
       headers: {},
       puppeteerArgs: ['--no-sandbox'],
       renderOnly: [],
+      renderOnlyPattern: null,
       closeBrowser: false,
       restrictedUrlPattern: null,
     };
@@ -465,6 +499,7 @@ test.serial(
       },
       puppeteerArgs: ['--no-sandbox'],
       renderOnly: [],
+      renderOnlyPattern: null,
       closeBrowser: false,
       restrictedUrlPattern: null,
     };
@@ -544,6 +579,7 @@ test('urls mathing pattern are restricted', async (t) => {
     },
     puppeteerArgs: ['--no-sandbox'],
     renderOnly: [],
+    renderOnlyPattern: null,
     closeBrowser: false,
     restrictedUrlPattern: '.*(\\.test.html)($|\\?)',
   };
@@ -572,4 +608,3 @@ test('urls mathing pattern are restricted', async (t) => {
   await cached_server.get(`/invalidate/`);
   fs.rmdirSync(path.join(os.tmpdir(), 'rendertron-test-cache'));
 });
-

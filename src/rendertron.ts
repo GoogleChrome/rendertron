@@ -125,12 +125,21 @@ export class Rendertron {
       return true;
     }
 
-    if (!this.config.renderOnly.length) {
+    // if we don't have any renderOnly urls or a renderOnlyPattern, there
+    // are no restrictions
+    if (!(this.config.renderOnly.length || this.config.renderOnlyPattern)) {
       return false;
     }
 
     for (let i = 0; i < this.config.renderOnly.length; i++) {
       if (href.startsWith(this.config.renderOnly[i])) {
+        return false;
+      }
+    }
+
+    if (this.config.renderOnlyPattern) {
+      const matches = href.match(new RegExp(this.config.renderOnlyPattern));
+      if (matches) {
         return false;
       }
     }
