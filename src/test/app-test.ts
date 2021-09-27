@@ -281,7 +281,7 @@ test('whitelist regex pattern ensures other urls do not get rendered', async (t:
     headers: {},
     puppeteerArgs: ['--no-sandbox'],
     renderOnly: [],
-    renderOnlyPattern: '.*localhost.*',
+    renderOnlyPattern: 'http://localhost.*',
     closeBrowser: false,
     restrictedUrlPattern: null,
   };
