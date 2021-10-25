@@ -87,7 +87,7 @@ export class FilesystemCache {
   }
 
   async clearAllCache() {
-    return new Promise((resolve) => {
+    return new Promise<void>((resolve) => {
       fs.readdir(this.getDir(''), (err, files) => {
         if (err) throw err;
         for (const file of files) {
@@ -242,20 +242,14 @@ export class FilesystemCache {
           ctx.set(response.header);
           ctx.set('x-rendertron-cached', content.saved.toUTCString());
           ctx.status = response.status;
-          let payload: string | { type?: string } = content.payload;
+          let payload: string = content.payload;
           try {
             payload = JSON.parse(content.payload);
           } catch (e) {
             // swallow this.
           }
           try {
-            if (
-              payload &&
-              typeof payload === 'object' &&
-              payload.type === 'Buffer'
-            ) {
-              ctx.body = Buffer.from(payload);
-            } else {
+            if (payload) {
               ctx.body = payload;
             }
             return;

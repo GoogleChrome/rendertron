@@ -154,7 +154,11 @@ export class MemoryCache {
     await next();
 
     if (ctx.status === 200) {
-      this.cacheContent(cacheKey, ctx.response.headers, ctx.body);
+      const headers: Record<string, string> = {};
+      for (const [key, value] of Object.entries(ctx.response.headers)) {
+        headers[key] = <string>value;
+      }
+      this.cacheContent(cacheKey, headers, Buffer.from(<string>ctx.body));
     }
   }
 

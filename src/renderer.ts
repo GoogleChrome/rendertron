@@ -109,7 +109,7 @@ export class Renderer {
       try {
         await page.emulateTimezone(timezoneId);
       } catch (e) {
-        if (e.message.includes('Invalid timezone')) {
+        if (e && e instanceof Error && e.message.includes('Invalid timezone')) {
           return {
             status: 400,
             customHeaders: new Map(),

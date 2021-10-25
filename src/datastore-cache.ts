@@ -99,7 +99,7 @@ export class DatastoreCache {
           name: 'expires',
           value: new Date(
             now.getTime() +
-              parseInt(this.config.cacheConfig.cacheDurationMinutes) * 60 * 1000
+            parseInt(this.config.cacheConfig.cacheDurationMinutes) * 60 * 1000
           ),
         },
         {
@@ -182,7 +182,11 @@ export class DatastoreCache {
       await next();
 
       if (ctx.status === 200) {
-        cacheContent(key, ctx.response.headers, ctx.body);
+        const headers: Record<string, string> = {};
+        for (const [key, value] of Object.entries(ctx.response.headers)) {
+          headers[key] = <string>value;
+        }
+        cacheContent(key, headers, Buffer.from(<string>ctx.body));
       }
     }.bind(this);
   }
