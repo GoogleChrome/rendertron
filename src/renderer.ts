@@ -8,6 +8,7 @@ type SerializedResponse = {
   status: number;
   customHeaders: Map<string, string>;
   content: string;
+  forwardedHeader: Map<string, string>;
 };
 
 type ViewportDimensions = {
@@ -25,10 +26,11 @@ const MOBILE_USERAGENT =
 export class Renderer {
   private browser: puppeteer.Browser;
   private config: Config;
-
+  public forwardedHeader: Map<string, string>;
   constructor(browser: puppeteer.Browser, config: Config) {
     this.browser = browser;
     this.config = config;
+    this.forwardedHeader = new Map();
   }
 
   private restrictRequest(requestUrl: string): boolean {
@@ -38,7 +40,10 @@ export class Renderer {
       return true;
     }
 
-    if (this.config.restrictedUrlPattern && requestUrl.match(new RegExp(this.config.restrictedUrlPattern))) {
+    if (
+      this.config.restrictedUrlPattern &&
+      requestUrl.match(new RegExp(this.config.restrictedUrlPattern))
+    ) {
       return true;
     }
 
@@ -112,6 +117,7 @@ export class Renderer {
         if (e.message.includes('Invalid timezone')) {
           return {
             status: 400,
+            forwardedHeader: new Map(),
             customHeaders: new Map(),
             content: 'Invalid timezone id',
           };
@@ -152,6 +158,13 @@ export class Renderer {
         timeout: this.config.timeout,
         waitUntil: 'networkidle0',
       });
+
+      let map = new Map();
+      for (let key in response['_headers']) {
+        map.set(key, response['_headers'][key]);
+      }
+
+      this.forwardedHeader = map;
     } catch (e) {
       console.error(e);
     }
@@ -164,7 +177,12 @@ export class Renderer {
       if (this.config.closeBrowser) {
         await this.browser.close();
       }
-      return { status: 400, customHeaders: new Map(), content: '' };
+      return {
+        status: 400,
+        customHeaders: new Map(),
+        forwardedHeader: new Map(),
+        content: '',
+      };
     }
 
     // Disable access to compute metadata. See
@@ -174,7 +192,12 @@ export class Renderer {
       if (this.config.closeBrowser) {
         await this.browser.close();
       }
-      return { status: 403, customHeaders: new Map(), content: '' };
+      return {
+        status: 403,
+        customHeaders: new Map(),
+        content: '',
+        forwardedHeader: new Map(),
+      };
     }
 
     // Set status to the initial server's response code. Check for a <meta
@@ -212,6 +235,8 @@ export class Renderer {
             );
           }
         }
+        // result.set("cache-control", response ? response["_headers"]["cache-control"] : "")
+
         return JSON.stringify([...result]);
       })
       .catch(() => undefined);
@@ -239,6 +264,7 @@ export class Renderer {
         ? new Map(JSON.parse(customHeaders))
         : new Map(),
       content: result,
+      forwardedHeader: this.forwardedHeader,
     };
   }
 

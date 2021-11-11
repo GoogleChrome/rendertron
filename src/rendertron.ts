@@ -10,6 +10,7 @@ import url from 'url';
 
 import { Renderer, ScreenshotError } from './renderer';
 import { Config, ConfigManager } from './config';
+//import { copySync } from 'fs-extra';
 
 /**
  * Rendertron rendering service. This runs the server which routes rendering
@@ -159,6 +160,10 @@ export class Rendertron {
     for (const key in this.config.headers) {
       ctx.set(key, this.config.headers[key]);
     }
+    // ctx.set("Cache-Control",serialized.forwardedHeader || "")
+    for (const [key, value] of serialized.forwardedHeader) {
+      if (key != 'content-encoding') ctx.set(key, value);
+    }
 
     // Mark the response as coming from Rendertron.
     ctx.set('x-renderer', 'rendertron');
@@ -166,6 +171,7 @@ export class Rendertron {
     serialized.customHeaders.forEach((value: string, key: string) =>
       ctx.set(key, value)
     );
+
     ctx.status = serialized.status;
     ctx.body = serialized.content;
   }
