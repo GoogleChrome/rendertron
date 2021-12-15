@@ -39,6 +39,7 @@ export type Config = {
   renderOnly: Array<string>;
   closeBrowser: boolean;
   restrictedUrlPattern: string | null;
+  renderLogOptions: Array<string>;
 };
 
 export class ConfigManager {
@@ -59,7 +60,8 @@ export class ConfigManager {
     puppeteerArgs: ['--no-sandbox'],
     renderOnly: [],
     closeBrowser: false,
-    restrictedUrlPattern: null
+    restrictedUrlPattern: null,
+    renderLogOptions: [],
   };
 
   static async getConfiguration(): Promise<Config> {

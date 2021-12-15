@@ -145,6 +145,32 @@ export class Renderer {
         response = r;
       }
     });
+  
+    if (this.config.renderLogOptions.includes("console")) {
+      page
+        .on('console', async msg => {
+          const args = await msg.args()
+          args.forEach(async (arg) => {
+            const val = await arg.jsonValue()
+            // value is serializable
+            if (JSON.stringify(val) !== JSON.stringify({})) console.log(val)
+            // value is unserializable (or an empty oject)
+            else {
+              const { type, subtype, description } = arg._remoteObject
+              console.log(`type: ${type}, subtype: ${subtype}, description:\n ${description}`)
+            }
+          })
+        })
+    
+      if (this.config.renderLogOptions.includes("pageerror")) { page.on('pageerror', ({ message }) => console.log(message)) }
+      if (this.config.renderLogOptions.includes("response")) { page.on('response', response => console.log(`${response.status()} ${response.url()}`)) }
+      if (this.config.renderLogOptions.includes("requestfailed")) {
+        page.on('requestfailed', request => {
+          const failureResult = request.failure();
+          if (failureResult) console.log(`${failureResult.errorText} ${request.url()}`)
+        })
+      }
+    }
 
     try {
       // Navigate to page. Wait until there are no oustanding network requests.
