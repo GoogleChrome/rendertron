@@ -1,3 +1,24 @@
+# デプロイ
+
+## ビルド
+
+事前にローカル環境に node12 をインストールした上で、
+```bash
+cd rendertron
+npm install
+npm run build
+```
+
+## デプロイ
+
+```bash
+gcloud app deploy app.yaml --project tellerapi-dev --no-promote
+```
+
+---
+
+以下、元の README
+
 # Rendertron
 
 [![CI](https://github.com/GoogleChrome/rendertron/workflows/CI/badge.svg)](https://github.com/GoogleChrome/rendertron/actions)
