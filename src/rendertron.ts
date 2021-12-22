@@ -160,9 +160,9 @@ export class Rendertron {
     for (const key in this.config.headers) {
       ctx.set(key, this.config.headers[key]);
     }
-    // ctx.set("Cache-Control",serialized.forwardedHeader || "")
     for (const [key, value] of serialized.forwardedHeader) {
-      if (key != 'content-encoding') ctx.set(key, value);
+      if (key != 'content-encoding' && key != 'access-control-allow-headers')
+        ctx.set(key, value);
     }
 
     // Mark the response as coming from Rendertron.
