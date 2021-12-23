@@ -160,6 +160,7 @@ export class Renderer {
       });
 
       let map = new Map();
+      console.log("response header is::",response['_headers'])
       for (let key in response['_headers']) {
         map.set(key, response['_headers'][key]);
       }

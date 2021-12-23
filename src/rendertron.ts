@@ -160,6 +160,7 @@ export class Rendertron {
     for (const key in this.config.headers) {
       ctx.set(key, this.config.headers[key]);
     }
+    console.log('haeder is::', serialized.forwardedHeader);
     for (const [key, value] of serialized.forwardedHeader) {
       if (key != 'content-encoding' && key != 'access-control-allow-headers')
         ctx.set(key, value);
