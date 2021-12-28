@@ -159,12 +159,12 @@ export class Renderer {
         waitUntil: 'networkidle0',
       });
 
-      let map = new Map();
-      console.log("response header is::",response['_headers'])
-      for (let key in response['_headers']) {
-        map.set(key, response['_headers'][key]);
-      }
+      const map = new Map();
 
+      for (const key in response['_headers']) {
+        if (!map.has(key) && key !== 'content-encoding')
+          map.set(key, response['_headers'][key].split('\n')[0]);
+      }
       this.forwardedHeader = map;
     } catch (e) {
       console.error(e);
