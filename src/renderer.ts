@@ -105,6 +105,10 @@ export class Renderer {
       page.setUserAgent(MOBILE_USERAGENT);
     }
 
+    if (this.config.pageUserAgent) {
+      page.setUserAgent(this.config.pageUserAgent);
+    }
+
     if (timezoneId) {
       try {
         await page.emulateTimezone(timezoneId);
