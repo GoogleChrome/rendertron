@@ -6,7 +6,6 @@ import koaSend from 'koa-send';
 import koaLogger from 'koa-logger';
 import path from 'path';
 import puppeteer, { ScreenshotOptions } from 'puppeteer';
-import url from 'url';
 
 import { Renderer, ScreenshotError } from './renderer';
 import { Config, ConfigManager } from './config';
@@ -81,7 +80,7 @@ export class Rendertron {
    * the requester to read the file system via Chrome.
    */
   restricted(href: string): boolean {
-    const parsedUrl = url.parse(href);
+    const parsedUrl = new URL(href);
     const protocol = parsedUrl.protocol || '';
 
     if (!protocol.match(/^https?/)) {
@@ -196,7 +195,7 @@ async function logUnhandledRejection(reason: unknown, _: Promise<any>) {
 }
 
 // Start rendertron if not running inside tests.
-if (!module.parent) {
+if (require.main) {
   const rendertron = new Rendertron();
   rendertron.initialize();
 
