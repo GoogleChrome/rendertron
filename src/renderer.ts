@@ -108,7 +108,7 @@ export class Renderer {
     if (timezoneId) {
       try {
         await page.emulateTimezone(timezoneId);
-      } catch (e) {
+      } catch (e: any) {
         if (e.message.includes('Invalid timezone')) {
           return {
             status: 400,

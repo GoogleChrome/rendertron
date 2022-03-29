@@ -5,7 +5,7 @@ import route from 'koa-route';
 import koaSend from 'koa-send';
 import koaLogger from 'koa-logger';
 import path from 'path';
-import puppeteer from 'puppeteer';
+import puppeteer, { ScreenshotOptions } from 'puppeteer';
 import url from 'url';
 
 import { Renderer, ScreenshotError } from './renderer';
@@ -57,39 +57,6 @@ export class Rendertron {
     this.app.use(
       route.get('/_ah/health', (ctx: Koa.Context) => (ctx.body = 'OK'))
     );
-
-    // Optionally enable cache for rendering requests.
-    if (this.config.cache === 'datastore') {
-      const { DatastoreCache } = await import('./datastore-cache');
-      const datastoreCache = new DatastoreCache();
-      this.app.use(
-        route.get('/invalidate/:url(.*)', datastoreCache.invalidateHandler())
-      );
-      this.app.use(
-        route.get('/invalidate/', datastoreCache.clearAllCacheHandler())
-      );
-      this.app.use(datastoreCache.middleware());
-    } else if (this.config.cache === 'memory') {
-      const { MemoryCache } = await import('./memory-cache');
-      const memoryCache = new MemoryCache();
-      this.app.use(
-        route.get('/invalidate/:url(.*)', memoryCache.invalidateHandler())
-      );
-      this.app.use(
-        route.get('/invalidate/', memoryCache.clearAllCacheHandler())
-      );
-      this.app.use(memoryCache.middleware());
-    } else if (this.config.cache === 'filesystem') {
-      const { FilesystemCache } = await import('./filesystem-cache');
-      const filesystemCache = new FilesystemCache(this.config);
-      this.app.use(
-        route.get('/invalidate/:url(.*)', filesystemCache.invalidateHandler())
-      );
-      this.app.use(
-        route.get('/invalidate/', filesystemCache.clearAllCacheHandler())
-      );
-      this.app.use(new FilesystemCache(this.config).middleware());
-    }
 
     this.app.use(
       route.get('/render/:url(.*)', this.handleRenderRequest.bind(this))
@@ -153,7 +120,7 @@ export class Rendertron {
     const serialized = await this.renderer.serialize(
       url,
       mobileVersion,
-      ctx.query.timezoneId
+      ctx.query.timezoneId as string
     );
 
     for (const key in this.config.headers) {
@@ -187,12 +154,16 @@ export class Rendertron {
 
     const mobileVersion = 'mobile' in ctx.query ? true : false;
 
+    
+    const screenshotOptions = ctx.request.body as ScreenshotOptions | undefined
+
     try {
       const img = await this.renderer.screenshot(
         url,
         mobileVersion,
         dimensions,
-        ctx.query.timezoneId
+        screenshotOptions,
+        ctx.query.timezoneId as string
       );
 
       for (const key in this.config.headers) {
