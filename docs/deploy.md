@@ -136,4 +136,4 @@ docker build . -t rendertron:3.0
 docker run -d --log-opt max-size=100m --log-opt max-file=3 --name rendertron -p 3000:3000 rendertron:3.0
 ```
 
-The rendertron api will be avaiable at localhost:3000
+The rendertron api will be available at localhost:3000
