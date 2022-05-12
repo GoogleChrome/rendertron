@@ -297,6 +297,15 @@ export class Renderer {
       throw new ScreenshotError('NoResponse');
     }
 
+    if (!response.ok()) {
+      console.error(`Page returned Status: ${response.status()} URL: ${url}`)
+      await page.close();
+      if (this.config.closeBrowser) {
+        await this.browser.close();
+      }
+      throw new ScreenshotError('PageError');
+    }
+
     // Disable access to compute metadata. See
     // https://cloud.google.com/compute/docs/storing-retrieving-metadata.
     if (response.headers()['metadata-flavor'] === 'Google') {
@@ -323,7 +332,7 @@ export class Renderer {
   }
 }
 
-type ErrorType = 'Forbidden' | 'NoResponse';
+type ErrorType = 'Forbidden' | 'NoResponse' | 'PageError';
 
 export class ScreenshotError extends Error {
   type: ErrorType;
