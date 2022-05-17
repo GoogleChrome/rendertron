@@ -40,7 +40,7 @@ export type Config = {
 
 export class ConfigManager {
   public static config: Config = {
-    timeout: 10000,
+    timeout: 30000, // 30s
     port: '8000',
     host: '0.0.0.0',
     width: 1000,
