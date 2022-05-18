@@ -1,0 +1,110 @@
+syntax = "proto3";
+
+package nemoengineering.rendertron.v1;
+
+service RendertronService {
+  // rpc Screenshot(ScreenshotRequest) returns (ScreenshotResponse);
+  rpc Echo(EchoRequest) returns (EchoResponse);
+}
+
+message EchoRequest { string value = 1; }
+
+message EchoResponse { string value = 1; }
+
+message ScreenshotRequest {
+  // The URL of the page to be screenshotted
+  string url = 1;
+
+  // Maximum wait time in milliseconds, defaults to 30 seconds, pass 0 to
+  // disable the timeout.
+  optional uint64 timeout_milliseconds = 2;
+
+  // Use a mobile User-Agent. Default: false
+  optional bool is_mobile = 3;
+
+  // Changes the timezone of the page. See | ICU’s
+  // https://source.chromium.org/chromium/chromium/deps/icu.git/+/faee8bc70570192d82d2978a71e2a615788597d1:source/data/misc/metaZones.txt
+  // for a list of supported timezone IDs.
+  optional string timezone_id = 4;
+  ScreenshotImageOptions image_options = 5;
+  ScreenshotEncoding encoding = 6;
+  WaitUntil wait_until = 7;
+
+  // Take a screenshot if page as non 2xx response. Default: false
+  optional bool screenshot_error = 8;
+}
+
+message ScreenshotImageOptions {
+  ScreenshotType type = 1;
+
+  // Quality of the image, between 0-100. Not applicable to `png` images.
+  optional uint32 quality = 2;
+
+  // When true, takes a screenshot of the full page. Default: false
+  optional bool full_page = 3;
+
+  // Hides default white background and allows capturing screenshots with
+  // transparency. Default: false
+  optional bool omit_background = 4;
+
+  optional Dimensions viewport_dimensions = 5;
+
+  // An object which specifies the clipping region of the page.
+  optional Clip clip = 6;
+
+  // If you need a screenshot bigger than the Viewport. Default: true
+  optional bool capture_beyond_viewport = 7;
+
+  message Dimensions {
+    uint64 width = 1;
+    uint64 height = 2;
+  }
+
+  message Clip {
+    uint64 x = 1;
+    uint64 y = 2;
+    Dimensions dimensions = 3;
+  }
+}
+
+enum ScreenshotType {
+  SCREENSHOT_TYPE_UNSPECIFIED = 0;
+  SCREENSHOT_TYPE_JPEG = 1;
+  SCREENSHOT_TYPE_PNG = 2;
+  SCREENSHOT_TYPE_WEBP = 3;
+}
+
+enum ScreenshotEncoding {
+  SCREENSHOT_ENCODING_UNSPECIFIED = 0;
+  SCREENSHOT_ENCODING_BASE64 = 1;
+  SCREENSHOT_ENCODING_BINARY = 2;
+}
+
+enum WaitUntil {
+  WAIT_UNTIL_UNSPECIFIED = 0;
+
+  // consider setting content to be finished when the load event is fired
+  WAIT_UNTIL_LOAD = 1;
+
+  // consider setting content to be finished when the DOMContentLoaded event is
+  // fired.
+  WAIT_UNTIL_DOMCONTENT_LOADED = 2;
+
+  // consider setting content to be finished when there are no more than 0
+  // network connections for at least 500 ms.
+  WAIT_UNTIL_NET_IDLE_0 = 3;
+
+  // consider setting content to be finished when there are no more than 2
+  // network connections for at least 500 ms.
+  WAIT_UNTIL_NET_IDLE_2 = 4;
+}
+
+message ScreenshotResponse {
+  ScreenshotType type = 1;
+  oneof content {
+    string base64 = 2;
+    bytes binary = 3;
+  }
+  uint64 status_code = 4;
+  map<string, string> headers = 5;
+}
