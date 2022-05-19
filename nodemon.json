@@ -1,6 +1,6 @@
 {
   "ignore": ["**/*.test.ts", ".git", "node_modules"],
-  "watch": ["src"],
+  "watch": ["src", "proto"],
   "exec": "npm run build && npm run start",
-  "ext": "ts"
+  "ext": "ts,proto"
 }
