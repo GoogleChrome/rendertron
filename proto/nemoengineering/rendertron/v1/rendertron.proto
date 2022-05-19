@@ -23,8 +23,6 @@ message ScreenshotRequest {
 
   // Take a screenshot if page as non 2xx response. Default: false
   optional bool screenshot_error = 8;
-
-  map<string, string> headers = 9;
 }
 
 message ScreenshotResponse {
@@ -50,8 +48,6 @@ message SerializeRequest {
   optional uint64 timeout_milliseconds = 4;
 
   WaitUntil wait_until = 5;
-
-  map<string, string> headers = 6;
 }
 
 message SerializeResponse {
