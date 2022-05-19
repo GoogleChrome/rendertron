@@ -1,16 +1,28 @@
-FROM node:16-slim as builder
+FROM node:18 as builder
 
-WORKDIR /app
+WORKDIR /usr/src/rendertron
 
 COPY package.json package.json
 COPY package-lock.json package-lock.json
 COPY tsconfig.json tsconfig.json
+COPY buf.work.yaml .
+COPY buf.gen.yaml .
 COPY src src
+COPY proto proto
 
-RUN npm install && \
-    npm run build
+RUN VERSION="1.4.0" && \
+    curl -sSL \
+    "https://github.com/bufbuild/buf/releases/download/v${VERSION}/buf-$(uname -s)-$(uname -m)" \
+    -o "/usr/local/bin/buf" && \
+    chmod +x "/usr/local/bin/buf"
 
-FROM node:16-slim
+RUN VERSION="3.15.8" && \
+    curl -LO "https://github.com/protocolbuffers/protobuf/releases/download/v${VERSION}/protoc-${VERSION}-linux-x86_64.zip" && \
+    unzip "protoc-${VERSION}-linux-x86_64.zip" -d /
+
+RUN npm install && npm run build
+
+FROM node:18-slim
 
 # Install latest chrome dev package and fonts to support major charsets (Chinese, Japanese, Arabic, Hebrew, Thai and a few others)
 # Note: this installs the necessary libs to make the bundled version of Chromium that Puppeteer
@@ -26,9 +38,10 @@ RUN apt-get update \
 
 WORKDIR /app
 
-COPY --from=builder /app/package.json .
-COPY --from=builder /app/node_modules node_modules
-COPY --from=builder /app/build build
+COPY --from=builder /usr/src/rendertron/package.json .
+COPY --from=builder /usr/src/rendertron/node_modules node_modules
+COPY --from=builder /usr/src/rendertron/build build
+COPY --from=builder /usr/src/rendertron/generated generated
 
 # Install puppeteer so it's available in the container.
 RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
