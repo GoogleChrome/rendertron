@@ -1,5 +1,5 @@
-'use strict';
-import 'dotenv/config'
+"use strict";
+import "dotenv/config";
 
 export interface Config {
   port: number;
@@ -16,5 +16,5 @@ export const config: Config = {
   puppeteerArgs: process.env.PUPPETEER_ARGS?.split(" ") || ["--no-sandbox"],
   allowedRenderOrigins: process.env.ALLOWED_RENDER_ORIGINS?.split(" ") || [],
   restrictedUrlPattern: process.env.RESTRICTED_URL_PATTERN,
-  closeBrowserAfterRender: (process.env.CLOSE_BROWSER_AFTER_RENDER === "true")
-} 
+  closeBrowserAfterRender: process.env.CLOSE_BROWSER_AFTER_RENDER === "true",
+};

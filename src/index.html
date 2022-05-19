@@ -39,7 +39,7 @@ the License.
 
     <script>
       (function (i, s, o, g, r, a, m) {
-        i['GoogleAnalyticsObject'] = r;
+        i["GoogleAnalyticsObject"] = r;
         (i[r] =
           i[r] ||
           function () {
@@ -53,13 +53,13 @@ the License.
       })(
         window,
         document,
-        'script',
-        'https://www.google-analytics.com/analytics.js',
-        'ga'
+        "script",
+        "https://www.google-analytics.com/analytics.js",
+        "ga"
       );
 
-      ga('create', 'UA-104508854-1', 'auto');
-      ga('send', 'pageview');
+      ga("create", "UA-104508854-1", "auto");
+      ga("send", "pageview");
     </script>
 
     <style>
@@ -69,7 +69,7 @@ the License.
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        font-family: 'Orbitron', sans-serif;
+        font-family: "Orbitron", sans-serif;
         margin: 0;
         min-height: calc(100vh - 40px);
         padding: 20px 0;
@@ -90,7 +90,7 @@ the License.
         box-sizing: border-box;
       }
 
-      input[type='url'] {
+      input[type="url"] {
         width: 100%;
         padding: 30px;
         box-sizing: border-box;
@@ -100,7 +100,7 @@ the License.
         border-radius: 10px;
         border: 2px solid #99f3ff;
         color: white;
-        font-family: 'Orbitron', sans-serif;
+        font-family: "Orbitron", sans-serif;
         text-align: center;
       }
 
@@ -155,7 +155,7 @@ the License.
         display: flex;
         flex-direction: column;
         font-size: 18px;
-        font-family: 'Orbitron', sans-serif;
+        font-family: "Orbitron", sans-serif;
         align-items: center;
         justify-content: center;
         cursor: pointer;
@@ -274,10 +274,10 @@ the License.
           return;
         }
 
-        element.classList.add('loading');
-        document.querySelector('.loading-bar').removeAttribute('hidden');
+        element.classList.add("loading");
+        document.querySelector(".loading-bar").removeAttribute("hidden");
         window.location.href += `render/${encodeUrl(url.value)}${
-          isMobile ? '?mobile' : ''
+          isMobile ? "?mobile" : ""
         }`;
       }
 
@@ -290,18 +290,18 @@ the License.
         var httpRegex = /(http(s?))\:\/\//gi;
 
         if (!httpRegex.test(url.value)) {
-          url.value = 'https://' + url.value;
+          url.value = "https://" + url.value;
         }
 
-        element.classList.add('loading');
-        document.querySelector('.loading-bar').removeAttribute('hidden');
+        element.classList.add("loading");
+        document.querySelector(".loading-bar").removeAttribute("hidden");
         window.location.href += `screenshot/${encodeUrl(url.value)}?width=${
           window.innerWidth
         }&height=${window.innerHeight}`;
       }
 
       function onEmptyUrl() {
-        url.classList.add('error');
+        url.classList.add("error");
       }
     </script>
   </body>
