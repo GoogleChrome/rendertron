@@ -1,5 +1,4 @@
 import puppeteer, {  ScreenshotOptions } from 'puppeteer';
-import url from 'url';
 import { dirname } from 'path';
 
 import { PageConfig, ScreenshotEncoding, ScreenshotImageOptions, ScreenshotRequest, ScreenshotResponse, ScreenshotType, SerializeRequest, SerializeResponse, WaitUntil } from '../generated/nodejs/nemoengineering/rendertron/v1/rendertron_pb';
@@ -23,6 +22,8 @@ export class Renderer {
   }
 
   async screenshot(req: ScreenshotRequest.AsObject ): Promise<ScreenshotResponse> {
+    if (this.isRestricted(req.url)) throw new PageSetupError("Requested URL is restricted")
+
     const page = await this.setupPage(req.pageConfig)
 
     let response: puppeteer.HTTPResponse | undefined
@@ -45,8 +46,8 @@ export class Renderer {
       throw new ScreenshotError('NoResponse');
     }
     
-    if (!response.ok()) {
-      console.error(`Page returned Status: ${response.status()} URL: ${url}`)
+    if (!response.ok() && !req.screenshotError) {
+      console.error(`Page returned Status: ${response.status()} URL: ${req.url}`)
       await page.close();
       await this.teardownBrowser();
     
@@ -97,6 +98,8 @@ export class Renderer {
   }
 
   async serialize(req: SerializeRequest.AsObject): Promise<SerializeResponse> {
+
+    if (this.isRestricted(req.url)) throw new PageSetupError("Requested URL is restricted")
     /**
      * Executed on the page after the page has loaded. Strips script and
      * import tags to prevent further loading of resources.
@@ -137,7 +140,6 @@ export class Renderer {
         document.head.insertAdjacentElement('afterbegin', base);
       }
     }
-
     const page = await this.setupPage(req.pageConfig)
 
     page.evaluateOnNewDocument('customElements.forcePolyfill = true');
@@ -248,7 +250,8 @@ export class Renderer {
   }
 
   private async setupPage(conf: PageConfig.AsObject | undefined): Promise<puppeteer.Page> {
-    if (!conf) throw new Error("Page config missing")
+    if (!conf) throw new PageSetupError("Page config missing")
+
     const page = await this.browser.newPage();
 
     if (!conf.viewportDimensions) throw new PageSetupError("Viewport dimensions missing")
@@ -306,14 +309,37 @@ export class Renderer {
     return false;
   }
 
-
-
   private async teardownBrowser() {
     if (this.config.closeBrowserAfterRender) await this.browser.close();
   }
 
-  private static clipFactory(clip: ScreenshotImageOptions.Clip.AsObject | undefined): puppeteer.ScreenshotClip {
-    if (!clip) throw new PageSetupError("Clip is missing")
+  private isRestricted(href: string): boolean {
+    const parsedUrl = new URL(href);
+    const protocol = parsedUrl.protocol || '';
+
+    if (!protocol.match(/^https?/)) {
+      return false;
+    }
+
+    if (parsedUrl.hostname && parsedUrl.hostname.match(/\.internal$/)) {
+      return false;
+    }
+
+    if (!this.config.allowedRenderOrigins.length) {
+      return true;
+    }
+
+    for (let i = 0; i < this.config.allowedRenderOrigins.length; i++) {
+      if (href.startsWith(this.config.allowedRenderOrigins[i])) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  private static clipFactory(clip: ScreenshotImageOptions.Clip.AsObject | undefined): puppeteer.ScreenshotClip | undefined {
+    if (!clip) return
     if (!clip.dimensions) throw new PageSetupError("Clip dimensions missing")
     return {
       height: clip.dimensions.height,
@@ -353,7 +379,7 @@ export class Renderer {
 
 
 
-type ErrorType = 'Forbidden' | 'NoResponse' | 'PageError' | 'IllegalMetadataAccess';
+type ErrorType = 'Forbidden' | 'NoResponse' | 'IllegalMetadataAccess';
 
 export class ScreenshotError extends Error {
   type: ErrorType;
