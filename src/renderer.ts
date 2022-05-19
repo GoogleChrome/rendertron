@@ -39,7 +39,6 @@ export class Renderer {
     const page = await this.setupPage(req.pageConfig);
 
     let response: puppeteer.HTTPResponse | undefined;
-
     try {
       // Navigate to page. Wait until there are no oustanding network requests.
       response = await page.goto(req.url, {
@@ -48,8 +47,9 @@ export class Renderer {
       });
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (e: any) {
-      console.error(e);
-      throw new Error(e);
+      await page.close();
+      await this.teardownBrowser();
+      throw e;
     }
 
     if (!response) {
@@ -340,27 +340,22 @@ export class Renderer {
 
   private isRestricted(href: string): boolean {
     const parsedUrl = new URL(href);
-    const protocol = parsedUrl.protocol || "";
-
-    if (!protocol.match(/^https?/)) {
-      return false;
-    }
 
     if (parsedUrl.hostname && parsedUrl.hostname.match(/\.internal$/)) {
-      return false;
+      return true;
     }
 
     if (!this.config.allowedRenderOrigins.length) {
-      return true;
+      return false;
     }
 
     for (let i = 0; i < this.config.allowedRenderOrigins.length; i++) {
       if (href.startsWith(this.config.allowedRenderOrigins[i])) {
-        return true;
+        return false;
       }
     }
 
-    return false;
+    return true;
   }
 
   private static clipFactory(

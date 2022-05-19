@@ -1,4 +1,4 @@
-import { Server, ServerCredentials } from "@grpc/grpc-js";
+import { Server, ServerCredentials, ServerErrorResponse, StatusObject } from "@grpc/grpc-js";
 import {
   IRendertronServiceServer,
   RendertronServiceService,
@@ -32,49 +32,26 @@ class Rendertron {
     this.renderer = new Renderer(browser, this.config);
   }
 
+  
+
   async initialize() {
     await this.createRenderer();
 
     const service: IRendertronServiceServer = {
       screenshot: (call, callback) => {
+        console.log("screenshot of: ", call.request.getUrl())
+
         this.renderer
           ?.screenshot(call.request.toObject())
           .then((res) => callback(null, res))
-          .catch((err) => {
-            if (err instanceof PageError) {
-              callback({
-                code: Status.ABORTED,
-                name: err.status.toString(),
-                message: `Requested page returned non 2xx code. (Code: ${err.status})`,
-              });
-            } else if (err instanceof PageSetupError) {
-              callback(err);
-            } else if (err instanceof ScreenshotError) {
-              callback(err);
-            } else {
-              console.error(err);
-              callback({ code: Status.INTERNAL });
-            }
-          });
+          .catch((err) => callback(Rendertron.handleError(err)));
       },
       serialize: (call, callback) => {
+        console.log("serializing of: ", call.request.getUrl())
         this.renderer
           ?.serialize(call.request.toObject())
           .then((res) => callback(null, res))
-          .catch((err) => {
-            if (err instanceof PageError) {
-              callback({
-                code: Status.ABORTED,
-                name: err.status.toString(),
-                message: `Requested page returned non 2xx code. (Code: ${err.status})`,
-              });
-            } else if (err instanceof PageSetupError) {
-              callback(err);
-            } else {
-              console.error(err);
-              callback({ code: Status.INTERNAL });
-            }
-          });
+          .catch((err) => callback(Rendertron.handleError(err)));
       },
     };
 
@@ -86,6 +63,33 @@ class Rendertron {
 
       console.log(`server is running on ${listener}`);
     });
+  }
+
+  private static handleError(err: any): Partial<StatusObject> | ServerErrorResponse {
+    console.error(err)
+    if (err instanceof PageError) {
+        return {
+          code: Status.FAILED_PRECONDITION,
+          name: err.status.toString(),
+          message: `Requested page returned non 2xx code. (Code: ${err.status})`,
+        };
+      } else if (err instanceof PageSetupError) {
+        return err;
+      } else if (err instanceof ScreenshotError) {
+        return err;
+      } else if (err instanceof puppeteer.errors.TimeoutError) {
+        return {
+            code: Status.ABORTED,
+            message: err.message,
+            name: err.name
+        };
+      } else {
+        console.error(err);
+        return { 
+            message: "Internal error",
+            code: Status.INTERNAL
+        };
+      }
   }
 }
 
