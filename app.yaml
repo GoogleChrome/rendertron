@@ -1,6 +1,0 @@
-runtime: nodejs12
-instance_class: F4_1G
-automatic_scaling:
-  min_instances: 1
-env_variables:
-  DISABLE_LEGACY_METADATA_SERVER_ENDPOINTS: "true"
