@@ -23,10 +23,8 @@
     "buf:lint": "buf lint"
   },
   "files": [
-    "bin/",
     "build/",
-    "!build/test/",
-    "app.json"
+    "!build/test/"
   ],
   "dependencies": {
     "@grpc/grpc-js": "^1.6.7",
