@@ -3,35 +3,78 @@ syntax = "proto3";
 package nemoengineering.rendertron.v1;
 
 service RendertronService {
-  // rpc Screenshot(ScreenshotRequest) returns (ScreenshotResponse);
-  rpc Echo(EchoRequest) returns (EchoResponse);
+  rpc Screenshot(ScreenshotRequest) returns (ScreenshotResponse);
+  rpc Serialize(SerializeRequest) returns (SerializeResponse);
 }
-
-message EchoRequest { string value = 1; }
-
-message EchoResponse { string value = 1; }
 
 message ScreenshotRequest {
   // The URL of the page to be screenshotted
   string url = 1;
 
+  PageConfig page_config = 2;
+
   // Maximum wait time in milliseconds, defaults to 30 seconds, pass 0 to
   // disable the timeout.
-  optional uint64 timeout_milliseconds = 2;
+  optional uint64 timeout_milliseconds = 3;
 
-  // Use a mobile User-Agent. Default: false
-  optional bool is_mobile = 3;
-
-  // Changes the timezone of the page. See | ICU’s
-  // https://source.chromium.org/chromium/chromium/deps/icu.git/+/faee8bc70570192d82d2978a71e2a615788597d1:source/data/misc/metaZones.txt
-  // for a list of supported timezone IDs.
-  optional string timezone_id = 4;
   ScreenshotImageOptions image_options = 5;
   ScreenshotEncoding encoding = 6;
   WaitUntil wait_until = 7;
 
   // Take a screenshot if page as non 2xx response. Default: false
   optional bool screenshot_error = 8;
+
+  map<string, string> headers = 9;
+}
+
+message ScreenshotResponse {
+  ScreenshotType type = 1;
+
+  // corresponds to the requested ScreenshotType
+  oneof content {
+    string base64 = 2;
+    bytes binary = 3;
+  }
+  uint64 status_code = 4;
+  map<string, string> headers = 5;
+}
+
+message SerializeRequest {
+  // The URL of the page to be screenshotted
+  string url = 1;
+
+  PageConfig page_config = 2;
+
+  // Maximum wait time in milliseconds, defaults to 30 seconds, pass 0 to
+  // disable the timeout.
+  optional uint64 timeout_milliseconds = 4;
+
+  WaitUntil wait_until = 5;
+
+  map<string, string> headers = 6;
+}
+
+message SerializeResponse {
+  string content = 1;
+  uint64 status_code = 2;
+  map<string, string> headers = 3;
+}
+
+message PageConfig {
+  optional Dimensions viewport_dimensions = 1;
+
+  // Use a mobile User-Agent. Default: false
+  optional bool is_mobile = 2;
+
+  // Changes the timezone of the page. See | ICU’s
+  // https://source.chromium.org/chromium/chromium/deps/icu.git/+/faee8bc70570192d82d2978a71e2a615788597d1:source/data/misc/metaZones.txt
+  // for a list of supported timezone IDs.
+  optional string timezone_id = 3;
+
+  // Headers to be added to the Requested page
+  map<string, string> headers = 4;
+
+  optional string user_agent = 5;
 }
 
 message ScreenshotImageOptions {
@@ -47,24 +90,22 @@ message ScreenshotImageOptions {
   // transparency. Default: false
   optional bool omit_background = 4;
 
-  optional Dimensions viewport_dimensions = 5;
-
   // An object which specifies the clipping region of the page.
-  optional Clip clip = 6;
+  optional Clip clip = 5;
 
   // If you need a screenshot bigger than the Viewport. Default: true
-  optional bool capture_beyond_viewport = 7;
-
-  message Dimensions {
-    uint64 width = 1;
-    uint64 height = 2;
-  }
+  optional bool capture_beyond_viewport = 6;
 
   message Clip {
     uint64 x = 1;
     uint64 y = 2;
     Dimensions dimensions = 3;
   }
+}
+
+message Dimensions {
+  uint64 width = 1;
+  uint64 height = 2;
 }
 
 enum ScreenshotType {
@@ -97,14 +138,4 @@ enum WaitUntil {
   // consider setting content to be finished when there are no more than 2
   // network connections for at least 500 ms.
   WAIT_UNTIL_NET_IDLE_2 = 4;
-}
-
-message ScreenshotResponse {
-  ScreenshotType type = 1;
-  oneof content {
-    string base64 = 2;
-    bytes binary = 3;
-  }
-  uint64 status_code = 4;
-  map<string, string> headers = 5;
 }
