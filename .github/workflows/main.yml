@@ -20,6 +20,17 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - uses: bufbuild/buf-setup-action@v1
+        with:
+          version: '1.4.0'
+          buf_token: ${{ secrets.BUF_TOKEN }}
+
+      - uses: bufbuild/buf-lint-action@v1
+      - uses: bufbuild/buf-breaking-action@v1
+        with:
+          # The 'main' branch of the GitHub repository that defines the module.
+          against: 'https://github.com/${GITHUB_REPOSITORY}.git#branch=main'
+
       - uses: actions/setup-node@v1
         with:
           node-version: 14
@@ -27,72 +38,3 @@ jobs:
       - run: npm ci
 
       - run: npm run lint
-
-  test:
-    name: Integration tests
-
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node: ['10', '12', '14']
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node }}
-
-      - run: npm ci
-
-      - run: npm test
-
-  test-cache:
-    name: e2e cache tests
-
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node: ['10', '12', '14']
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node }}
-
-      - name: Install dependencies
-        run: |
-          npm ci
-          export CLOUDSDK_CORE_DISABLE_PROMPTS=1
-          sudo apt-get update && sudo apt-get install google-cloud-sdk google-cloud-sdk-datastore-emulator
-          mkdir ./tmp
-          echo '{"cacheConfig": { "snapshotDir": "./tmp/rendertron" } }' > ./config.json
-
-      - name: Run the e2e cache tests
-        run: npm run test-cache
-
-  test-middleware:
-    name: Middleware tests
-
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node: ['10', '12', '14']
-
-    steps:
-      - uses: actions/checkout@v2
-
-      - uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node }}
-
-      - run: cd middleware/
-
-      - run: npm ci
-
-      - run: npm run test
