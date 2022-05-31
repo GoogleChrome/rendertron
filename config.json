@@ -1,4 +1,5 @@
 {
     "port": 8090,
-    "cache": "datastore"
+    "cache": "datastore",
+    "width": 400
 }
