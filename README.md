@@ -3,6 +3,13 @@
 [![CI](https://github.com/GoogleChrome/rendertron/workflows/CI/badge.svg)](https://github.com/GoogleChrome/rendertron/actions)
 [![NPM package](https://img.shields.io/npm/v/rendertron.svg)](https://npmjs.org/package/rendertron)
 
+
+## Rendertron is deprecated
+
+Please note that this project is **deprecated**. Dynamic rendering [is not a recommended approach](https://developers.google.com/search/docs/crawling-indexing/javascript/dynamic-rendering) and [there are better approaches to rendering on the web](https://web.dev/rendering-on-the-web/).
+
+**Rendertron will not be actively maintained at this point.**
+
 > Rendertron is a headless Chrome rendering solution designed to render & serialise web pages on the fly.
 
 #### :hammer: Built with [Puppeteer](https://github.com/GoogleChrome/puppeteer)
@@ -18,11 +25,6 @@ standalone HTTP server. Rendertron renders requested pages using Headless Chrome
 and serializes the response back to the original request. To use Rendertron, your application
 configures [middleware](#middleware) to determine whether to proxy a request to Rendertron.
 Rendertron is compatible with all client side technologies, including [web components](#web-components).
-
-**Demo endpoint**
-
-A demo Rendertron service is available at https://render-tron.appspot.com/. It is not designed
-to be used as a production endpoint. You can use it, but there are no uptime guarantees.
 
 ## Contents
 
